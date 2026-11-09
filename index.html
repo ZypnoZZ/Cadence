@@ -651,6 +651,12 @@ label.ghost{color:var(--ink);font-weight:600}
 .exp-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .exp-plans .plan{padding:10px 12px}
 .lockprev{position:relative;filter:blur(3px) saturate(.7);opacity:.6;pointer-events:none;user-select:none;-webkit-user-select:none;max-height:760px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.abo-st{display:flex;flex-direction:column;gap:3px;padding:14px;border-radius:16px;background:var(--soft);margin:4px 0 6px}
+.abo-st b{font-size:18px}
+.abo-st span{font-size:14px}
+.abo-st small{color:var(--muted);font-size:12.5px}
+.abo-st.off b{color:var(--danger,#d33)}
+.danger-t{color:var(--danger,#d33)!important}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
@@ -1089,14 +1095,15 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 43';
+const APP_VERSION='2026.11.09 · 44';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
 const LIC_RECHECK_MS=12*3600*1000;
 function licenseGet(){try{return JSON.parse(localStorage.getItem(LS_LICENSE)||'null')}catch(e){return null}}
 function licenseSet(v){try{localStorage.setItem(LS_LICENSE,JSON.stringify(v))}catch(e){}}
-function licensePlan(){const l=licenseGet();if(!l)return null;if(l.type==='admin')return 'coach';if(l.type==='sub'&&l.active)return l.plan==='coach'?'coach':'base';return null}
+function licLive(l){return !!(l&&l.active&&!(l.cancelAt&&Date.now()>l.cancelAt))}
+function licensePlan(){const l=licenseGet();if(!l)return null;if(l.type==='admin')return 'coach';if(l.type==='sub'&&licLive(l))return l.plan==='coach'?'coach':'base';return null}
 function coachUnlocked(){return !IS_PWA||licensePlan()==='coach'}
 function coachActive(){return prefs().coach&&coachUnlocked()}
 const LS_LASTEMAIL='cadence-last-email';
@@ -1110,6 +1117,28 @@ function rememberCheckout(email,plan){
   if(l.type==='admin')return;
   licenseSet({type:'sub',email,active:l.email===email&&!!l.active,plan:l.email===email?(l.plan||'base'):'base',checked:0,want:plan,pending:Date.now()});
 }
+const fmtEnd=t=>new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long'}).format(new Date(t));
+// Retour du portail Stripe (résiliation, changement de formule) : l'app se met à jour toute seule.
+async function licenseSync(){
+  const l=licenseGet();if(!l||l.type!=='sub'||!l.email)return;
+  const key=x=>[!!x.active,x.plan||'base',x.cancelAt||0].join('|'),before=key(l);
+  toast('Mise à jour de ton abonnement…');
+  let d=null;
+  for(let i=0;i<12;i++){
+    try{d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json()}catch(e){}
+    if(d&&key(d)!==before)break;
+    await new Promise(r=>setTimeout(r,i<6?1500:3000));
+  }
+  if(!d)return;
+  licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
+  V.lic=false;updateGate();render();
+  const now=licenseGet();
+  if(!licLive(now))toast('Abonnement résilié. Tes données restent sur ce téléphone.');
+  else if(now.cancelAt&&now.cancelAt!==(l.cancelAt||null))toast('Résiliation enregistrée : accès complet jusqu\'au '+fmtEnd(now.cancelAt));
+  else if(!now.cancelAt&&l.cancelAt)toast('Résiliation annulée, ton abonnement continue');
+  else if(now.plan!==(l.plan||'base'))toast(now.plan==='coach'?'Cadence + Coach activé 🎉':'Formule Cadence activée');
+  else toast('Abonnement à jour');
+}
 // Après le paiement Stripe : on vérifie l'abonnement tout seul (le webhook peut mettre quelques secondes).
 async function licenseActivate(){
   const l=licenseGet(),msg=$('#lic-msg'),em=$('#lic-email');
@@ -1122,7 +1151,7 @@ async function licenseActivate(){
     try{
       const d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json();
       if(d.active&&(want!=='coach'||d.plan==='coach')){
-        licenseSet({type:'sub',email:l.email,active:true,plan:d.plan||'base',checked:Date.now()});
+        licenseSet({type:'sub',email:l.email,active:true,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
         $('#license').classList.remove('busy');if(msg)msg.textContent='';V.lic=false;
         updateGate();render();
         toast(was?(d.plan==='coach'?'Cadence + Coach activé 🎉':'Abonnement mis à jour'):'Bienvenue dans Cadence 🎉');
@@ -1135,7 +1164,7 @@ async function licenseActivate(){
   const cur=licenseGet();if(cur){delete cur.pending;licenseSet(cur)}
   if(msg)msg.textContent='Paiement bien reçu, la validation prend un peu plus de temps. Appuie sur « J\'ai déjà un abonnement » dans une minute.';
 }
-function licenseExpired(){const l=licenseGet();return IS_PWA&&!!l&&l.type==='sub'&&!!l.email&&!l.active}
+function licenseExpired(){const l=licenseGet();return IS_PWA&&!!l&&l.type==='sub'&&!!l.email&&!licLive(l)}
 function renderExpiredCard(){
   const l=licenseGet()||{};
   return '<section class="card expcard"><div class="exp-h"><span class="exp-ic" aria-hidden="true">🔒</span><div><h2>Abonnement terminé</h2><p class="note">Tes données sont gardées. Voici un aperçu : réabonne-toi pour tout débloquer.</p></div></div>'
@@ -1144,16 +1173,16 @@ function renderExpiredCard(){
    +'<div class="row" style="margin-top:8px;justify-content:space-between"><button type="button" class="linkbtn" data-act="expcheck">J\'ai déjà réactivé</button><button type="button" class="linkbtn" data-act="liclogout">Changer d\'email</button></div>'
    +'<p class="note" id="exp-msg" style="margin-top:2px;font-size:12.5px" aria-live="polite">Compte : '+esc(l.email||'')+'</p></section>';
 }
-function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return !!l.active;return false}
+function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return licLive(l);return false}
 async function sha256Hex(str){const d=new TextEncoder().encode(str);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function licenseRecheckIfStale(){
   const l=licenseGet();
   if(!l||l.type!=='sub'||!l.email)return;
-  if(l.active&&l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
+  if(licLive(l)&&l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
   try{
     const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email));
     const d=await r.json();
-    licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
+    licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
     updateGate();
   }catch(e){}
   return true;
@@ -1789,10 +1818,24 @@ function renderSettings(){
   }
   if(sec==='abo'){
     const l=licenseGet();
-    const body=!l?'<p class="note">Aucune licence active.</p>'
-      :l.type==='admin'?'<p class="note">Accès administrateur (gratuit), coach inclus.</p>'
-      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'formule '+(l.plan==='coach'?'Cadence + Coach':'Cadence')+' active.':'abonnement inactif.')+'</p>'+(!l.active?'<button type="button" class="primary" data-act="expsub" data-plan="base" style="width:100%;margin-bottom:8px">Me réabonner</button>':'')+(l.active&&l.plan!=='coach'?'<button type="button" class="primary" data-act="licportal" style="width:100%;margin-bottom:8px">Passer à Cadence + Coach</button>':'')
-       +'<div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="licportal">Gérer / annuler l\'abonnement</button><button type="button" class="ghost" data-act="liclogout">Se déconnecter</button></div>';
+    let body;
+    if(!l)body='<p class="note">Aucun abonnement sur ce téléphone.</p>';
+    else if(l.type==='admin')body='<p class="note">Accès administrateur (gratuit), coach inclus.</p><button type="button" class="ghost" data-act="liclogout" style="margin-top:10px">Se déconnecter</button>';
+    else{
+      const live=licLive(l),pl=l.plan==='coach'?'Cadence + Coach':'Cadence';
+      body='<div class="abo-st'+(live?'':' off')+'"><b>'+(live?pl:'Abonnement terminé')+'</b><span>'+(live?(l.cancelAt?'Résilié · accès complet jusqu\'au '+fmtEnd(l.cancelAt):(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois · renouvellement automatique'):'Tes données restent sur ce téléphone.')+'</span><small>'+esc(l.email||'')+'</small></div>';
+      const btn=(act,lbl,cls,extra)=>'<button type="button" class="'+(cls||'ghost')+'" data-act="'+act+'"'+(extra||'')+' style="width:100%;margin-top:8px">'+lbl+'</button>';
+      if(!live)body+=btn('expsub','Me réabonner','primary',' data-plan="base"');
+      else{
+        if(l.cancelAt){}
+        else if(l.plan!=='coach')body+=btn('licportal','Passer à Cadence + Coach','primary',' data-flow="update"');
+        else body+=btn('licportal','Changer de formule','ghost',' data-flow="update"');
+        body+=l.cancelAt?btn('licportal','Annuler la résiliation','primary',' data-flow=""'):btn('licportal','Résilier mon abonnement','ghost danger-t',' data-flow="cancel"');
+        body+=btn('licportal','Factures et carte bancaire','ghost',' data-flow=""');
+      }
+      body+='<p class="note" style="margin-top:10px">Stripe s\'ouvre pour confirmer, puis se referme tout seul : Cadence se met à jour automatiquement.</p>'
+        +'<button type="button" class="linkbtn" data-act="liclogout" style="display:block;margin:10px auto 0">Se déconnecter</button>';
+    }
     return head+'<section class="card"><h2>Mon abonnement</h2>'+body+'</section>';
   }
   if(sec==='train'){
@@ -1846,7 +1889,7 @@ const DR_IC={
   trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>'
 };
 const drSvg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+DR_IC[k]+'</svg>';
-function planLabel(){const l=licenseGet();if(!IS_PWA)return '';if(!l)return 'Aucun abonnement';if(l.type==='admin')return 'Accès complet';if(l.type==='sub'&&l.active)return l.plan==='coach'?'Cadence + Coach':'Cadence';return 'Abonnement inactif'}
+function planLabel(){const l=licenseGet();if(!IS_PWA)return '';if(!l)return 'Aucun abonnement';if(l.type==='admin')return 'Accès complet';if(l.type==='sub'&&licLive(l))return (l.plan==='coach'?'Cadence + Coach':'Cadence')+(l.cancelAt?' · fin le '+fmtEnd(l.cancelAt):'');return 'Abonnement terminé'}
 function openDrawer(){
   const p=S.profile,name=IS_PWA?curProfile().name:'Mon compte',P=IS_PWA?profiles():null;
   const ini=n=>(String(n).trim()[0]||'?').toUpperCase();
@@ -3695,7 +3738,7 @@ document.addEventListener('click',e=>{
     if(!email){msg.textContent='Entre ton email.';return}
     msg.textContent='Vérification…';
     fetch(WORKER_URL+'/status?email='+encodeURIComponent(email)).then(r=>r.json()).then(d=>{
-      licenseSet({type:'sub',email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
+      licenseSet({type:'sub',email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       if(d.active){msg.textContent='';V.lic=false;updateGate();render()}
       else msg.textContent="Aucun abonnement actif pour cet email. Clique sur \"S'abonner\".";
     }).catch(()=>{msg.textContent='Impossible de vérifier pour le moment. Réessaie plus tard.'});
@@ -3709,14 +3752,14 @@ document.addEventListener('click',e=>{
   }
   else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}rememberCheckout(email,'coach');location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='licportal'){
-    const l=licenseGet();if(!l||!l.email)return;
-    location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname);
+    const l=licenseGet();if(!l||!l.email)return;const fl=b.dataset.flow||(b.closest('.sale,.chero,.coachpay')||/Coach/.test(b.textContent)?'update':'');
+    location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+(fl?'&flow='+fl:'')+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
   else if(a==='liclogout'){licenseLogout()}
   else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
     fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
-      licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
+      licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       if(d.active){render();toast('Content de te revoir 🎉')}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
     }).catch(()=>{const m2=$('#exp-msg');if(m2)m2.textContent='Impossible de vérifier pour le moment.'})}
   else if(a==='wipe'){
@@ -3967,10 +4010,12 @@ fillSelects();
 if(IS_PWA){
   try{
     const qs=new URLSearchParams(location.search);
-    if(qs.get('lic')==='ok'){V.licReturn=true;history.replaceState(null,'',location.pathname)}
+    if(qs.get('lic')==='changed'){V.licChanged=true;history.replaceState(null,'',location.pathname)}
+    else if(qs.get('lic')==='ok'){V.licReturn=true;history.replaceState(null,'',location.pathname)}
     else if(qs.get('lic')==='cancel'){const l=licenseGet();if(l&&l.pending){delete l.pending;delete l.want;licenseSet(l)}history.replaceState(null,'',location.pathname);setTimeout(()=>toast('Paiement annulé'),300)}
   }catch(e){}
   if(V.licReturn)setTimeout(licenseActivate,50);
+  else if(V.licChanged)setTimeout(licenseSync,50);
   else licenseRecheckIfStale().then(()=>render());
 }
 render();

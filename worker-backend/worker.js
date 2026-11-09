@@ -55,6 +55,29 @@ async function verifyStripeSignature(rawBody, sigHeader, secret) {
   return toHex(sig) === v1;
 }
 
+async function stripeGet(env, path) {
+  const r = await fetch('https://api.stripe.com/v1/' + path, { headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY } });
+  return r.json();
+}
+// Date de fin d'accès si la résiliation est programmée (ms), sinon null
+function cancelAtOf(sub) {
+  if (!sub) return null;
+  if (sub.cancel_at) return sub.cancel_at * 1000;
+  if (sub.cancel_at_period_end) {
+    const end = sub.current_period_end || (sub.items && sub.items.data && sub.items.data[0] && sub.items.data[0].current_period_end);
+    return end ? end * 1000 : null;
+  }
+  return null;
+}
+async function saveSub(env, sub, activeOverride) {
+  const cust = await stripeGet(env, 'customers/' + sub.customer);
+  if (!cust || !cust.email) return;
+  const active = activeOverride !== undefined ? activeOverride : (sub.status === 'active' || sub.status === 'trialing');
+  await env.LICENSES.put('lic:' + cust.email.toLowerCase(), JSON.stringify({
+    active, customerId: sub.customer, subscriptionId: sub.id, plan: active ? planOf(env, sub) : 'base',
+    cancelAt: active ? cancelAtOf(sub) : null, updated: Date.now()
+  }));
+}
 // Formule d'un abonnement : d'après le prix (fiable après un changement de formule), sinon les métadonnées.
 function planOf(env, sub) {
   const price = sub && sub.items && sub.items.data && sub.items.data[0] && sub.items.data[0].price && sub.items.data[0].price.id;
@@ -184,7 +207,7 @@ export default {
       if (!email) return json({ error: 'email manquant' }, 400);
       const v = await env.LICENSES.get('lic:' + email);
       const data = v ? JSON.parse(v) : null;
-      return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base' });
+      return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base', cancelAt: (data && data.cancelAt) || null });
     }
 
     // GET /checkout?email=... -> redirige vers Stripe Checkout
@@ -217,11 +240,27 @@ export default {
       const v = await env.LICENSES.get('lic:' + email);
       const data = v ? JSON.parse(v) : null;
       if (!data || !data.customerId) return json({ error: 'Aucun abonnement trouvé pour cet email' }, 404);
+      const flow = url.searchParams.get('flow');
+      const back = appUrl + '?lic=changed';
       try {
-        const session = await stripe(env, 'billing_portal/sessions', {
-          customer: data.customerId,
-          return_url: appUrl
-        });
+        const params = { customer: data.customerId, return_url: back };
+        if (flow === 'cancel' || flow === 'update') {
+          let subId = data.subscriptionId;
+          if (!subId) {
+            const list = await stripeGet(env, 'subscriptions?customer=' + encodeURIComponent(data.customerId) + '&status=active&limit=1');
+            subId = list && list.data && list.data[0] && list.data[0].id;
+          }
+          if (subId) {
+            params['flow_data[type]'] = flow === 'cancel' ? 'subscription_cancel' : 'subscription_update';
+            params['flow_data[' + (flow === 'cancel' ? 'subscription_cancel' : 'subscription_update') + '][subscription]'] = subId;
+            // Après confirmation, Stripe se ferme tout seul et revient dans Cadence
+            params['flow_data[after_completion][type]'] = 'redirect';
+            params['flow_data[after_completion][redirect][return_url]'] = back;
+          }
+        }
+        let session;
+        try { session = await stripe(env, 'billing_portal/sessions', params); }
+        catch (e) { session = await stripe(env, 'billing_portal/sessions', { customer: data.customerId, return_url: back }); }
         return Response.redirect(session.url, 302);
       } catch (e) {
         return json({ error: e.message }, 500);
@@ -257,36 +296,18 @@ export default {
       const obj = event.data && event.data.object;
 
       if (event.type === 'checkout.session.completed' && obj.customer_email) {
-        await env.LICENSES.put('lic:' + obj.customer_email.toLowerCase(), JSON.stringify({
-          active: true, customerId: obj.customer, plan: (obj.metadata && obj.metadata.plan) || 'base'
-        }));
+        const key = 'lic:' + obj.customer_email.toLowerCase();
+        const prev = JSON.parse((await env.LICENSES.get(key)) || '{}');
+        await env.LICENSES.put(key, JSON.stringify(Object.assign(prev, {
+          active: true, customerId: obj.customer, plan: (obj.metadata && obj.metadata.plan) || prev.plan || 'base',
+          subscriptionId: obj.subscription || prev.subscriptionId || null, updated: Date.now()
+        })));
       }
       if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
-        const email = (obj.metadata && obj.metadata.email) || null;
-        const active = obj.status === 'active' || obj.status === 'trialing';
-        // On retrouve l'email via le customer Stripe si besoin
-        try {
-          const cust = await (await fetch('https://api.stripe.com/v1/customers/' + obj.customer, {
-            headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY }
-          })).json();
-          if (cust.email) {
-            await env.LICENSES.put('lic:' + cust.email.toLowerCase(), JSON.stringify({
-              active, customerId: obj.customer, plan: planOf(env, obj)
-            }));
-          }
-        } catch (e) {}
+        try { await saveSub(env, obj); } catch (e) {}
       }
       if (event.type === 'customer.subscription.deleted') {
-        try {
-          const cust = await (await fetch('https://api.stripe.com/v1/customers/' + obj.customer, {
-            headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY }
-          })).json();
-          if (cust.email) {
-            await env.LICENSES.put('lic:' + cust.email.toLowerCase(), JSON.stringify({
-              active: false, customerId: obj.customer, plan: 'base'
-            }));
-          }
-        } catch (e) {}
+        try { await saveSub(env, obj, false); } catch (e) {}
       }
       return new Response('ok');
     }
