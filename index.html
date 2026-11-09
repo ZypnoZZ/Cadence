@@ -848,10 +848,10 @@ label.ghost{color:var(--ink);font-weight:600}
 .csc .btn.p{background:var(--grad);color:#fff;animation:cscTap 2.4s 1s infinite}
 .csc .btn.g{border:1px solid var(--line);color:var(--ink);animation:cscTap 2.4s 2.2s infinite}
 @keyframes cscTap{0%,70%,100%{transform:none}80%{transform:scale(.94)}90%{transform:scale(1.03)}}
-.csc .ring{width:104px;height:104px;display:block}
-.csc .ring circle{fill:none;stroke-width:9;stroke-linecap:round}
-.csc .ring .bg{stroke:var(--line)}
-.csc .ring .fg{stroke:var(--accent);stroke-dasharray:1;stroke-dashoffset:0;transform:rotate(-90deg);transform-origin:50% 50%;animation:cscRing 5s linear infinite}
+.csc .tring{width:104px;height:104px;display:block}
+.csc .tring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.csc .tring .bg{stroke:var(--line)}
+.csc .tring .fg{stroke:var(--accent);stroke-dasharray:1;stroke-dashoffset:0;transform:rotate(-90deg);transform-origin:50% 50%;animation:cscRing 5s linear infinite}
 @keyframes cscRing{from{stroke-dashoffset:0}to{stroke-dashoffset:1}}
 .csc .ex{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:11px;border:1px solid var(--line);background:var(--bg);font-weight:600;font-size:12.5px}
 .csc .ex i{margin-left:auto;font-style:normal;color:var(--accent);font-weight:800;opacity:0;animation:cscChk 6s infinite both}
@@ -1350,7 +1350,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 51';
+const APP_VERSION='2026.11.09 · 52';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1515,7 +1515,7 @@ function coachScene(k){
     +PIN(3,310,142)+LEG(206,['Aujourd\'hui','Séance','Agenda'])+'</div>';
   if(k==='c_sess')return '<div class="csc">'
     +'<span class="a lb" style="left:16px;top:12px">SÉANCE GUIDÉE</span>'
-    +'<div class="a hlr" style="left:16px;top:36px;width:104px;height:104px"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" pathLength="1" cx="52" cy="52" r="44"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1"><span><b style="font-size:17px">Repos</b><br><span class="lb">60 s</span></span></div></div>'
+    +'<div class="a hlr" style="left:16px;top:36px;width:104px;height:104px"><svg class="tring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" pathLength="1" cx="52" cy="52" r="44"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1"><span><b style="font-size:17px">Repos</b><br><span class="lb">60 s</span></span></div></div>'
     +PIN(1,104,30)
     +'<div class="a hl" style="left:138px;right:14px;top:36px;display:grid;gap:8px;padding:6px;border-radius:16px">'
     +[['Pompes','4×12'],['Rowing','4×10'],['Gainage','3×40 s']].map((e,i)=>'<span class="ex"><span>'+e[0]+'</span><span class="lb">'+e[1]+'</span><i style="animation-delay:'+(i*1.2)+'s">✓</i></span>').join('')+'</div>'
