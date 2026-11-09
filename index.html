@@ -141,6 +141,14 @@ p{margin:0}
 .day .dots{display:flex;gap:3px;height:6px}
 .day .dots i{width:6px;height:6px;border-radius:50%;display:block}
 .day.out{background:transparent;color:var(--muted);border-color:transparent}
+.day{position:relative}
+.day.hol::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.7}
+.day.ferie::after{background:var(--accent);opacity:1}
+.day.ferie .n{color:var(--accent)}
+.day.sel .n{color:#fff}
+.day.sel::after{background:#fff}
+.hol-line{font-size:13px;font-weight:600;color:var(--accent);margin-top:2px}
+.hol-line.minor{color:var(--muted)}
 .day.today{border:2px solid var(--accent)}
 .day.sel{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 12px var(--glow)}
 :root{--sport:var(--t-eve);--important:var(--t-pm);--todo:var(--t-am)}
@@ -385,6 +393,16 @@ label.ghost{color:var(--ink);font-weight:600}
   </nav>
 </div>
 
+<div id="dsheet" class="scrim" hidden>
+  <div class="panel" role="dialog" aria-labelledby="d-head">
+    <div class="panel-head">
+      <div style="min-width:0"><h2 id="d-head"></h2><p id="d-hol" class="hol-line" hidden></p></div>
+      <button type="button" class="x" data-act="dayclose" aria-label="Fermer">×</button>
+    </div>
+    <ul class="list" id="d-list"></ul>
+    <button type="button" class="primary" data-act="dadd" style="width:100%;margin-top:14px">+ Ajouter ce jour-là</button>
+  </div>
+</div>
 <div id="sheet" class="scrim" hidden>
   <form id="form" class="panel" autocomplete="off">
     <div class="panel-head">
@@ -650,7 +668,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 15';
+const APP_VERSION='2026.11.09 · 16';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -895,7 +913,7 @@ function itemHTML(it,showDate){
 
   return '<li class="item'+(it.done?' done':'')+'" style="--c:'+itemColor(it)+'">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
-   +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+(it.type==='sport'?' <span class="type">· '+esc(it.sport)+'</span>':'')+'</div>'
+   +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+'</div>'
    +(top.length?'<div class="m">'+top.join('')+'</div>':'')+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
 }
 function updateSlot(){
@@ -906,6 +924,32 @@ function updateSlot(){
   el.innerHTML='<span class="pill d" style="--pc:var('+DATE_C[dateState(fake)]+')">'+label+'</span>';
 }
 
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),t=h+l-7*m+114;return new Date(y,Math.floor(t/31)-1,(t%31)+1)}
+const HOL_CACHE={};
+function holidays(y){
+  if(HOL_CACHE[y])return HOL_CACHE[y];
+  const e=easter(y),m={},add=(d,n,f)=>{m[iso(d)]={n,f}};
+  add(new Date(y,1,14),'Saint-Valentin',0);add(e,'Pâques',0);add(addDays(e,49),'Pentecôte',0);
+  let fm=new Date(y,4,31);while(fm.getDay()!==0)fm=addDays(fm,-1);if(iso(fm)===iso(addDays(e,49)))fm=addDays(fm,7);add(fm,'Fête des mères',0);
+  let fp=new Date(y,5,1);while(fp.getDay()!==0)fp=addDays(fp,1);add(addDays(fp,14),'Fête des pères',0);
+  add(new Date(y,9,31),'Halloween',0);add(new Date(y,11,24),'Réveillon de Noël',0);add(new Date(y,11,31),'Saint-Sylvestre',0);
+  add(new Date(y,0,1),"Jour de l'an",1);add(addDays(e,1),'Lundi de Pâques',1);add(new Date(y,4,1),'Fête du Travail',1);add(new Date(y,4,8),'Victoire 1945',1);
+  add(addDays(e,39),'Ascension',1);add(addDays(e,50),'Lundi de Pentecôte',1);add(new Date(y,6,14),'Fête nationale',1);add(new Date(y,7,15),'Assomption',1);
+  add(new Date(y,10,1),'Toussaint',1);add(new Date(y,10,11),'Armistice 1918',1);add(new Date(y,11,25),'Noël',1);
+  return HOL_CACHE[y]=m;
+}
+function holiday(k){return holidays(+k.slice(0,4))[k]}
+function holHTML(k){const h=holiday(k);return h?'<p class="hol-line'+(h.f?'':' minor')+'">'+esc(h.n)+(h.f?' · jour férié':'')+'</p>':''}
+function openDay(k){
+  V.dsheet=k;
+  $('#d-head').textContent=cap(FMT.long.format(parseISO(k)));
+  const h=holiday(k),hl=$('#d-hol');hl.hidden=!h;
+  if(h){hl.textContent=h.n+(h.f?' · jour férié':'');hl.className='hol-line'+(h.f?'':' minor')}
+  const its=groupBy()[k]||[];
+  $('#d-list').innerHTML=its.length?its.map(i=>itemHTML(i,false)).join(''):'<li class="empty">Rien de prévu ce jour-là.</li>';
+  $('#dsheet').hidden=false;
+}
+function closeDay(){$('#dsheet').hidden=true;V.dsheet=null}
 function renderAgenda(){
   const m=V.month,y=m.getFullYear(),mo=m.getMonth();
   const first=new Date(y,mo,1),start=addDays(first,-((first.getDay()+6)%7));
@@ -913,8 +957,9 @@ function renderAgenda(){
   for(let i=0;i<42;i++){
     const d=addDays(start,i),k=iso(d),its=by[k]||[];
     const types=[...new Set(its.map(itemColor))].slice(0,4);
-    const cls=['day'];if(d.getMonth()!==mo)cls.push('out');if(k===todayISO)cls.push('today');if(k===V.sel)cls.push('sel');
-    cells+='<button type="button" class="'+cls.join(' ')+'" data-act="pick" data-date="'+k+'" aria-label="'+esc(FMT.long.format(d))+(its.length?', '+its.length+' élément'+(its.length>1?'s':''):'')+'"'+(k===V.sel?' aria-pressed="true"':'')+'><span class="n">'+d.getDate()+'</span><span class="dots">'+types.map(c=>'<i style="background:'+c+'"></i>').join('')+'</span></button>';
+    const hd=holiday(k);
+    const cls=['day'];if(d.getMonth()!==mo)cls.push('out');if(hd)cls.push(hd.f?'hol ferie':'hol');if(k===todayISO)cls.push('today');if(k===V.sel)cls.push('sel');
+    cells+='<button type="button" class="'+cls.join(' ')+'" data-act="pick" data-date="'+k+'" aria-label="'+esc(FMT.long.format(d))+(hd?', '+esc(hd.n):'')+(its.length?', '+its.length+' élément'+(its.length>1?'s':''):'')+'"'+(k===V.sel?' aria-pressed="true"':'')+'><span class="n">'+d.getDate()+'</span><span class="dots">'+types.map(c=>'<i style="background:'+c+'"></i>').join('')+'</span></button>';
   }
   const ws=addDays(today,-((today.getDay()+6)%7)),we=addDays(ws,6);
   const sp=S.items.filter(i=>i.type==='sport'&&i.date>=iso(ws)&&i.date<=iso(we));
@@ -925,7 +970,7 @@ function renderAgenda(){
    +'<div class="wd" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>'
    +'<div class="grid">'+cells+'</div>'
    +(sp.length?'<p class="week-line">Séances cette semaine : <b>'+spDone+'/'+sp.length+'</b></p>':'')
-   +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2></div>'
+   +'<div class="day-title" style="display:block"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2>'+holHTML(V.sel)+'</div>'
    +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu.</div>')
    +exNote
    +'<div id="todos" style="margin-top:24px">'+renderTodos()+'</div>';
@@ -1798,6 +1843,7 @@ function render(){
   v.innerHTML=V.tab==='seances'?renderSeances():V.tab==='nutrition'?renderNutrition():V.tab==='settings'?renderSettings():V.tab==='poids'?renderPoids():V.tab==='journal'?renderJournal():V.tab==='legal'?renderLegal():V.tab==='agenda'?renderAgenda():V.tab==='todos'?renderTodos():V.tab==='macros'?renderMacros():renderMeals();
   if(V.tab==='macros'||(V.tab==='nutrition'&&(V.nseg||'macros')==='macros'))updateRateBox();
   updateGate();
+  if(V.dsheet&&!$('#dsheet').hidden)openDay(V.dsheet);
 }
 
 /* ---------- Feuille d'édition ---------- */
@@ -1850,6 +1896,7 @@ function submitForm(e){
 document.addEventListener('click',e=>{
   if(e.target===$('#drawer')){closeDrawer();return}
   if(e.target===$('#sheet')){closeSheet();return}
+  if(e.target===$('#dsheet')){closeDay();return}
   if(e.target===$('#fsheet')){closeFood();return}
   const b=e.target.closest('[data-act]');if(!b)return;
   const a=b.dataset.act;
@@ -1863,7 +1910,9 @@ document.addEventListener('click',e=>{
   else if(a==='prev'){V.month=new Date(V.month.getFullYear(),V.month.getMonth()-1,1);render()}
   else if(a==='next'){V.month=new Date(V.month.getFullYear(),V.month.getMonth()+1,1);render()}
   else if(a==='today'){V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;render()}
-  else if(a==='pick'){V.sel=b.dataset.date;const d=parseISO(V.sel);V.month=new Date(d.getFullYear(),d.getMonth(),1);render()}
+  else if(a==='pick'){V.sel=b.dataset.date;const d=parseISO(V.sel);V.month=new Date(d.getFullYear(),d.getMonth(),1);render();openDay(V.sel)}
+  else if(a==='dayclose'){closeDay()}
+  else if(a==='dadd'){const k=V.dsheet||V.sel;openSheet(null,{type:V.lastType,date:k})}
   else if(a==='toggle'){const it=S.items.find(x=>x.id===b.dataset.id);if(it){it.done=!it.done;touch();render()}}
   else if(a==='edit'){const it=S.items.find(x=>x.id===b.dataset.id);if(it)openSheet(it)}
   else if(a==='add'&&V.tab==='journal'){openFood()}
@@ -2054,7 +2103,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{
   if(!$('#lock').hidden){if(/^[0-9]$/.test(e.key))pinKey(e.key);else if(e.key==='Backspace')pinKey('del');return}
   if(e.key==='Escape'&&!$('#drawer').hidden){closeDrawer();return}
-  if(e.key==='Escape'){if(!$('#sheet').hidden)closeSheet();if(!$('#fsheet').hidden)closeFood()}
+  if(e.key==='Escape'){if(!$('#sheet').hidden)closeSheet();else if(!$('#dsheet').hidden)closeDay();if(!$('#fsheet').hidden)closeFood()}
   if(e.key==='Enter'&&e.target.id==='fs-code'){e.preventDefault();lookupCode(e.target.value)}
 });
 document.addEventListener('input',e=>{
