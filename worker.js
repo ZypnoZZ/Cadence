@@ -9,6 +9,8 @@
 // Et une liaison KV (Settings > Bindings > KV Namespace) nommée : LICENSES
 // Notifications push : ajoute un déclencheur Cron (Settings > Triggers > Cron) : */5 * * * *
 //   (les clés VAPID sont créées automatiquement et gardées dans LICENSES ; VAPID_SUBJECT facultatif)
+//   STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET  (facultatif) identifiants de l'application créée sur strava.com/settings/api
+//     (domaine de rappel : le domaine de ce worker, sans https://)
 // Changement de formule : dans Stripe, portail client > autoriser le changement d'abonnement entre les deux prix.
 
 const CORS = {
@@ -187,6 +189,83 @@ async function pushRoutes(request, env, url) {
   return null;
 }
 
+
+const APP_URL = 'https://zypnozz.github.io/Cadence/';
+const SKIND = t => /Run/.test(t) ? 'run' : /Ride|Cycl/.test(t) ? 'bike' : /Swim/.test(t) ? 'swim' : null;
+async function stravaToken(env, params) {
+  const r = await fetch('https://www.strava.com/oauth/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(Object.assign({ client_id: env.STRAVA_CLIENT_ID, client_secret: env.STRAVA_CLIENT_SECRET }, params))
+  });
+  const d = await r.json();
+  if (!r.ok || !d.access_token) throw new Error('strava');
+  return d;
+}
+async function stravaRoutes(request, env, url) {
+  const p = url.pathname;
+  if (!env.STRAVA_CLIENT_ID || !env.STRAVA_CLIENT_SECRET) {
+    if (p === '/strava/connect' || p === '/strava/callback') return Response.redirect(APP_URL + '?strava=err', 302);
+    return json({ error: 'Strava non configuré' }, 500);
+  }
+  if (p === '/strava/connect') {
+    const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+    if (!email) return json({ error: 'email manquant' }, 400);
+    const nonce = crypto.randomUUID();
+    await env.LICENSES.put('stn:' + nonce, email, { expirationTtl: 900 });
+    const a = new URL('https://www.strava.com/oauth/authorize');
+    a.searchParams.set('client_id', env.STRAVA_CLIENT_ID);
+    a.searchParams.set('redirect_uri', url.origin + '/strava/callback');
+    a.searchParams.set('response_type', 'code');
+    a.searchParams.set('approval_prompt', 'auto');
+    a.searchParams.set('scope', 'read,activity:read_all');
+    a.searchParams.set('state', nonce);
+    return Response.redirect(a.toString(), 302);
+  }
+  if (p === '/strava/callback') {
+    const code = url.searchParams.get('code'), state = url.searchParams.get('state') || '';
+    const email = state && await env.LICENSES.get('stn:' + state);
+    if (!code || !email || url.searchParams.get('error')) return Response.redirect(APP_URL + '?strava=err', 302);
+    try {
+      const d = await stravaToken(env, { code, grant_type: 'authorization_code' });
+      const sk = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+      await env.LICENSES.put('strava:' + sk, JSON.stringify({ email, access: d.access_token, refresh: d.refresh_token, exp: d.expires_at }));
+      await env.LICENSES.delete('stn:' + state);
+      return Response.redirect(APP_URL + '?strava=ok&sk=' + sk, 302);
+    } catch (e) { return Response.redirect(APP_URL + '?strava=err', 302); }
+  }
+  const sk = url.searchParams.get('sk') || '';
+  const rec = sk && await env.LICENSES.get('strava:' + sk, { type: 'json' });
+  if (!rec) return json({ error: 'non connecté' }, 401);
+  if (p === '/strava/disconnect') {
+    try { await fetch('https://www.strava.com/oauth/deauthorize', { method: 'POST', headers: { Authorization: 'Bearer ' + rec.access } }); } catch (e) {}
+    await env.LICENSES.delete('strava:' + sk);
+    return json({ ok: true });
+  }
+  if (p === '/strava/activities') {
+    // Réservé à Cadence + Coach
+    const lic = await env.LICENSES.get('lic:' + rec.email, { type: 'json' });
+    if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
+    try {
+      if (rec.exp < Date.now() / 1000 + 60) {
+        const d = await stravaToken(env, { grant_type: 'refresh_token', refresh_token: rec.refresh });
+        Object.assign(rec, { access: d.access_token, refresh: d.refresh_token, exp: d.expires_at });
+        await env.LICENSES.put('strava:' + sk, JSON.stringify(rec));
+      }
+      const after = Math.floor(Date.now() / 1000) - 56 * 86400;
+      const r = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=80&after=' + after, { headers: { Authorization: 'Bearer ' + rec.access } });
+      if (r.status === 401) { await env.LICENSES.delete('strava:' + sk); return json({ error: 'non connecté' }, 401); }
+      const list = await r.json();
+      const acts = (Array.isArray(list) ? list : []).filter(a => SKIND(a.sport_type || a.type || '')).map(a => ({
+        t: a.sport_type || a.type, d: a.start_date_local, km: Math.round(a.distance / 10) / 100, min: Math.round(a.moving_time / 60),
+        hr: a.average_heartrate ? Math.round(a.average_heartrate) : null, w: a.average_watts ? Math.round(a.average_watts) : null,
+        up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60)
+      }));
+      return json({ acts });
+    } catch (e) { return json({ error: 'strava indisponible' }, 502); }
+  }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runSchedules(env));
@@ -195,6 +274,8 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    if (url.pathname.startsWith('/strava/')) return stravaRoutes(request, env, url);
 
     if (url.pathname.startsWith('/push/')) {
       const r = await pushRoutes(request, env, url);

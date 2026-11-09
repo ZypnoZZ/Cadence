@@ -548,6 +548,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .wkstrip .today{outline:2px solid var(--accent);outline-offset:1px}
 .cs-top{display:flex;justify-content:space-between;align-items:center}
 .cdone{font-size:12px;font-weight:700;color:var(--d-today)}
+.strv{margin-bottom:12px}.strv-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.strv-l li{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}.strv-l li small{grid-column:2;opacity:.7}.strv-l b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acc-sw{display:flex;gap:10px;flex-wrap:wrap}.acc-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;min-width:56px;border-radius:14px;border:2px solid transparent;background:none;font-size:12px}.acc-sw i{width:36px;height:36px;border-radius:50%;display:block;transition:transform .25s}.acc-sw button[aria-pressed=true]{border-color:var(--accent)}.acc-sw button[aria-pressed=true] i{transform:scale(1.12)}
 .xbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;margin-left:8px}
 .cs-top .xbadge{margin-right:auto}
@@ -1359,7 +1360,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 54';
+const APP_VERSION='2026.11.09 · 55';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2280,7 +2281,7 @@ function switchProfile(pid){
 }
 
 /* ---------- Réglages ---------- */
-const ACC_ICON={sport:'<circle cx="14" cy="5" r="2"/><path d="M5 22l4-8 4 2 3-5M9 14l-1-4 5-2 2 3h3"/>',perso:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',rythme:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',diet:'<path d="M5 3v8a3 3 0 0 0 3 3v7M11 3v8a3 3 0 0 1-3 3M17 21V3c-2 1-3.5 4-3.5 8 0 2 1.2 3 3.5 3"/>',coach:'<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>',seance:'<path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
+const ACC_ICON={strava:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>',sport:'<circle cx="14" cy="5" r="2"/><path d="M5 22l4-8 4 2 3-5M9 14l-1-4 5-2 2 3h3"/>',perso:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',rythme:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',diet:'<path d="M5 3v8a3 3 0 0 0 3 3v7M11 3v8a3 3 0 0 1-3 3M17 21V3c-2 1-3.5 4-3.5 8 0 2 1.2 3 3.5 3"/>',coach:'<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>',seance:'<path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
 const isAcc=(k,def)=>V.acc&&k in V.acc?!!V.acc[k]:!!def;
 function acc(key,ic,title,sum,body,def,pill){
   const o=isAcc(key,def);
@@ -2309,6 +2310,7 @@ function accountHTML(){
    +acc('rythme','rythme','Activité et objectif',esc(actL+' · '+(GOAL_L[p.goal]||'Maintien')),rythme)
    +'</div>'
    +accSport()
+   +accStrava()
    +acc('diet','diet','Alimentation',esc(dl.join(' · ')),'<p class="note" style="margin-bottom:6px">Tes menus, tes recettes et ta liste de courses tiennent compte de ton régime.</p>'+dietChips(d))
    +'<button type="button" class="linkbtn" data-act="setupredo" style="display:block;margin:10px auto 0">Refaire les questions de départ</button>';
 }
@@ -3525,8 +3527,70 @@ function evPhase(n){
   if(w>=3&&w<=12)return {f:1,name:'Préparation spécifique',why:'Seuil et séances d\'expert pour préparer '+ev.name+' (environ '+w+' semaines).'};
   return null;
 }
+const actKind=t=>/Run/.test(t)?'run':/Ride|Cycl/.test(t)?'bike':/Swim/.test(t)?'swim':null;
+const fmtPace=sec=>{sec=Math.round(sec);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
+const fmtDur=m=>m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'):m+' min';
+function stravaOn(){return !!(S.strava&&S.strava.sk)}
+function stravaStats(){
+  const st=S.strava;if(!stravaOn()||!Array.isArray(st.acts)||!coachUnlocked())return null;
+  const now=Date.now(),A=st.acts.map(a=>Object.assign({k:actKind(a.t),dt:(now-Date.parse(a.d))/864e5},a)).filter(a=>a.k&&a.dt>=0);
+  const last7=A.filter(a=>a.dt<=7).reduce((x,a)=>x+a.min,0),prev=A.filter(a=>a.dt>7&&a.dt<=28).reduce((x,a)=>x+a.min,0)/3;
+  const best=(k,lo,hi,mk)=>A.filter(a=>a.k===k&&a.dt<=42&&a.min>=lo&&a.min<=hi&&a.km>=mk).reduce((b,a)=>{const sp=a.min*60/a.km;return !b||sp<b?sp:b},0);
+  const run=best('run',20,60,3),swim=best('swim',10,90,.4);
+  return {A,last7,prev,load:prev>=30?last7/prev:null,runSeuil:run?run*1.03:0,swimSeuil:swim?swim/10*1.03:0,n:A.length};
+}
+function stravaAdjust(s,n){
+  const cfg=coachCfg();if(!ENDU.includes(cfg.style))return s;
+  const x=stravaStats();if(!x)return s;
+  if(s.expert&&s.sport==='Course à pied'&&x.runSeuil)s.focus=(s.focus?s.focus+' · ':'')+'Allure seuil visée ≈ '+fmtPace(x.runSeuil)+' /km';
+  if(s.expert&&s.sport==='Natation'&&x.swimSeuil)s.focus=(s.focus?s.focus+' · ':'')+'Allure seuil visée ≈ '+fmtPace(x.swimSeuil)+' /100 m';
+  if(n===curWeekNo()&&x.load){
+    const f=x.load>1.4?.8:x.load>1.2?.9:x.load<.5?.9:1;
+    if(f<1){scaleEx(s,f);s.sadj={f,why:x.load>1.2?'Ta charge des 7 derniers jours est élevée : séances allégées de '+Math.round((1-f)*100)+' %.':'Peu d\'activité récente : reprise un peu plus douce.'}}
+  }
+  return s;
+}
+async function stravaSync(force){
+  const st=S.strava;if(!stravaOn()||!coachUnlocked())return false;
+  if(!force&&st.at&&Date.now()-st.at<30*6e4)return false;
+  try{
+    const r=await fetch(WORKER_URL+'/strava/activities?sk='+encodeURIComponent(st.sk));
+    if(r.status===401){delete S.strava;touch();return false}
+    if(!r.ok)return false;
+    const d=await r.json();if(!Array.isArray(d.acts))return false;
+    st.acts=d.acts;st.at=Date.now();touch();return true;
+  }catch(e){return false}
+}
+function stravaBoot(){
+  try{const q=new URLSearchParams(location.search),r=q.get('strava');
+    if(r){history.replaceState(null,'',location.pathname);
+      if(r==='ok'&&q.get('sk')){S.strava={sk:q.get('sk'),acts:[],at:0};touch();V.tab='coach';render();toast('Strava connecté');stravaSync(true).then(ok=>{render();if(ok)toast('Activités récupérées')});return}
+      toast('Connexion Strava impossible. Réessaie plus tard.')}}catch(e){}
+  stravaSync(false).then(ok=>{if(ok&&V.tab==='coach')render()});
+}
+function stravaCard(){
+  if(!stravaOn())return '<button type="button" class="card evcard" data-act="stravaconnect"><span class="ev-j"><b>⌚</b></span><span class="ev-t"><b>Connecter Strava</b><span>Garmin inclus : le coach adapte tes séances à tes sorties réelles.</span></span></button>';
+  const x=stravaStats();if(!x)return '';
+  const ic={run:'🏃',bike:'🚴',swim:'🏊'};
+  const list=x.A.slice().sort((a,b)=>Date.parse(b.d)-Date.parse(a.d)).slice(0,4);
+  const pc=x.load?Math.round((x.load-1)*100):null;
+  return '<section class="card strv"><div class="row"><b>Mes activités Strava</b><button type="button" class="linkbtn" data-act="stravasync">Actualiser</button></div>'
+   +'<p class="note" style="margin:4px 0 8px">7 derniers jours : '+fmtDur(Math.round(x.last7))+(pc!==null?' ('+(pc>=0?'+':'')+pc+' % vs ta moyenne)':'')
+   +(x.runSeuil?' · seuil course ≈ '+fmtPace(x.runSeuil)+' /km':'')+(x.swimSeuil?' · seuil natation ≈ '+fmtPace(x.swimSeuil)+' /100 m':'')+'</p>'
+   +(list.length?'<ul class="strv-l">'+list.map(a=>'<li><span>'+ic[a.k]+'</span><b>'+esc(a.n||a.t)+'</b><small>'+esc(cap(FMT.short.format(new Date(a.d.slice(0,10)+'T12:00:00'))))+' · '+(a.km?num(a.km,1)+' km · ':'')+fmtDur(a.min)+'</small></li>').join('')+'</ul>':'<p class="note">Aucune activité de course, vélo ou natation ces dernières semaines.</p>')+'</section>';
+}
+function accStrava(){
+  const on=stravaOn(),n=on&&S.strava.acts?S.strava.acts.length:0;
+  const body=!coachUnlocked()?'<p class="note">Avec Cadence + Coach, connecte Strava (ou Garmin via Strava) : le coach lit tes sorties de course, vélo et natation pour adapter tes séances.</p><button type="button" class="primary" data-act="cpsale">Découvrir Cadence + Coach</button>'
+   :'<p class="note" style="margin-bottom:8px">Le coach lit tes sorties de course, vélo et natation (lecture seule) pour estimer ton allure seuil et adapter la charge. Garmin : dans Garmin Connect, active l\'envoi automatique de tes activités vers Strava.</p>'
+    +(on?'<div class="row" style="justify-content:flex-start;gap:8px"><button type="button" class="ghost" data-act="stravasync">Actualiser</button><button type="button" class="linkbtn" data-act="stravaoff">Déconnecter</button></div>':'<button type="button" class="primary" data-act="stravaconnect">Connecter Strava</button>');
+  return acc('strava','strava','Strava et Garmin',on?'Connecté · '+n+' activité'+(n>1?'s':''):'Non connecté',body);
+}
 function evScale(s,n){
   const ph=evPhase(n);if(!ph)return s;s.evp=ph;if(ph.f>=1)return s;
+  return scaleEx(s,ph.f);
+}
+function scaleEx(s,f){const ph={f};
   s.ex=s.ex.map(e=>{e=Object.assign({},e);
     if(e.iv){const iv=Object.assign({},e.iv);iv.n=Math.max(2,Math.round(iv.n*ph.f));e.iv=iv;e.min=Math.round((iv.on+iv.off)*iv.n/60);e.txt=iv.n+' × '+fmtS(iv.on)+(iv.off?' / récup '+fmtS(iv.off):'')}
     else if(e.kind==='cardio'&&e.min>=10&&!/échauffement|retour|étirements|transition/i.test(e.name)){e.min=Math.max(10,Math.round(e.min*ph.f/5)*5);e.txt=e.min+' min'}
@@ -3716,7 +3780,7 @@ function coachWeek(n){
     Object.keys(mp).forEach(k=>{const i=ks.indexOf(k);if(i>=0&&!ks.includes(mp[k]))ks[i]=mp[k]});
     list=ks.map(k=>{const s=PL.s[k](li,have);return Object.assign({key:cfg.style+'-'+k,sport:s.sport||PL.sp,focus:''},s)});
   }
-  const wn=n||curWeekNo();list=list.map(s=>evScale(applyWeek(s,wn),wn));
+  const wn=n||curWeekNo();list=list.map(s=>stravaAdjust(evScale(applyWeek(s,wn),wn),wn));
   const mv=(S.coach&&S.coach.moves)||{};
   return list.map((s,i)=>{s.dur=Math.max(15,Math.round(s.ex.reduce((a,e)=>a+(e.kind==='cardio'?e.min:e.s*((e.hold||40)+(e.restS||60))/60),0)/5)*5);s.idx=i;s.wn=wn;s.wd0=days[i];const m=mv[wn+':'+i];s.wd=m!=null&&m>=0&&m<7?+m:days[i];s.moved=s.wd!==s.wd0;return s}).sort((a,b)=>a.wd-b.wd||a.idx-b.idx);
 }
@@ -3887,7 +3951,7 @@ function renderCoachPreview(){
    +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:12px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
 }
-const COACH_LOCKED_ACTS=['cstyletxt','cevent','cevdel','evopen','cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
+const COACH_LOCKED_ACTS=['stravaconnect','stravasync','cstyletxt','cevent','cevdel','evopen','cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
 function coachPaywallNudge(){openCoachSale()}
 function renderCoach(){
   if(!coachUnlocked())return renderCoachPreview();
@@ -3910,6 +3974,7 @@ function renderCoach(){
     if(ev)h+='<button type="button" class="card evcard" data-act="evopen"><span class="ev-j"><b>'+(ev.days>0?'J-'+ev.days:ev.days===0?'Jour J':'Passé')+'</b><span>'+(ev.days>1?'jours':ev.days===1?'jour':'')+'</span></span><span class="ev-t"><b>'+esc(ev.name)+'</b><span>'+esc(cap(FMT.long.format(ev.d)))+(curPh?' · '+esc(curPh.name):'')+'</span></span></button>';
     else h+='<button type="button" class="card evcard" data-act="evopen"><span class="ev-j"><b>🏁</b></span><span class="ev-t"><b>Une échéance sportive ?</b><span>Course, compétition, voyage : le coach adapte ton programme.</span></span></button>';
   }
+  if(ENDU.includes(cfg.style)){h+=stravaCard();const x0=stravaStats();if(x0&&isCur){const w0=wk.find(q=>q.sadj);if(w0)h+='<p class="note" style="margin:-4px 2px 12px">'+esc(w0.sadj.why)+'</p>'}}
   // Mon programme : carte bien visible
   h+='<button type="button" class="progcard" data-act="copen" aria-expanded="'+!!V.coachOpen+'"><span class="pc-ic">⚙</span><span class="pc-t"><b>Mon programme</b><span>'+esc([sl,strength?fl[1]:'',withEq?(cfg.place==='gym'?'Salle':'Maison'):'',cfg.days+' séances / sem.',LVL[cfg.level].l].filter(Boolean).join(' · '))+'</span></span><span class="pc-go">'+(V.coachOpen?'Fermer':'Modifier')+'</span></button>';
   if(V.coachOpen)h+='<section class="card cset">'
@@ -4270,6 +4335,9 @@ document.addEventListener('click',e=>{
     V.tab='agenda';V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;
     render();window.scrollTo({top:0,behavior:'smooth'});
   }
+  else if(a==='stravaconnect'){const l=licenseGet();if(!l||!l.email){toast('Connecte-toi d\'abord avec ton abonnement.');return}location.href=WORKER_URL+'/strava/connect?email='+encodeURIComponent(l.email)}
+  else if(a==='stravasync'){toast('Mise à jour…');stravaSync(true).then(ok=>{render();toast(ok?'Activités à jour':'Strava indisponible pour le moment')})}
+  else if(a==='stravaoff'){const sk=S.strava&&S.strava.sk;delete S.strava;touch();render();toast('Strava déconnecté');if(sk)fetch(WORKER_URL+'/strava/disconnect?sk='+encodeURIComponent(sk)).catch(()=>{})}
   else if(a==='setaccent'){setAccent(b.dataset.v);render()}
   else if(a==='theme'){themeSwap(effTheme()==='dark'?'light':'dark',e)}
   else if(a==='settheme'){themeSwap(b.dataset.t,e)}
@@ -4610,7 +4678,8 @@ document.addEventListener('change',e=>{
   if(e.target.closest&&e.target.closest('#macro-form'))readMacroForm();
   if(e.target.id==='meal-count'){S.profile.meals=parseInt(e.target.value,10);S.shop={};touch();render()}
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkReminders();if(IS_PWA)pushSync(false)}});
+setTimeout(stravaBoot,1800);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){stravaSync(false).then(ok=>{if(ok&&V.tab==='coach')render()});checkReminders();if(IS_PWA)pushSync(false)}});
 if(IS_PWA)setTimeout(()=>pushSync(false),4000);
 document.addEventListener('input',e=>{
   const t=e.target,w=V.tab==='seances'&&V.wEdit?curW():null;if(!w)return;
