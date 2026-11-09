@@ -569,7 +569,9 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .ssn{width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
 .ssi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ssi b{font-size:15px}.ssi span{font-size:13px;color:var(--muted)}
 .ssx .vid{margin:0}
-.mvb{display:flex;flex-direction:column;gap:2px;flex:none;margin-left:auto}.mvb button{width:34px;height:26px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font-size:12px;padding:0;min-height:0}.mvb button:disabled{opacity:.3}.wex .mvb{flex-direction:row;margin-left:auto}.wex .mvb button{height:34px}
+.dgh{flex:none;width:34px;height:40px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;touch-action:none;cursor:grab;padding:0;min-height:0;-webkit-user-select:none;user-select:none}.ssx .dgh{margin-left:auto}
+.dragging{position:relative;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,.28);background:var(--surface);border-radius:14px;transition:none!important}
+body.dg-on{-webkit-user-select:none;user-select:none;overscroll-behavior:none}
 .cs-ex summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent);padding:8px 0 0}
 .fbar{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
 .fbar button{flex:none;padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:13px}
@@ -1369,7 +1371,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 63';
+const APP_VERSION='2026.11.10 · 64';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2824,9 +2826,55 @@ function seancesProg(){
   h+='<h3 class="group-h">Dernières séances</h3><table class="ptable"><tbody>'+rows+'</tbody></table></section>';
   return h;
 }
+const DGH='<button type="button" class="dgh" aria-label="Glisser pour déplacer l\'exercice" title="Glisser pour déplacer">⠿</button>';
+function moveWEx(from,to){const w=curW();if(!w||to<0||to>=w.ex.length||from===to)return;const x=w.ex.splice(from,1)[0];w.ex.splice(to,0,x);touch();render()}
+function moveCEx(si,from,to){const s=(V.coachWeek||[])[si];if(!s||to<0||to>=s.ex.length||from===to)return;const names=s.ex.map(e=>e.name),x=names.splice(from,1)[0];names.splice(to,0,x);
+  S.coach=Object.assign(coachCfg(),{start:progStart()});S.coach.ord=Object.assign({},S.coach.ord,{[s.key]:names});touch();render();openSess(si)}
+function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else moveCEx(+item.dataset.dgs,from,to)}
+let DG=null;
+function dgScroller(el){while(el&&el!==document.body){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight)return el;el=el.parentElement}return document.scrollingElement||document.documentElement}
+function dgUpdate(){
+  const g=DG;if(!g)return;
+  const dy=g.y-g.y0+(g.sc.scrollTop-g.sc0),cen=g.rects[g.from].top+dy+g.rects[g.from].height/2;
+  g.item.style.transform='translateY('+dy+'px)';
+  let t=g.from;
+  for(let j=g.from+1;j<g.items.length;j++){if(g.rects[j].top+g.rects[j].height/2<cen)t=j;else break}
+  for(let j=g.from-1;j>=0;j--){if(g.rects[j].top+g.rects[j].height/2>cen)t=j;else break}
+  g.to=t;
+  g.items.forEach((it,j)=>{if(j===g.from)return;let o=0;if(j>g.from&&j<=t)o=-g.h;else if(j<g.from&&j>=t)o=g.h;it.style.transform=o?'translateY('+o+'px)':'';});
+}
+function dgLoop(){
+  const g=DG;if(!g)return;
+  const top=g.sc===(document.scrollingElement||document.documentElement)?0:g.sc.getBoundingClientRect().top,bot=g.sc===(document.scrollingElement||document.documentElement)?innerHeight:g.sc.getBoundingClientRect().bottom;
+  if(g.y<top+70)g.sc.scrollTop-=12;else if(g.y>bot-70)g.sc.scrollTop+=12;
+  dgUpdate();g.raf=requestAnimationFrame(dgLoop);
+}
+function dgEnd(ok){
+  const g=DG;if(!g)return;DG=null;cancelAnimationFrame(g.raf);
+  g.items.forEach(it=>{it.style.transform='';it.style.transition='';it.classList.remove('dragging')});document.body.classList.remove('dg-on');
+  try{g.hd.releasePointerCapture(g.id)}catch(e){}
+  if(ok&&g.to!==g.from)dgMove(g.item,g.from,g.to);
+}
+document.addEventListener('pointerdown',e=>{
+  const hd=e.target.closest&&e.target.closest('.dgh');if(!hd||DG)return;
+  const item=hd.closest('[data-dg]');if(!item)return;e.preventDefault();
+  const items=[...item.parentElement.children].filter(x=>x.hasAttribute('data-dg')&&x.dataset.dgt===item.dataset.dgt&&x.dataset.dgs===item.dataset.dgs),from=items.indexOf(item);
+  const rects=items.map(x=>x.getBoundingClientRect()),sc=dgScroller(item);
+  DG={item,items,from,to:from,rects,hd,id:e.pointerId,y:e.clientY,y0:e.clientY,sc,sc0:sc.scrollTop,h:rects[from].height+(items[from+1]?rects[from+1].top-rects[from].bottom:items[from-1]?rects[from].top-rects[from-1].bottom:0)};
+  try{hd.setPointerCapture(e.pointerId)}catch(x){}
+  item.classList.add('dragging');items.forEach(it=>{if(it!==item)it.style.transition='transform .15s'});document.body.classList.add('dg-on');
+  DG.raf=requestAnimationFrame(dgLoop);
+});
+document.addEventListener('pointermove',e=>{if(DG&&e.pointerId===DG.id){DG.y=e.clientY;e.preventDefault()}},{passive:false});
+document.addEventListener('pointerup',e=>{if(DG&&e.pointerId===DG.id)dgEnd(true)});
+document.addEventListener('pointercancel',e=>{if(DG&&e.pointerId===DG.id)dgEnd(false)});
+document.addEventListener('keydown',e=>{
+  const hd=e.target.closest&&e.target.closest('.dgh');if(!hd||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
+  const item=hd.closest('[data-dg]');if(!item)return;e.preventDefault();const k=+item.dataset.di;dgMove(item,k,k+(e.key==='ArrowUp'?-1:1));
+});
 function exoCardHTML(w,e,i){
   const lp=lastPerf(e.name,w);
-  let h='<section class="card wex"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+esc(e.name)+'</h3><span class="mvb"><button type="button" data-act="wexmove" data-i="'+i+'" data-d="-1" aria-label="Monter"'+(i===0?' disabled':'')+'>▲</button><button type="button" data-act="wexmove" data-i="'+i+'" data-d="1" aria-label="Descendre"'+(i===w.ex.length-1?' disabled':'')+'>▼</button></span><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
+  let h='<section class="card wex" data-dg="1" data-dgt="w" data-di="'+i+'"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+DGH+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+esc(e.name)+'</h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
   if(lp)h+='<p class="note" style="margin-bottom:8px">Dernière fois ('+esc(FMT.short.format(parseISO(lp.date)))+') : '+esc(perfText(lp.e))+'</p>';
   if(e.kind==='cardio'){
     h+='<div class="r2"><label><span class="lab">Durée (min)</span><input type="number" inputmode="decimal" min="0" data-wi="'+i+'" data-k="min" value="'+esc(e.min)+'"></label><label><span class="lab">Distance (km)</span><input type="number" inputmode="decimal" step="0.01" min="0" data-wi="'+i+'" data-k="km" value="'+esc(e.km)+'"></label></div><p class="note" id="wx-'+i+'">'+cardioPace(e)+'</p>';
@@ -3648,9 +3696,9 @@ function stravaCard(){
   const icuForm=V.icuForm?'<div class="actf"><p class="note"><b>Garmin, gratuit, en 2 minutes</b><br>1. Crée un compte gratuit sur intervals.icu.<br>2. Dans Réglages › Connexions, relie ton compte Garmin (tes sorties arrivent toutes seules).<br>3. Tout en bas de Réglages, copie ta « clé API » et colle-la ici.</p><input type="password" id="icu-key" autocomplete="off" placeholder="Clé API intervals.icu" value="'+esc(icuOn()?S.icu.key:'')+'"><div class="row" style="justify-content:flex-start;gap:8px"><button type="button" class="primary" data-act="icusave">Connecter</button><button type="button" class="linkbtn" data-act="icuform">Annuler</button></div></div>':'';
   const btns=V.actForm||V.icuForm?'':'<div class="row" style="justify-content:flex-start;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="ghost" data-act="actform">Ajouter une sortie</button><button type="button" class="ghost" data-act="actfile">Importer un fichier</button><button type="button" class="ghost" data-act="icuform">'+(icuOn()?'Garmin connecté':'Connecter Garmin')+'</button>'+(on?'<button type="button" class="linkbtn" data-act="stravasync">Actualiser Strava</button>':'')+'</div>';
   const sum=x?'<p class="note" style="margin:4px 0 8px">7 derniers jours : '+fmtDur(Math.round(x.last7))+(x.load?' ('+(x.load>=1?'+':'')+Math.round((x.load-1)*100)+' % vs ta moyenne)':'')+(x.runSeuil?' · seuil course ≈ '+fmtPace(x.runSeuil)+' /km':'')+(x.swimSeuil?' · seuil natation ≈ '+fmtPace(x.swimSeuil)+' /100 m':'')+'</p>':'<p class="note" style="margin:4px 0 8px">Ajoute tes sorties de course, vélo ou natation : le coach estime ton allure seuil et adapte la charge de la semaine.</p>';
-  return '<section class="card strv"><div class="row"><b>Mes sorties</b>'+(on?'<span class="note">Strava connecté</span>':icuOn()?'<span class="note">'+(S.icu.bad?'Clé à vérifier':'Garmin connecté')+'</span>':'')+'</div>'+sum+(x?actList(x):'')+form+icuForm+btns
-   +'<input type="file" id="act-file" accept=".gpx,.tcx" multiple hidden>'
-   +(on?'':'<button type="button" class="linkbtn" data-act="stravaconnect" style="display:block;margin-top:8px">Connecter Strava (avec abonnement Strava)</button>')+'</section>';
+  const nAct=x?x.n:0,tag=on?'Strava':icuOn()?(S.icu.bad?'clé à vérifier':'Garmin'):'';
+  const sm=(x?fmtDur(Math.round(x.last7))+' sur 7 jours · '+nAct+' sortie'+(nAct>1?'s':''):'Aucune sortie')+(tag?' · '+tag:'');
+  return acc('sorties','strava','Mes sorties',esc(sm),sum+(x?actList(x):'')+form+icuForm+btns+'<input type="file" id="act-file" accept=".gpx,.tcx" multiple hidden>');
 }
 function accStrava(){
   const on=stravaOn(),n=(on&&S.strava.acts?S.strava.acts.length:0)+(Array.isArray(S.acts)?S.acts.length:0);
@@ -3968,7 +4016,7 @@ function openSess(i){
   $('#ss-sub').textContent=cap(FMT.long.format(date))+' · semaine '+Math.min(wn,12)+' · ≈ '+s.dur+' min';
   const p=prefs();
   $('#ss-body').innerHTML='<p class="note" style="margin-bottom:10px">'+esc(s.focus)+'</p>'+s.ex.map((e,k)=>{const a=p.anim!=='never'?animFor(e.name):null;
-    return '<div class="ssx'+(e.ss?' sup':'')+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'<span class="mvb"><button type="button" data-act="exmove" data-i="'+i+'" data-k="'+k+'" data-d="-1" aria-label="Monter"'+(k===0?' disabled':'')+'>▲</button><button type="button" data-act="exmove" data-i="'+i+'" data-k="'+k+'" data-d="1" aria-label="Descendre"'+(k===s.ex.length-1?' disabled':'')+'>▼</button></span></div>'}).join('')
+    return '<div class="ssx'+(e.ss?' sup':'')+'" data-dg="1" data-dgt="c" data-dgs="'+i+'" data-di="'+k+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+''+DGH+'</div>'}).join('')
    +(cur?'<div class="row" style="margin-top:14px"><button type="button" class="primary" data-act="cstart" data-i="'+i+'" style="flex:1">Commencer</button><button type="button" class="ghost" data-act="cplan" data-i="'+i+'">Agenda</button><button type="button" class="ghost" data-act="cshift" data-i="'+i+'">Décaler</button></div>':'<p class="note" style="margin-top:12px">Cette séance sera disponible à partir du '+esc(FMT.long.format(date))+'.</p><button type="button" class="ghost" data-act="cshift" data-i="'+i+'" style="width:100%;margin-top:8px">Décaler cette séance</button>');
   $('#ssheet').hidden=false;
 }
@@ -4737,10 +4785,6 @@ document.addEventListener('click',e=>{
     touch();render();
     const c=document.querySelectorAll('.wex');if(c.length)c[c.length-1].scrollIntoView({block:'center'});
   }
-  else if(a==='wexmove'){const w=curW();if(!w)return;const i=+b.dataset.i,j=i+(+b.dataset.d);if(j<0||j>=w.ex.length)return;[w.ex[i],w.ex[j]]=[w.ex[j],w.ex[i]];touch();render()}
-  else if(a==='exmove'){const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const k=+b.dataset.k,j=k+(+b.dataset.d);if(j<0||j>=s.ex.length)return;
-    const names=s.ex.map(e=>e.name);[names[k],names[j]]=[names[j],names[k]];
-    S.coach=Object.assign(coachCfg(),{start:progStart()});S.coach.ord=Object.assign({},S.coach.ord,{[s.key]:names});touch();render();openSess(+b.dataset.i)}
   else if(a==='wdelex'){const w=curW();if(w){w.ex.splice(+b.dataset.i,1);touch();render()}}
   else if(a==='waddset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){const l=e.sets[e.sets.length-1];e.sets.push(l?{r:l.r,kg:l.kg}:{r:'',kg:''});touch();render()}}
   else if(a==='wdelset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){e.sets.splice(+b.dataset.j,1);touch();render()}}
