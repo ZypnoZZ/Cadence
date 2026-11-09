@@ -218,8 +218,8 @@ textarea{resize:vertical}
 .alert button{background:var(--bg);color:var(--ink);border:0;border-radius:6px;padding:8px 14px;font-weight:600}
 
 /* Barre d'onglets et bouton d'ajout */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;font-weight:600;color:var(--muted);border-radius:8px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11.5px;font-weight:600;color:var(--muted);border-radius:8px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-current="page"]{color:var(--accent)}
 .fab{position:fixed;z-index:41;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:32px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.28)}
@@ -314,7 +314,6 @@ label.ghost{color:var(--ink);font-weight:600}
 
 <nav class="tabs" aria-label="Sections">
   <button data-act="tab" data-tab="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
-  <button data-act="tab" data-tab="todos"><svg viewBox="0 0 24 24"><path d="M4 7l2 2 3-4M4 17l2 2 3-4M13 8h7M13 18h7"/></svg>À faire</button>
   <button data-act="tab" data-tab="seances"><svg viewBox="0 0 24 24"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>Séances</button>
   <button data-act="tab" data-tab="journal"><svg viewBox="0 0 24 24"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>Assiette</button>
   <button data-act="tab" data-tab="nutrition"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Nutrition</button>
@@ -563,6 +562,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
+const APP_VERSION='2026.11.09 · 7';
 const ZXING_URL='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
 const GEMINI_MODELS=['gemini-flash-latest','gemini-2.5-flash'];
 /* ---------- Application ---------- */
@@ -781,14 +781,15 @@ function renderAgenda(){
    +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2><span class="note">'+dayItems.length+' élément'+(dayItems.length>1?'s':'')+'</span></div>'
    +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu ce jour-là. Touche + pour ajouter une séance, une échéance ou une tâche.</div>')
    +exNote
-   +'<p class="note" style="margin-top:14px">Les rappels s\'affichent en haut de l\'écran tant que Cadence est ouverte.</p>';
+   +'<p class="note" style="margin-top:14px">Les rappels s\'affichent en haut de l\'écran tant que Cadence est ouverte.</p>'
+   +'<div id="todos" style="margin-top:28px;padding-top:18px;border-top:1px solid var(--line)">'+renderTodos()+'</div>';
 }
 
 function renderTodos(){
   const open=S.items.filter(i=>i.type!=='sport'&&!i.done).sort(byDT);
   const wk=iso(addDays(today,7));
   const groups=[['En retard',i=>i.date<todayISO,'late'],["Aujourd'hui",i=>i.date===todayISO,'today'],['Cette semaine',i=>i.date>todayISO&&i.date<=wk,''],['Plus tard',i=>i.date>wk,'']];
-  let html='<h2 style="font-size:30px;margin-bottom:4px">À faire</h2><p class="note">Tâches et échéances importantes, classées par date. Les séances restent dans l\'agenda.</p>';
+  let html='<h2 style="font-size:30px;margin-bottom:4px">À faire</h2><p class="note">Tâches et échéances importantes, classées par date. Les séances de sport restent dans le calendrier.</p>';
   let any=false;
   for(const [label,fn,cls] of groups){
     const l=open.filter(fn);if(!l.length)continue;any=true;
@@ -817,24 +818,12 @@ function macroResultsHTML(p){
 function renderMacros(){
   const p=S.profile;
   const radio=(name,val,label,cur)=>'<label><input type="radio" name="'+name+'" value="'+val+'"'+(cur===val?' checked':'')+'><span>'+label+'</span></label>';
-  const goalHTML='<div class="seg-title">Objectif</div><div class="seg">'+radio('goal','prise','Prise de masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
-   +'<div id="rate-box"><div class="seg-title" id="rate-title"></div><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div>';
+  const act=(ACT.find(a=>a[0]===+p.activity)||ACT[2])[1];
   let h='<h2 style="font-size:30px;margin-bottom:10px">Macros</h2>';
-  if(!p.done){
-    h+='<p class="note" style="margin-bottom:10px">'+(p.custom?'':'Valeurs d\'exemple : remplace-les par les tiennes. ')+'Une fois enregistrées, ces infos passent dans ton compte (icône en haut à gauche).</p>'
-     +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false">'
-     +'<div class="seg-title">Sexe</div><div class="seg">'+radio('sex','H','Homme',p.sex)+radio('sex','F','Femme',p.sex)+'</div>'
-     +'<div class="r3"><label><span class="lab">Âge</span><input type="number" id="m-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label>'
-     +'<label><span class="lab">Taille (cm)</span><input type="number" id="m-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label>'
-     +'<label><span class="lab">Poids (kg)</span><input type="number" id="m-weight" inputmode="decimal" step="0.1" min="30" max="250" value="'+esc(p.weight)+'"></label></div>'
-     +'<label><span class="lab">Niveau d\'activité</span><select id="m-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
-     +goalHTML
-     +'<button type="button" class="primary" data-act="profiledone" style="width:100%;margin-top:14px">Enregistrer mon profil</button><p class="note" id="m-done-msg" style="margin-top:6px"></p></form>';
-  }else{
-    const act=(ACT.find(a=>a[0]===+p.activity)||ACT[2])[1];
-    h+='<section class="card"><div class="row"><div style="min-width:0"><div class="seg-title">Ton profil</div><b>'+esc((p.sex==='F'?'Femme':'Homme')+' · '+p.age+' ans · '+p.height+' cm · '+num(+p.weight||0,1)+' kg · '+act)+'</b></div><button type="button" class="ghost" data-act="sec" data-sec="account">Modifier</button></div></section>'
-     +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false">'+goalHTML+'</form>';
-  }
+  if(!p.custom)h+='<section class="card"><p style="margin-bottom:10px">Complète ton profil dans ton compte (sexe, âge, taille, activité) et ajoute ta première pesée. En attendant, les calculs utilisent des valeurs d\'exemple.</p><div class="row" style="justify-content:flex-start"><button type="button" class="primary" data-act="sec" data-sec="account">Compléter mon compte</button><button type="button" class="ghost" data-act="sec" data-sec="poids">Ajouter une pesée</button></div></section>';
+  h+='<section class="card"><div class="row"><div style="min-width:0"><div class="seg-title">'+(p.custom?'Ton profil':'Valeurs d\'exemple')+'</div><b>'+esc((p.sex==='F'?'Femme':'Homme')+' · '+(p.age||'?')+' ans · '+(p.height||'?')+' cm · '+num(+p.weight||0,1)+' kg · '+act)+'</b></div><button type="button" class="ghost" data-act="sec" data-sec="account">Modifier</button></div></section>'
+   +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false"><div class="seg-title">Objectif</div><div class="seg">'+radio('goal','prise','Prise de masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
+   +'<div id="rate-box"><div class="seg-title" id="rate-title"></div><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div></form>';
   return h+'<section class="card" id="macro-out" aria-live="polite">'+macroResultsHTML(p)+'</section>';
 }
 function renderPoids(){
@@ -854,7 +843,7 @@ function mealUnit(it){
 }
 function renderMeals(){
   const p=S.profile,T=calc(p);
-  if(!T.ok)return '<h2 style="font-size:30px;margin-bottom:10px">Repas</h2><div class="card"><p>Renseigne ton âge, ta taille et ton poids dans l\'onglet Macros pour générer un plan.</p><div style="margin-top:12px"><button type="button" class="primary" data-act="tab" data-tab="macros">Aller aux macros</button></div></div>';
+  if(!T.ok)return '<h2 style="font-size:30px;margin-bottom:10px">Repas</h2><div class="card"><p>Renseigne ton âge et ta taille dans ton compte pour générer un plan.</p><div style="margin-top:12px"><button type="button" class="primary" data-act="sec" data-sec="account">Ouvrir mon compte</button></div></div>';
   const d=V.planDay;
   const plan=buildDay(T,p.meals,S.seeds[d]*7919+d*31+p.meals);
   const goalTxt=p.goal==='prise'?'prise de masse':p.goal==='seche'?'déficit':'maintien';
@@ -1049,11 +1038,12 @@ function openDrawer(){
   const p=S.profile,name=IS_PWA?curProfile().name:'Mon compte';
   $('#dr-av').textContent=(name.trim()[0]||'?').toUpperCase();
   $('#dr-name').textContent=name;
-  $('#dr-sub').textContent=p.done?[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.weight?num(+p.weight,1)+' kg':''].filter(Boolean).join(' · '):'Profil à compléter dans Nutrition';
+  $('#dr-sub').textContent=p.custom?[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.weight?num(+p.weight,1)+' kg':''].filter(Boolean).join(' · '):'Profil à compléter';
   const G=[['Compte',[['account','Mon compte'],['poids','Pesée']].concat(IS_PWA?[['profiles','Profils']]:[])]];
-  if(IS_PWA)G.push(['Sécurité',[['security','Code et clé Gemini']]],['Préférences',[['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['legalmenu','Conditions et confidentialité']]],['Données',[['data','Effacer mes données']]]);
-  const cur=V.tab==='poids'?'poids':V.tab==='settings'?V.sec:'';
+  if(IS_PWA)G.push(['Sécurité',[['security','Code et clé Gemini']]],['Préférences',[['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['cgu','Conditions d\'utilisation'],['conf','Confidentialité'],['mentions','Mentions légales']]],['Données',[['data','Effacer mes données']]]);
+  const cur=V.tab==='poids'?'poids':V.tab==='legal'?V.doc:V.tab==='settings'?V.sec:'';
   $('#dr-items').innerHTML=G.map(g=>'<div class="dr-group">'+g[0]+'</div>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')).join('');
+  $('#dr-items').insertAdjacentHTML('beforeend','<p class="note" style="margin:20px 8px 0">Version '+APP_VERSION+'</p>');
   $('#drawer').hidden=false;
 }
 function closeDrawer(){$('#drawer').hidden=true}
@@ -1064,7 +1054,7 @@ function renderNutrition(){
 }
 function renderCourses(){
   const p=S.profile,T=calc(p);
-  if(!T.ok)return '<div class="card"><p>Renseigne ton profil dans Macros pour générer la liste.</p></div>';
+  if(!T.ok)return '<div class="card"><p>Renseigne ton âge et ta taille dans ton compte (menu en haut à gauche) pour générer la liste.</p></div>';
   return shoppingHTML(T,p.meals)
    +'<section class="card" style="margin-top:14px"><h2 style="font-size:20px">Faire les courses en ligne</h2><p class="note" style="margin-bottom:10px">Copie la liste (sans ce qui est déjà coché), puis cherche chaque produit sur ton drive.</p>'
    +'<div class="row" style="justify-content:flex-start"><button type="button" class="primary" data-act="copyshop">Copier la liste</button><a class="ghost" href="https://www.leclercdrive.fr/" target="_blank" rel="noopener" style="text-decoration:none;color:var(--ink);font-weight:600">Ouvrir Leclerc Drive</a></div>'
@@ -1108,7 +1098,9 @@ function hasPrev(w){return !!(w.title&&S.workouts.some(x=>x.id!==w.id&&x.title==
 function renderSeances(){
   if(V.wEdit){const w=curW();if(w)return renderWorkout(w);V.wEdit=null}
   const sg=V.wseg||'hist';
+  if(V.wimport)return renderImport();
   return '<div class="cal-head"><h2>Séances</h2><button type="button" class="primary" data-act="wnew">Nouvelle séance</button></div>'
+   +'<button type="button" class="ghost" data-act="wimp" style="width:100%;margin-bottom:12px">Importer une séance depuis Notes</button>'
    +'<div class="modes">'+[['hist','Historique'],['prog','Progrès']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
    +(sg==='hist'?seancesHist():seancesProg());
 }
@@ -1205,6 +1197,87 @@ function exoCardHTML(w,e,i){
      +'<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-act="waddset" data-i="'+i+'">+ Série</button><span class="note" id="wx-'+i+'" style="min-width:0">'+exoSummary(e)+'</span></div>';
   }
   return h+'</section>';
+}
+const deacc=x=>String(x).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const CARDIO_RE=/\b(course|run|running|footing|jogging|velo|rameur|natation|nage|marche|corde|elliptique|cardio|tapis|fractionne)\b/;
+function exoName(raw){
+  const n=String(raw).replace(/^[\s•\-–—*·>#]+/,'').replace(/[\s:–—\-=]+$/,'').trim();if(!n)return '';
+  const d=deacc(n),list=[...knownExos().keys(),...EXOS];
+  return list.find(e=>deacc(e)===d)||(d.length>=4&&list.find(e=>deacc(e).startsWith(d)))||cap(n);
+}
+function parseData(str,ex,isCardio){
+  const s=str.replace(/(\d),(\d)/g,'$1.$2');
+  if(isCardio){
+    ex.kind='cardio';
+    const h=s.match(/(\d+)\s*h\s*(\d{1,2})?/i),mi=s.match(/(\d+(?:\.\d+)?)\s*(?:min|mn|minutes?)\b/i),km=s.match(/(\d+(?:\.\d+)?)\s*km\b/i),me=s.match(/(\d+)\s*m\b(?!in)/i);
+    if(h)ex.min=(+h[1])*60+(+(h[2]||0));else if(mi)ex.min=+mi[1];
+    if(km)ex.km=+km[1];else if(me)ex.km=+me[1]/1000;
+    return;
+  }
+  const tm=[...s.matchAll(/(\d+)\s*[x×*]\s*(\d+)\s*[x×*@]\s*(\d+(?:\.\d+)?)/gi)];
+  if(tm.length){for(const m of tm)for(let i=0;i<Math.min(+m[1],20);i++)ex.sets.push({r:+m[2],kg:+m[3]});return}
+  const rest=s.replace(/(\d+)\s*[x×*]\s*(\d+(?:\.\d+)?)\s*(kg)?/gi,' ');
+  const lk=rest.match(/(\d+(?:\.\d+)?)\s*kg/i)||rest.match(/[@à]\s*(\d+(?:\.\d+)?)/i),kg=lk?+lk[1]:'';
+  const sr=s.match(/(\d+)\s*s[ée]ries?\s*(?:de|x)?\s*(\d+)/i);
+  if(sr){for(let i=0;i<Math.min(+sr[1],20);i++)ex.sets.push({r:+sr[2],kg});return}
+  const pairs=[...s.matchAll(/(\d+)\s*[x×*]\s*(\d+(?:\.\d+)?)\s*(kg)?/gi)];
+  if(pairs.length===1&&!pairs[0][3]){
+    const n=+pairs[0][1],r=+pairs[0][2];
+    if(kg===''&&r>=25)ex.sets.push({r:n,kg:r});
+    else for(let i=0;i<Math.min(n,20);i++)ex.sets.push({r,kg});
+    return;
+  }
+  if(pairs.length){for(const m of pairs)ex.sets.push({r:+m[1],kg:+m[2]});return}
+  const rr=s.match(/(\d+)\s*(?:reps?|r[ée]p\w*|fois)\b/i)||(kg!==''?s.match(/^\s*(\d+)\b(?!\s*kg)/i):null);
+  if(rr)ex.sets.push({r:+rr[1],kg});
+}
+function parseNote(txt){
+  const out={title:'',date:todayISO,dur:'',ex:[],skipped:[]};
+  for(const raw of String(txt||'').split(/\r?\n/)){
+    const line=raw.trim();if(!line)continue;
+    const hasData=/\d\s*[x×*]\s*\d|\d\s*(kg|min|mn|km|reps?|r[ée]p|s[ée]ries?|fois)\b|\d\s*h\b|\d\s*h\s*\d/i.test(line);
+    const fd=line.search(/\d/);
+    let namePart=fd<0?line:line.slice(0,fd);
+    if(!hasData){
+      const dm=line.match(/\b(\d{1,2})[\/.\-](\d{1,2})(?:[\/.\-](\d{2,4}))?\b/);
+      let t=line;
+      if(dm){const d=+dm[1],m=+dm[2],y=dm[3]?(dm[3].length===2?2000+(+dm[3]):+dm[3]):today.getFullYear();if(d>=1&&d<=31&&m>=1&&m<=12)out.date=iso(new Date(y,m-1,d));t=line.replace(dm[0],'')}
+      t=t.replace(/^[\s•\-–—*#]+|[\s:–—\-]+$/g,'').replace(/^s[ée]ance\s*(du|de|:)?\s*/i,'').trim();
+      if(!t)continue;
+      if(!out.title&&!out.ex.length)out.title=t.slice(0,60);
+      else if(/[a-zà-ÿ]/i.test(t))out.ex.push({name:exoName(t),kind:CARDIO_RE.test(deacc(t))?'cardio':'force',sets:[],min:'',km:''});
+      else out.skipped.push(line);
+      continue;
+    }
+    if(/^dur[ée]e/i.test(namePart.trim())){const h=line.match(/(\d+)\s*h\s*(\d{1,2})?/i),mi=line.match(/(\d+)\s*(?:min|mn)/i);out.dur=h?(+h[1])*60+(+(h[2]||0)):mi?+mi[1]:'';continue}
+    const nm=exoName(namePart);
+    let ex=null;
+    if(!nm)ex=out.ex[out.ex.length-1]||null;
+    else ex=out.ex.find(e=>deacc(e.name)===deacc(nm))||null;
+    if(!ex){if(!nm){out.skipped.push(line);continue}ex={name:nm,kind:'force',sets:[],min:'',km:''};out.ex.push(ex)}
+    const isC=ex.kind==='cardio'||CARDIO_RE.test(deacc(ex.name))||(/\b(min|mn|km)\b/i.test(line)&&!/\d\s*[x×*]\s*\d/.test(line));
+    const before=ex.sets.length+(ex.min?1:0)+(ex.km?1:0);
+    parseData(fd<0?'':line.slice(fd),ex,isC);
+    if(ex.sets.length+(ex.min?1:0)+(ex.km?1:0)===before)out.skipped.push(line);
+  }
+  return out;
+}
+function importPreview(){
+  const r=parseNote(V.impText||'');
+  if(!r.ex.length)return '<p class="note">Colle ou écris ta séance ci-dessus pour voir ce que Cadence comprend.</p>';
+  let h='<section class="card"><div class="wt row"><b style="font-family:var(--font-display);font-size:22px">'+esc(r.title||'Séance')+'</b><span class="note">'+esc(cap(FMT.short.format(parseISO(r.date))))+(r.dur?' · '+r.dur+' min':'')+'</span></div>'
+   +'<table class="ptable" style="margin-top:8px"><tbody>'+r.ex.map(e=>'<tr><td>'+esc(e.name)+'</td><td>'+esc(perfText(e)||'à compléter')+'</td></tr>').join('')+'</tbody></table></section>';
+  if(r.skipped.length)h+='<div class="warn">Lignes non comprises, à ajouter à la main : '+esc(r.skipped.join(' / '))+'</div>';
+  return h+'<button type="button" class="primary" data-act="impcreate" style="width:100%;margin-top:10px">Créer la séance</button>';
+}
+function renderImport(){
+  return '<div class="row" style="margin-bottom:12px"><button type="button" class="ghost" data-act="impcancel">‹ Annuler</button></div>'
+   +'<h2 style="font-size:28px;margin-bottom:6px">Importer depuis Notes</h2>'
+   +'<p class="note" style="margin-bottom:8px">Dans Notes, sélectionne ta séance, copie-la, puis touche « Coller ». Une ligne par exercice, par exemple :</p>'
+   +'<pre class="card" style="font-size:13px;white-space:pre-wrap;margin:0 0 12px">Push 09/11\nDéveloppé couché 4x10 60kg\nDéveloppé incliné 10x22, 8x24, 8x24\nDips 3x12\nCourse 25 min 4,5 km</pre>'
+   +'<label><span class="lab">Ta séance</span><textarea id="imp-text" rows="8" placeholder="Colle ta séance ici">'+esc(V.impText||'')+'</textarea></label>'
+   +'<div class="row" style="justify-content:flex-start;margin-bottom:12px"><button type="button" class="ghost" data-act="impaste">Coller</button><button type="button" class="ghost" data-act="impclear">Effacer</button></div>'
+   +'<div id="imp-prev">'+importPreview()+'</div>';
 }
 function renderWorkout(w){
   const titles=[...new Set([...SPORTS.filter(x=>x!=='Autre'),...S.workouts.map(x=>x.title).filter(Boolean)])];
@@ -1470,7 +1543,7 @@ const LEGAL={
 };
 function renderLegal(){
   const d=LEGAL[V.doc]?V.doc:'cgu';
-  return '<div style="margin-bottom:10px"><button type="button" class="ghost" data-act="legalback">‹ Retour</button></div><div class="modes">'+[['cgu','Conditions'],['conf','Confidentialité'],['mentions','Mentions légales']].map(x=>'<button type="button" data-act="legal" data-doc="'+x[0]+'" aria-pressed="'+(d===x[0])+'">'+x[1]+'</button>').join('')+'</div><article class="legal card">'+LEGAL[d]()+'</article>';
+  return '<div class="row" style="margin-bottom:10px;justify-content:flex-start"><button type="button" class="ghost" data-act="legalback">‹ Retour</button><button type="button" class="ghost" data-act="dopen">Menu</button></div><article class="legal card">'+LEGAL[d]()+'</article>';
 }
 let LS_LOCK='cadence-lock',LS_LOCKTRY='cadence-lock-try';
 const L={entry:'',hiddenAt:0,wasOpen:false,resetArmed:false,timer:null,busy:false};
@@ -1595,6 +1668,7 @@ document.addEventListener('click',e=>{
     let t=b.dataset.tab;
     if(t==='macros'||t==='meals'){V.nseg=t==='meals'?'repas':'macros';t='nutrition'}
     if(t==='settings'){openDrawer();return}
+    if(t==='todos')t='agenda';
     V.tab=t;closeDrawer();render();window.scrollTo(0,0);
   }
   else if(a==='prev'){V.month=new Date(V.month.getFullYear(),V.month.getMonth()-1,1);render()}
@@ -1703,7 +1777,7 @@ document.addEventListener('click',e=>{
   }
   else if(a==='dopen'){openDrawer()}
   else if(a==='dclose'){closeDrawer()}
-  else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0)}
+  else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else if(x==='cgu'||x==='conf'||x==='mentions'){if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=x}else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0)}
   else if(a==='nseg'){V.tab='nutrition';V.nseg=b.dataset.seg;render();window.scrollTo(0,0)}
   else if(a==='copyshop'){
     const t=shopText(),ta=$('#shop-text'),msg=$('#shop-msg');ta.value=t;
@@ -1711,6 +1785,18 @@ document.addEventListener('click',e=>{
     try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Liste copiée. Colle-la dans tes notes, puis cherche chaque produit sur ton drive.'},fail)}catch(err){fail()}
   }
   else if(a==='wseg'){V.wseg=b.dataset.seg;render()}
+  else if(a==='wimp'){V.wimport=true;render();window.scrollTo(0,0)}
+  else if(a==='impcancel'){V.wimport=false;render();window.scrollTo(0,0)}
+  else if(a==='impclear'){V.impText='';render()}
+  else if(a==='impaste'){
+    const ta=$('#imp-text');
+    try{navigator.clipboard.readText().then(t=>{V.impText=t||'';ta.value=V.impText;$('#imp-prev').innerHTML=importPreview()},()=>{ta.focus()})}catch(err){ta.focus()}
+  }
+  else if(a==='impcreate'){
+    const r=parseNote(V.impText||'');if(!r.ex.length)return;
+    const w={id:uid(),date:r.date,title:r.title,dur:r.dur,ex:r.ex.map(e=>({name:e.name,kind:e.kind,sets:e.sets,min:e.min,km:e.km})),note:'',agendaId:null};
+    S.workouts.push(w);V.wimport=false;V.impText='';V.wEdit=w.id;touch();render();window.scrollTo(0,0);
+  }
   else if(a==='wnew'){
     const it=b.dataset.from?S.items.find(x=>x.id===b.dataset.from):null;
     const w={id:uid(),date:todayISO,title:it?(it.sport&&it.sport!=='Autre'?it.sport:it.title):'',dur:it&&it.dur?it.dur:'',ex:[],note:'',agendaId:it?it.id:null};
@@ -1798,6 +1884,7 @@ document.addEventListener('input',e=>{
   else return;
   touch();
 });
+document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{
   if(e.target.id==='w-title'){const w=curW();if(w&&!w.ex.length&&hasPrev(w))render()}
   else if(e.target.id==='wp-ex'){V.wpEx=e.target.value;render()}
@@ -1805,7 +1892,19 @@ document.addEventListener('change',e=>{
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#account-form'))readAccount()});
 document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('#account-form')&&e.target.type==='radio')readAccount()});
 
-if(IS_PWA&&'serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(IS_PWA&&'serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+  const hadCtl=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})});
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!hadCtl||$('#upd'))return;
+    const el=document.createElement('div');el.id='upd';el.className='alert';el.style.setProperty('--c','var(--d-today)');
+    el.innerHTML='<div><small>Mise à jour</small><b>Une nouvelle version de Cadence est prête.</b></div><button type="button">Recharger</button>';
+    el.querySelector('button').addEventListener('click',()=>location.reload());
+    $('#alerts').appendChild(el);
+  });
+}
 function routeHash(){const map={cgu:'cgu',confidentialite:'conf',mentions:'mentions'},h=(location.hash||'').slice(1);if(!map[h])return false;if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=map[h];return true}
 if(IS_PWA){routeHash();window.addEventListener('hashchange',()=>{if(routeHash()){render();window.scrollTo(0,0)}})}
 if(IS_PWA){applyProfileKeys(profiles().active);loadFired()}
