@@ -1367,7 +1367,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 58';
+const APP_VERSION='2026.11.10 · 59';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3545,7 +3545,7 @@ const EXPMAP={course:{inter:{E:'S'},conf:{E:'S',R:'T'}},tri:{inter:{run:'trun'},
 function sportPref(){const q=S.sportPref||{};return {k:GSPORTS.some(x=>x[0]===q.k)?q.k:'aucun',txt:String(q.txt||'').slice(0,40)}}
 function evInfo(){const e=S.event;if(!e||!/^\d{4}-\d\d-\d\d$/.test(e.date||''))return null;const d=parseISO(e.date),days=Math.round((d-today)/864e5);if(days<-14)return null;return {name:String(e.name||'').trim().slice(0,50)||'Mon événement',date:e.date,d,days}}
 function evPhase(n){
-  const ev=evInfo();if(!ev||!ENDU.includes(coachCfg().style))return null;
+  const ev=evInfo();if(!ev||!endu(coachCfg()))return null;
   const ws=addDays(parseISO(progStart()),(n-1)*7),w=Math.floor(Math.round((ev.d-ws)/864e5)/7);
   if(w===0)return {f:.5,name:'Semaine de l\'événement',why:'Séances courtes pour arriver frais le jour J : '+ev.name+' est cette semaine.'};
   if(w===1)return {f:.7,name:'Affûtage',why:'Le volume baisse, l\'intensité reste : tes jambes récupèrent avant '+ev.name+'.'};
@@ -3567,7 +3567,7 @@ function stravaStats(){
   return {A,last7,prev,load:prev>=30?last7/prev:null,runSeuil:run?run*1.03:0,swimSeuil:swim?swim/10*1.03:0,n:A.length};
 }
 function stravaAdjust(s,n){
-  const cfg=coachCfg();if(!ENDU.includes(cfg.style))return s;
+  const cfg=coachCfg();if(!endu(cfg))return s;
   const x=stravaStats();if(!x)return s;
   if(s.expert&&s.sport==='Course à pied'&&x.runSeuil)s.focus=(s.focus?s.focus+' · ':'')+'Allure seuil visée ≈ '+fmtPace(x.runSeuil)+' /km';
   if(s.expert&&s.sport==='Natation'&&x.swimSeuil)s.focus=(s.focus?s.focus+' · ':'')+'Allure seuil visée ≈ '+fmtPace(x.swimSeuil)+' /100 m';
@@ -3840,11 +3840,25 @@ function applyWeek(s,n){
     return e});
   s.week=W;return s;
 }
+// Musculation + sport d'endurance à côté : 1 séance (2 à partir de 5 jours) est remplacée par une séance de ce sport.
+function sideEndu(list,cfg,wn){
+  const K={course:'course',velo:'velo',natation:'natation',tri:'tri'}[cfg.sport];
+  if(!K||cfg.days<3)return list;
+  const nSl=cfg.days>=5?2:1,li=LVL[cfg.level].i,have=eqSet(cfg),PL=PROG[K],lv=cfg.level;
+  const pick=[
+    ()=>({course:lv==='deb'?'E':'S',velo:lv==='deb'?'end':lv==='conf'?'ftp':'ss',natation:lv==='deb'?'tech':'css',tri:lv==='deb'?'run':['trun','tbike','tswim'][(wn-1)%3]})[K],
+    ()=>({course:'E',velo:'end',natation:'endu',tri:'swim'})[K]
+  ];
+  const add=[];
+  for(let i=0;i<nSl;i++){const k=pick[i](),x=PL.s[k](li,have);add.push(Object.assign({key:K+'-'+k,sport:x.sport||PL.sp,focus:''},x))}
+  return list.slice(0,list.length-nSl).concat(add);
+}
 function coachWeek(n){
   const cfg=coachCfg(),goal=S.profile.goal||'maintien',days=DAYMAP[cfg.days];
   let list;
   if(cfg.style==='muscu'||cfg.style==='cali'){
     list=SPLITS[goal][cfg.days].map(k=>buildStrength(k,cfg,goal));
+    list=sideEndu(list,cfg,n||curWeekNo());
   }else{
     const PL=PROG[cfg.style],li=LVL[cfg.level].i,have=eqSet(cfg);
     const keys=PL.plans?PL.plans[cfg.days]:Array.from({length:cfg.days},(_,i)=>PL.order[i%PL.order.length]);
