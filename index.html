@@ -56,6 +56,9 @@ img{max-width:100%}
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 html,body{overflow-x:hidden;overflow-x:clip;max-width:100%;overscroll-behavior-x:none}
 .gridwrap{overflow:hidden;overflow:clip;margin:0 -4px;padding:0 4px 8px}
 [hidden]{display:none!important}
@@ -112,7 +115,7 @@ p{margin:0}
 .ptable td:last-child{text-align:right;color:var(--muted);padding-left:10px}
 .curw{font-family:var(--font-display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
 .homebtn{all:unset;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.homebtn:active{opacity:.7}
+.homebtn:active{opacity:.75}
 .homebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .top h1{font-size:34px;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:2px}
 #today-label{color:var(--muted);font-size:13px;margin-top:2px}
@@ -719,7 +722,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 22';
+const APP_VERSION='2026.11.09 · 23';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
