@@ -128,9 +128,10 @@ details summary{cursor:pointer;font-weight:600;color:var(--muted);margin:18px 0 
 /* Formulaires */
 label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:10px}
 label>span.lab{display:block;margin-bottom:4px}
-input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;color:var(--ink);font-weight:400;min-height:44px}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],select,textarea{width:100%;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;color:var(--ink);font-weight:400;min-height:44px}
 textarea{resize:vertical}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r2>*,.r3>*{min-width:0}
 .r3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px;background:var(--bg)}
 .seg label{flex:1;margin:0}
@@ -242,6 +243,19 @@ label.ghost{color:var(--ink);font-weight:600}
 .legal a{color:var(--ink)}
 .gate{z-index:80}
 .gate .panel{max-height:96%}
+.lock{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.lock-in{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-block:16px}
+.lock-in h2{font-size:40px}
+.pdots{display:flex;gap:14px;height:16px}
+.pdots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:block}
+.pdots i.on{background:var(--ink)}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px 22px;margin-top:6px}
+.pad button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-family:var(--font-display);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--soft)}
+.pad .blank{visibility:hidden}
+.pad .del{font-size:22px;border:0;background:none}
+@media (prefers-reduced-motion:no-preference){.shake{animation:shake .35s}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
 </head>
@@ -328,6 +342,25 @@ label.ghost{color:var(--ink);font-weight:600}
     <label class="ck"><input type="checkbox" id="gate-ok"><span>J'ai lu et j'accepte les conditions d'utilisation et la politique de confidentialité.</span></label>
     <button type="button" class="primary" data-act="accept" style="width:100%">Commencer</button>
     <p class="note" id="gate-msg" style="margin-top:8px"></p>
+  </div>
+</div>
+
+<div id="lock" class="lock" hidden>
+  <div class="lock-in">
+    <h2>Cadence</h2>
+    <p id="lock-msg" class="note" aria-live="polite">Entre ton code</p>
+    <div class="pdots" id="lock-dots" aria-hidden="true"></div>
+    <div class="pad">
+      <button type="button" data-act="pin" data-d="1">1</button><button type="button" data-act="pin" data-d="2">2</button><button type="button" data-act="pin" data-d="3">3</button>
+      <button type="button" data-act="pin" data-d="4">4</button><button type="button" data-act="pin" data-d="5">5</button><button type="button" data-act="pin" data-d="6">6</button>
+      <button type="button" data-act="pin" data-d="7">7</button><button type="button" data-act="pin" data-d="8">8</button><button type="button" data-act="pin" data-d="9">9</button>
+      <span class="blank"></span><button type="button" data-act="pin" data-d="0">0</button><button type="button" class="del" data-act="pin" data-d="del" aria-label="Effacer un chiffre">⌫</button>
+    </div>
+    <button type="button" class="linkbtn" data-act="pinforgot">Code oublié ?</button>
+    <div id="lock-forgot" hidden>
+      <p class="note" style="margin-bottom:10px">Le code n'est enregistré nulle part ailleurs. Sans lui, la seule solution est d'effacer toutes les données de Cadence sur ce téléphone.</p>
+      <button type="button" class="danger" data-act="pinreset">Effacer toutes mes données</button>
+    </div>
   </div>
 </div>
 
@@ -854,9 +887,14 @@ function pwaHTML(){
   else if(perm==='granted')n='<p class="note">Notifications autorisées.</p>';
   else if(perm==='denied')n='<p class="note">Notifications refusées. Réactive-les dans Réglages, Notifications, Cadence.</p>';
   else n='<button type="button" class="ghost" data-act="notif">Activer les notifications</button>';
-  const key=getKey();
+  const key=getKey(),lk=lockCfg();
+  const pinIn=(id,lab)=>'<label><span class="lab">'+lab+'</span><input type="password" id="'+id+'" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"></label>';
+  const lockHTML=lk
+    ?'<p class="note" style="margin-bottom:8px">Code activé. Cadence le demande à chaque ouverture et après 1 minute en arrière-plan.</p><div class="r3">'+pinIn('pin-cur','Code actuel')+pinIn('pin-new','Nouveau code')+pinIn('pin-new2','Confirmer')+'</div><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="pinchange">Changer le code</button><button type="button" class="ghost" data-act="pinoff">Désactiver</button></div>'
+    :'<p class="note" style="margin-bottom:8px">Protège Cadence avec un code de 4 à 6 chiffres. Si tu l\'oublies, il faudra effacer toutes les données.</p><div class="r2">'+pinIn('pin-new','Code')+pinIn('pin-new2','Confirmer le code')+'</div><button type="button" class="primary" data-act="pinon">Activer le code</button>';
   return '<section class="card" style="margin-top:14px"><h2>Réglages</h2>'
-   +'<h3 class="group-h" style="margin-top:6px">Notifications</h3>'+n+'<p class="note" style="margin-top:8px">iOS ne réveille pas une app web fermée : un rappel apparaît quand Cadence est ouverte ou vient d\'être utilisée. Pour une alarme à heure fixe, double-la avec l\'app Rappels.</p>'
+   +'<h3 class="group-h" style="margin-top:6px">Code de verrouillage</h3>'+lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>'
+   +'<h3 class="group-h">Notifications</h3>'+n+'<p class="note" style="margin-top:8px">iOS ne réveille pas une app web fermée : un rappel apparaît quand Cadence est ouverte ou vient d\'être utilisée. Pour une alarme à heure fixe, double-la avec l\'app Rappels.</p>'
    +'<h3 class="group-h">Photo des repas</h3>'+(key?'<p class="note" style="margin-bottom:8px">Clé Gemini enregistrée sur ce téléphone.</p><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button>':'<p class="note">Aucune clé Gemini. Ajoute-la depuis Journal, puis Photo.</p>')
    +'<h3 class="group-h">Sauvegarde</h3><p class="note" style="margin-bottom:8px">Tes données restent sur ce téléphone. Copie-les pour les garder ailleurs ou les restaurer. La clé Gemini n\'est pas incluse.</p>'
    +'<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="backup">Copier ma sauvegarde</button><button type="button" class="ghost" data-act="restore">Restaurer</button></div><p class="note" id="bk-msg" style="margin-top:8px"></p>'
@@ -1106,7 +1144,7 @@ const LEGAL={
 <h3>12. Droit applicable et contact</h3><p>Ces conditions sont soumises au droit français. En cas de désaccord, écris d'abord à ${m} pour chercher une solution amiable. À défaut, les tribunaux français seront compétents.</p>`},
   conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
 <h3>En résumé</h3><p>Cadence ne collecte aucune donnée personnelle sur un serveur de l'éditeur. Il n'y a ni compte, ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
-<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Agenda, puis Réglages, puis « Effacer toutes mes données », ou en supprimant l'application.</p>
+<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Agenda, puis Réglages, puis « Effacer toutes mes données », ou en supprimant l'application.</p>
 <h3>Ce qui est envoyé à d'autres services</h3><ul>
 <li><b>Hébergeur du site</b> : quand tu ouvres ou mets à jour Cadence, ton adresse IP et des informations techniques peuvent être enregistrées dans les journaux de l'hébergeur, selon sa propre politique.</li>
 <li><b>Open Food Facts</b> (association française) : seulement quand tu cherches un produit, le code-barres et ton adresse IP. Rien d'autre.</li>
@@ -1118,6 +1156,62 @@ const LEGAL={
 function renderLegal(){
   const d=LEGAL[V.doc]?V.doc:'cgu';
   return '<div style="margin-bottom:10px"><button type="button" class="ghost" data-act="legalback">‹ Retour</button></div><div class="modes">'+[['cgu','Conditions'],['conf','Confidentialité'],['mentions','Mentions légales']].map(x=>'<button type="button" data-act="legal" data-doc="'+x[0]+'" aria-pressed="'+(d===x[0])+'">'+x[1]+'</button>').join('')+'</div><article class="legal card">'+LEGAL[d]()+'</article>';
+}
+const LS_LOCK='cadence-lock',LS_LOCKTRY='cadence-lock-try';
+const L={entry:'',hiddenAt:0,wasOpen:false,resetArmed:false,timer:null,busy:false};
+function lockCfg(){try{const c=JSON.parse(localStorage.getItem(LS_LOCK)||'null');return c&&c.hash&&c.salt&&c.len?c:null}catch(e){return null}}
+function lockTry(){try{return JSON.parse(localStorage.getItem(LS_LOCKTRY)||'null')||{fails:0,until:0}}catch(e){return {fails:0,until:0}}}
+function saveTry(t){try{localStorage.setItem(LS_LOCKTRY,JSON.stringify(t))}catch(e){}}
+async function pinHash(code,salt){const d=new TextEncoder().encode(salt+':'+code);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function drawDots(){const c=lockCfg();if(!c)return;$('#lock-dots').innerHTML=Array.from({length:c.len},(_,i)=>'<i class="'+(i<L.entry.length?'on':'')+'"></i>').join('')}
+function setLockMsg(m){
+  clearTimeout(L.timer);
+  const w=Math.ceil((lockTry().until-Date.now())/1000),el=$('#lock-msg');
+  if(w>0){el.textContent='Trop d\'essais. Réessaie dans '+w+' s.';L.timer=setTimeout(()=>setLockMsg(),1000)}
+  else el.textContent=m||'Entre ton code';
+}
+function showLock(){
+  if(!IS_PWA||!lockCfg())return false;
+  L.entry='';L.resetArmed=false;$('#lock-forgot').hidden=true;
+  const rb=document.querySelector('#lock [data-act=pinreset]');if(rb)rb.textContent='Effacer toutes mes données';
+  $('#lock').hidden=false;drawDots();setLockMsg();return true;
+}
+async function pinKey(d){
+  const c=lockCfg();if(!c||L.busy)return;
+  if(Date.now()<lockTry().until){setLockMsg();return}
+  if(d==='del'){L.entry=L.entry.slice(0,-1);drawDots();return}
+  if(L.entry.length>=c.len)return;
+  L.entry+=d;drawDots();
+  if(L.entry.length<c.len)return;
+  L.busy=true;
+  const ok=(await pinHash(L.entry,c.salt))===c.hash;
+  L.busy=false;L.entry='';
+  if(ok){saveTry({fails:0,until:0});$('#lock').hidden=true;checkReminders();return}
+  const t=lockTry();t.fails=(t.fails||0)+1;
+  if(t.fails>=5)t.until=Date.now()+30000*Math.pow(2,Math.min(t.fails-5,6));
+  saveTry(t);
+  const dots=$('#lock-dots');dots.classList.add('shake');
+  setTimeout(()=>{dots.classList.remove('shake');drawDots()},350);
+  setLockMsg('Code incorrect');
+}
+async function pinSave(a,b,msg){
+  if(!/^\d{4,6}$/.test(a)){msg.textContent='Le code doit faire 4 à 6 chiffres.';return false}
+  if(a!==b){msg.textContent='Les deux codes ne sont pas identiques.';return false}
+  if(!(window.crypto&&crypto.subtle)){msg.textContent='Le verrouillage n\'est pas disponible sur ce navigateur.';return false}
+  const salt=uid()+uid(),hash=await pinHash(a,salt);
+  try{localStorage.setItem(LS_LOCK,JSON.stringify({salt,hash,len:a.length}));saveTry({fails:0,until:0})}
+  catch(e){msg.textContent='Impossible d\'enregistrer le code sur cet appareil.';return false}
+  return true;
+}
+async function pinChange(off){
+  const c=lockCfg(),msg=$('#pin-msg');if(!c)return;
+  if((await pinHash($('#pin-cur').value,c.salt))!==c.hash){msg.textContent='Code actuel incorrect.';return}
+  if(off){try{localStorage.removeItem(LS_LOCK);localStorage.removeItem(LS_LOCKTRY)}catch(e){}render();$('#pin-msg').textContent='Code désactivé.';return}
+  if(await pinSave($('#pin-new').value,$('#pin-new2').value,msg)){render();$('#pin-msg').textContent='Code changé.'}
+}
+function wipeAll(){
+  try{[LS_KEY,LS_FIRED,LS_KEYG,LS_CGU,LS_LOCK,LS_LOCKTRY].forEach(k=>localStorage.removeItem(k))}catch(e){}
+  memKey='';memCgu='';S=defaultState();fired=new Set();V.tab='agenda';$('#lock').hidden=true;render();
 }
 function updateGate(){const g=$('#gate');if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'}
 
@@ -1249,14 +1343,20 @@ document.addEventListener('click',e=>{
   }
   else if(a==='wipe'){
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
-    V.wipeArmed=false;try{[LS_KEY,LS_FIRED,LS_KEYG,LS_CGU].forEach(k=>localStorage.removeItem(k))}catch(e){}
-    memKey='';memCgu='';S=defaultState();fired=new Set();V.tab='agenda';render();
+    V.wipeArmed=false;wipeAll();
   }
+  else if(a==='pin'){pinKey(b.dataset.d)}
+  else if(a==='pinforgot'){$('#lock-forgot').hidden=false}
+  else if(a==='pinreset'){if(!L.resetArmed){L.resetArmed=true;b.textContent='Confirmer : tout effacer';return}wipeAll()}
+  else if(a==='pinon'){pinSave($('#pin-new').value,$('#pin-new2').value,$('#pin-msg')).then(ok=>{if(ok){render();$('#pin-msg').textContent='Code activé.'}})}
+  else if(a==='pinchange'){pinChange(false)}
+  else if(a==='pinoff'){pinChange(true)}
   else if(a==='planday'){V.planDay=+b.dataset.i;render()}
   else if(a==='regen-day'){S.seeds[V.planDay]=Math.floor(Math.random()*9000)+1;S.shop={};touch();render()}
   else if(a==='regen-week'){S.seeds=S.seeds.map(()=>Math.floor(Math.random()*9000)+1);S.shop={};touch();render()}
 });
 document.addEventListener('keydown',e=>{
+  if(!$('#lock').hidden){if(/^[0-9]$/.test(e.key))pinKey(e.key);else if(e.key==='Backspace')pinKey('del');return}
   if(e.key==='Escape'){if(!$('#sheet').hidden)closeSheet();if(!$('#fsheet').hidden)closeFood()}
   if(e.key==='Enter'&&e.target.id==='fs-code'){e.preventDefault();lookupCode(e.target.value)}
 });
@@ -1307,6 +1407,15 @@ function routeHash(){const map={cgu:'cgu',confidentialite:'conf',mentions:'menti
 if(IS_PWA){routeHash();window.addEventListener('hashchange',()=>{if(routeHash()){render();window.scrollTo(0,0)}})}
 fillSelects();
 render();
+if(IS_PWA){
+  showLock();
+  document.addEventListener('visibilitychange',()=>{
+    if(!lockCfg())return;
+    if(document.hidden){L.hiddenAt=Date.now();L.wasOpen=$('#lock').hidden;showLock()}
+    else if(L.wasOpen&&Date.now()-L.hiddenAt<60000){$('#lock').hidden=true;L.wasOpen=false}
+    else L.wasOpen=false;
+  });
+}
 setSync('pending');
 initStore().then(()=>{checkReminders();setInterval(checkReminders,15000)});
 </script>
