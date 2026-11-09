@@ -62,7 +62,16 @@ button{cursor:pointer}
 h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;letter-spacing:.01em;text-wrap:balance}
 p{margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-bottom:150px}
-.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.top>div{flex:1;min-width:0}
+.gear{flex:none;width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.gear svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gear[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:50px;border-top:1px solid var(--line)}
+.plist li:first-child{border-top:0}
+.plist .pn{font-weight:600;overflow-wrap:anywhere;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.curw{font-family:var(--font-display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
 .top h1{font-size:34px;line-height:1}
 #today-label{color:var(--muted);font-size:13px;margin-top:2px}
 .chip{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:99px;white-space:nowrap;background:var(--surface)}
@@ -182,8 +191,8 @@ textarea{resize:vertical}
 .alert button{background:var(--bg);color:var(--ink);border:0;border-radius:6px;padding:8px 14px;font-weight:600}
 
 /* Barre d'onglets et bouton d'ajout */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11.5px;font-weight:600;color:var(--muted);border-radius:8px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:10.5px;font-weight:600;color:var(--muted);border-radius:8px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-current="page"]{color:var(--accent)}
 .fab{position:fixed;z-index:41;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:32px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.28)}
@@ -263,6 +272,7 @@ label.ghost{color:var(--ink);font-weight:600}
 
 <div class="wrap">
   <header class="top">
+    <button type="button" class="gear" data-act="tab" data-tab="settings" aria-label="Réglages et compte"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div>
       <h1>Cadence</h1>
       <p id="today-label"></p>
@@ -279,6 +289,7 @@ label.ghost{color:var(--ink);font-weight:600}
   <button data-act="tab" data-tab="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
   <button data-act="tab" data-tab="todos"><svg viewBox="0 0 24 24"><path d="M4 7l2 2 3-4M4 17l2 2 3-4M13 8h7M13 18h7"/></svg>À faire</button>
   <button data-act="tab" data-tab="journal"><svg viewBox="0 0 24 24"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>Journal</button>
+  <button data-act="tab" data-tab="poids"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 10a5 5 0 0 1 8 0M12 10l1.5-2"/></svg>Poids</button>
   <button data-act="tab" data-tab="macros"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Macros</button>
   <button data-act="tab" data-tab="meals"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg>Repas</button>
 </nav>
@@ -348,6 +359,7 @@ label.ghost{color:var(--ink);font-weight:600}
 <div id="lock" class="lock" hidden>
   <div class="lock-in">
     <h2>Cadence</h2>
+    <p id="lock-who" style="font-weight:600;margin-top:-8px"></p>
     <p id="lock-msg" class="note" aria-live="polite">Entre ton code</p>
     <div class="pdots" id="lock-dots" aria-hidden="true"></div>
     <div class="pad">
@@ -357,9 +369,11 @@ label.ghost{color:var(--ink);font-weight:600}
       <span class="blank"></span><button type="button" data-act="pin" data-d="0">0</button><button type="button" class="del" data-act="pin" data-d="del" aria-label="Effacer un chiffre">⌫</button>
     </div>
     <button type="button" class="linkbtn" data-act="pinforgot">Code oublié ?</button>
+    <button type="button" class="linkbtn" id="lock-switch" data-act="lockprofiles" hidden>Changer de profil</button>
+    <div id="lock-plist" hidden style="display:flex;flex-direction:column;gap:8px;width:100%"></div>
     <div id="lock-forgot" hidden>
-      <p class="note" style="margin-bottom:10px">Le code n'est enregistré nulle part ailleurs. Sans lui, la seule solution est d'effacer toutes les données de Cadence sur ce téléphone.</p>
-      <button type="button" class="danger" data-act="pinreset">Effacer toutes mes données</button>
+      <p class="note" style="margin-bottom:10px">Le code n'est enregistré nulle part ailleurs. Sans lui, la seule solution est d'effacer les données de ce profil sur ce téléphone.</p>
+      <button type="button" class="danger" data-act="pinreset">Effacer les données de ce profil</button>
     </div>
   </div>
 </div>
@@ -547,7 +561,7 @@ function defaultState(){
   const d=n=>iso(addDays(today,n));
   return {
     v:1,touched:false,weights:[],shop:{},log:{},
-    profile:{sex:'H',age:22,height:175,weight:70,activity:1.55,goal:'prise',rate:'modere',meals:4,custom:false},
+    profile:{sex:'H',age:22,height:175,weight:70,activity:1.55,goal:'prise',rate:'modere',meals:4,custom:false,done:false},
     seeds:[11,22,33,44,55,66,77],
     items:[
       {id:uid(),type:'sport',title:'Séance du haut du corps',sport:SPORTS[0],dur:60,date:d(1),time:'18:30',remind:60,notes:'',done:false,ex:true},
@@ -561,6 +575,7 @@ function normalize(data){
   const base=defaultState();
   const s=Object.assign(base,data||{});
   s.profile=Object.assign(defaultState().profile,(data&&data.profile)||{});
+  if(data&&data.profile&&data.profile.done===undefined)s.profile.done=!!data.profile.custom;
   if(!Array.isArray(s.items))s.items=[];
   if(!Array.isArray(s.weights))s.weights=[];
   if(!s.shop||typeof s.shop!=='object')s.shop={};
@@ -580,7 +595,7 @@ const V={jday:todayISO,doc:'cgu',prevTab:'agenda',wipeArmed:false,tab:'agenda',m
 
 /* ---------- Enregistrement ---------- */
 let stateRef=null,lastJSON='',saveTimer=null,saving=false,dirty=false,loadTimer=null;
-const LS_KEY='cadence-v1',LS_FIRED='cadence-fired';
+let LS_KEY='cadence-v1',LS_FIRED='cadence-fired';
 function setSync(s){
   const el=$('#sync');if(!el)return;
   el.dataset.s=s;
@@ -731,7 +746,7 @@ function renderAgenda(){
    +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2><span class="note">'+dayItems.length+' élément'+(dayItems.length>1?'s':'')+'</span></div>'
    +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu ce jour-là. Touche + pour ajouter une séance, une échéance ou une tâche.</div>')
    +exNote
-   +'<p class="note" style="margin-top:14px">Les rappels s\'affichent en haut de l\'écran tant que Cadence est ouverte.</p>'+(IS_PWA?pwaHTML():'');
+   +'<p class="note" style="margin-top:14px">Les rappels s\'affichent en haut de l\'écran tant que Cadence est ouverte.</p>';
 }
 
 function renderTodos(){
@@ -767,18 +782,28 @@ function macroResultsHTML(p){
 function renderMacros(){
   const p=S.profile;
   const radio=(name,val,label,cur)=>'<label><input type="radio" name="'+name+'" value="'+val+'"'+(cur===val?' checked':'')+'><span>'+label+'</span></label>';
-  return '<h2 style="font-size:30px;margin-bottom:10px">Macros</h2>'
-   +(p.custom?'':'<p class="note" id="m-example" style="margin-bottom:10px">Valeurs d\'exemple : remplace-les par les tiennes.</p>')
-   +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false">'
-   +'<div class="seg-title">Sexe</div><div class="seg">'+radio('sex','H','Homme',p.sex)+radio('sex','F','Femme',p.sex)+'</div>'
-   +'<div class="r3"><label><span class="lab">Âge</span><input type="number" id="m-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label>'
-   +'<label><span class="lab">Taille (cm)</span><input type="number" id="m-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label>'
-   +'<label><span class="lab">Poids (kg)</span><input type="number" id="m-weight" inputmode="decimal" step="0.1" min="30" max="250" value="'+esc(p.weight)+'"></label></div>'
-   +'<label><span class="lab">Niveau d\'activité</span><select id="m-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
-   +'<div class="seg-title">Objectif</div><div class="seg">'+radio('goal','prise','Prise de masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
-   +'<div id="rate-box"><div class="seg-title" id="rate-title"></div><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div>'
-   +'</form>'
-   +'<section class="card" id="macro-out" aria-live="polite">'+macroResultsHTML(p)+'</section>'+weightHTML();
+  const goalHTML='<div class="seg-title">Objectif</div><div class="seg">'+radio('goal','prise','Prise de masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
+   +'<div id="rate-box"><div class="seg-title" id="rate-title"></div><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div>';
+  let h='<h2 style="font-size:30px;margin-bottom:10px">Macros</h2>';
+  if(!p.done){
+    h+='<p class="note" style="margin-bottom:10px">'+(p.custom?'':'Valeurs d\'exemple : remplace-les par les tiennes. ')+'Une fois enregistrées, ces infos passent dans ton compte (icône en haut à gauche).</p>'
+     +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false">'
+     +'<div class="seg-title">Sexe</div><div class="seg">'+radio('sex','H','Homme',p.sex)+radio('sex','F','Femme',p.sex)+'</div>'
+     +'<div class="r3"><label><span class="lab">Âge</span><input type="number" id="m-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label>'
+     +'<label><span class="lab">Taille (cm)</span><input type="number" id="m-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label>'
+     +'<label><span class="lab">Poids (kg)</span><input type="number" id="m-weight" inputmode="decimal" step="0.1" min="30" max="250" value="'+esc(p.weight)+'"></label></div>'
+     +'<label><span class="lab">Niveau d\'activité</span><select id="m-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
+     +goalHTML
+     +'<button type="button" class="primary" data-act="profiledone" style="width:100%;margin-top:14px">Enregistrer mon profil</button><p class="note" id="m-done-msg" style="margin-top:6px"></p></form>';
+  }else{
+    const act=(ACT.find(a=>a[0]===+p.activity)||ACT[2])[1];
+    h+='<section class="card"><div class="row"><div style="min-width:0"><div class="seg-title">Ton profil</div><b>'+esc((p.sex==='F'?'Femme':'Homme')+' · '+p.age+' ans · '+p.height+' cm · '+num(+p.weight||0,1)+' kg · '+act)+'</b></div><button type="button" class="ghost" data-act="tab" data-tab="settings">Modifier</button></div></section>'
+     +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false">'+goalHTML+'</form>';
+  }
+  return h+'<section class="card" id="macro-out" aria-live="polite">'+macroResultsHTML(p)+'</section>';
+}
+function renderPoids(){
+  return '<h2 style="font-size:30px;margin-bottom:4px">Pesée</h2><p class="note" style="margin-bottom:12px">Pour comparer d\'une fois sur l\'autre, pèse-toi dans les mêmes conditions, par exemple le matin au réveil.</p>'+weightHTML();
 }
 function updateRateBox(){
   const g=S.profile.goal;const box=$('#rate-box');if(!box)return;
@@ -880,33 +905,95 @@ function weightHTML(){
   }else h+='<div class="empty" style="margin-top:12px">Aucune pesée pour l\'instant. Ajoute la première pour voir ta courbe.</div>';
   return h+'</section>';
 }
-function pwaHTML(){
-  const hasN='Notification' in window;const perm=hasN?Notification.permission:'none';
+/* ---------- Profils ---------- */
+const LS_PROFILES='cadence-profiles';
+let PROF=null;
+function profiles(){
+  if(PROF)return PROF;
+  let p=null;try{p=JSON.parse(localStorage.getItem(LS_PROFILES)||'null')}catch(e){}
+  if(!p||!Array.isArray(p.list)||!p.list.length)p={active:'p0',list:[{id:'p0',name:'Moi'}]};
+  if(!p.list.some(x=>x.id===p.active))p.active=p.list[0].id;
+  PROF=p;return p;
+}
+function saveProfiles(){try{localStorage.setItem(LS_PROFILES,JSON.stringify(PROF))}catch(e){}}
+function curProfile(){const P=profiles();return P.list.find(x=>x.id===P.active)}
+const sfx=pid=>pid==='p0'?'':'-'+pid;
+function applyProfileKeys(pid){const x=sfx(pid);LS_KEY='cadence-v1'+x;LS_FIRED='cadence-fired'+x;LS_KEYG='cadence-gemini-key'+x;LS_CGU='cadence-cgu'+x;LS_LOCK='cadence-lock'+x;LS_LOCKTRY='cadence-lock-try'+x}
+function loadFired(){try{fired=new Set(JSON.parse(localStorage.getItem(LS_FIRED)||'[]'))}catch(e){fired=new Set()}}
+function lockedProfile(pid){try{const c=JSON.parse(localStorage.getItem('cadence-lock'+sfx(pid))||'null');return !!(c&&c.hash)}catch(e){return false}}
+function switchProfile(pid){
+  const P=profiles();if(!P.list.some(x=>x.id===pid))return;
+  clearTimeout(saveTimer);dirty=false;
+  P.active=pid;saveProfiles();applyProfileKeys(pid);
+  memKey='';memCgu='';
+  const loc=localLoad();S=loc?normalize(loc):defaultState();if(loc)S.touched=true;
+  loadFired();
+  V.tab='agenda';V.jday=todayISO;V.sel=todayISO;V.month=new Date(today.getFullYear(),today.getMonth(),1);
+  if(!showLock())$('#lock').hidden=true;
+  render();window.scrollTo(0,0);checkReminders();
+}
+
+/* ---------- Réglages ---------- */
+function accountHTML(){
+  const p=S.profile;
+  const radio=(val,label)=>'<label><input type="radio" name="a-sex" value="'+val+'"'+(p.sex===val?' checked':'')+'><span>'+label+'</span></label>';
+  return '<section class="card" id="account-form"><h2>Mon compte</h2>'
+   +(IS_PWA?'<label><span class="lab">Nom du profil</span><input type="text" id="a-name" maxlength="30" value="'+esc(curProfile().name)+'"></label>':'')
+   +'<div class="seg-title">Sexe</div><div class="seg">'+radio('H','Homme')+radio('F','Femme')+'</div>'
+   +'<div class="r2"><label><span class="lab">Âge</span><input type="number" id="a-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label><label><span class="lab">Taille (cm)</span><input type="number" id="a-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label></div>'
+   +'<label><span class="lab">Niveau d\'activité</span><select id="a-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
+   +'<div class="row" style="align-items:flex-end;margin-top:4px"><div><div class="seg-title">Poids actuel</div><span class="curw">'+(p.weight?num(+p.weight,1)+' kg':'–')+'</span></div><button type="button" class="ghost" data-act="tab" data-tab="poids">Nouvelle pesée</button></div>'
+   +'<p class="note" id="a-msg" style="margin-top:10px">Les modifications sont enregistrées automatiquement.</p></section>';
+}
+function readAccount(){
+  const p=S.profile,v=id=>{const el=$(id);if(!el)return null;const x=parseFloat(el.value);return isNaN(x)?null:x};
+  p.age=v('#a-age');p.height=v('#a-height');
+  const ac=$('#a-act');if(ac)p.activity=parseFloat(ac.value);
+  const sx=document.querySelector('#account-form input[name=a-sex]:checked');if(sx)p.sex=sx.value;
+  p.custom=true;
+  if(IS_PWA){const n=$('#a-name');if(n){const nv=n.value.trim().slice(0,30),pr=curProfile();if(nv&&nv!==pr.name){pr.name=nv;saveProfiles();$('#today-label').textContent=headLabel()}}}
+  touch();
+  const m=$('#a-msg');if(m)m.textContent=(p.age>=14&&p.age<=90&&p.height>=120&&p.height<=230)?'Enregistré.':'Vérifie l\'âge (14 à 90 ans) et la taille (120 à 230 cm).';
+}
+function headLabel(){return cap(FMT.long.format(today))+(IS_PWA&&profiles().list.length>1?' · '+curProfile().name:'')}
+function profilesHTML(){
+  const P=profiles(),cur=curProfile();
+  return '<section class="card"><h2>Profils</h2><p class="note" style="margin-bottom:8px">Chaque profil a ses propres données, son code et sa clé Gemini.</p><ul class="plist">'
+   +P.list.map(x=>'<li><span class="pn">'+esc(x.name)+(x.id===P.active?'<span class="tag">Actif</span>':'')+(lockedProfile(x.id)?'<span class="tag">Code</span>':'')+'</span>'+(x.id===P.active?'':'<button type="button" class="ghost" data-act="pickprofile" data-pid="'+x.id+'">Ouvrir</button>')+'</li>').join('')+'</ul>'
+   +(P.list.length<6?'<div style="display:flex;gap:8px;margin-top:10px"><input type="text" id="np-name" maxlength="30" placeholder="Nom du nouveau profil" aria-label="Nom du nouveau profil" style="flex:1;min-width:0"><button type="button" class="ghost" data-act="addprofile">Ajouter</button></div>':'<p class="note">6 profils maximum.</p>')
+   +'<p class="note" id="np-msg" style="margin-top:6px"></p>'
+   +(P.list.length>1?'<button type="button" class="danger" data-act="delprofile" style="margin-top:6px">Supprimer le profil « '+esc(cur.name)+' »</button>':'')
+   +'</section>';
+}
+function renderSettings(){
+  let h='<h2 style="font-size:30px;margin-bottom:12px">Réglages</h2>'+accountHTML();
+  if(!IS_PWA)return h+'<p class="note">Le code de verrouillage, les profils, la sauvegarde et les infos légales se règlent dans l\'app installée sur ton téléphone.</p>';
+  const hasN='Notification' in window,perm=hasN?Notification.permission:'none';
   let n;
   if(!hasN)n='<p class="note">Les notifications ne sont disponibles qu\'une fois Cadence ajoutée à l\'écran d\'accueil, puis ouverte depuis son icône.</p>';
   else if(perm==='granted')n='<p class="note">Notifications autorisées.</p>';
-  else if(perm==='denied')n='<p class="note">Notifications refusées. Réactive-les dans Réglages, Notifications, Cadence.</p>';
+  else if(perm==='denied')n='<p class="note">Notifications refusées. Réactive-les dans les Réglages de l\'iPhone, Notifications, Cadence.</p>';
   else n='<button type="button" class="ghost" data-act="notif">Activer les notifications</button>';
   const key=getKey(),lk=lockCfg();
   const pinIn=(id,lab)=>'<label><span class="lab">'+lab+'</span><input type="password" id="'+id+'" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"></label>';
   const lockHTML=lk
     ?'<p class="note" style="margin-bottom:8px">Code activé. Cadence le demande à chaque ouverture et après 1 minute en arrière-plan.</p><div class="r3">'+pinIn('pin-cur','Code actuel')+pinIn('pin-new','Nouveau code')+pinIn('pin-new2','Confirmer')+'</div><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="pinchange">Changer le code</button><button type="button" class="ghost" data-act="pinoff">Désactiver</button></div>'
-    :'<p class="note" style="margin-bottom:8px">Protège Cadence avec un code de 4 à 6 chiffres. Si tu l\'oublies, il faudra effacer toutes les données.</p><div class="r2">'+pinIn('pin-new','Code')+pinIn('pin-new2','Confirmer le code')+'</div><button type="button" class="primary" data-act="pinon">Activer le code</button>';
-  return '<section class="card" style="margin-top:14px"><h2>Réglages</h2>'
-   +'<h3 class="group-h" style="margin-top:6px">Code de verrouillage</h3>'+lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>'
-   +'<h3 class="group-h">Notifications</h3>'+n+'<p class="note" style="margin-top:8px">iOS ne réveille pas une app web fermée : un rappel apparaît quand Cadence est ouverte ou vient d\'être utilisée. Pour une alarme à heure fixe, double-la avec l\'app Rappels.</p>'
-   +'<h3 class="group-h">Photo des repas</h3>'+(key?'<p class="note" style="margin-bottom:8px">Clé Gemini enregistrée sur ce téléphone.</p><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button>':'<p class="note">Aucune clé Gemini. Ajoute-la depuis Journal, puis Photo.</p>')
-   +'<h3 class="group-h">Sauvegarde</h3><p class="note" style="margin-bottom:8px">Tes données restent sur ce téléphone. Copie-les pour les garder ailleurs ou les restaurer. La clé Gemini n\'est pas incluse.</p>'
-   +'<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="backup">Copier ma sauvegarde</button><button type="button" class="ghost" data-act="restore">Restaurer</button></div><p class="note" id="bk-msg" style="margin-top:8px"></p>'
-   +'<h3 class="group-h">Infos légales</h3><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div>'
-   +'<h3 class="group-h">Données</h3><button type="button" class="danger" data-act="wipe">Effacer toutes mes données</button>'
-   +'</section>';
+    :'<p class="note" style="margin-bottom:8px">Protège ce profil avec un code de 4 à 6 chiffres. Si tu l\'oublies, il faudra effacer les données du profil.</p><div class="r2">'+pinIn('pin-new','Code')+pinIn('pin-new2','Confirmer le code')+'</div><button type="button" class="primary" data-act="pinon">Activer le code</button>';
+  h+=profilesHTML();
+  h+='<section class="card"><h2>Sécurité</h2><h3 class="group-h" style="margin-top:6px">Code de verrouillage</h3>'+lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>'
+   +'<h3 class="group-h">Clé Gemini (photo des repas)</h3>'+(key?'<p class="note" style="margin-bottom:8px">Clé enregistrée sur ce téléphone, pour ce profil.</p><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button>':'<p class="note">Aucune clé. Ajoute-la depuis Journal, bouton +, puis Photo.</p>')+'</section>';
+  h+='<section class="card"><h2>Notifications</h2>'+n+'<p class="note" style="margin-top:8px">iOS ne réveille pas une app web fermée : un rappel apparaît quand Cadence est ouverte ou vient d\'être utilisée. Pour une alarme à heure fixe, double-la avec l\'app Rappels.</p></section>';
+  h+='<section class="card"><h2>Sauvegarde</h2><p class="note" style="margin-bottom:8px">Les données de ce profil restent sur ce téléphone. Copie-les pour les garder ailleurs ou les restaurer. Le code et la clé Gemini ne sont pas inclus.</p>'
+   +'<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="backup">Copier ma sauvegarde</button><button type="button" class="ghost" data-act="restore">Restaurer</button></div><p class="note" id="bk-msg" style="margin-top:8px"></p></section>';
+  h+='<section class="card"><h2>Conditions et confidentialité</h2><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
+  h+='<section class="card"><h2>Données</h2><p class="note" style="margin-bottom:8px">Efface l\'agenda, le journal, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe">Effacer les données de ce profil</button></section>';
+  return h;
 }
 
 /* ---------- Journal alimentaire ---------- */
 const MEALS=[['bf','Petit-déjeuner'],['lunch','Déjeuner'],['dinner','Dîner'],['snack','Collations']];
 const SRC_L={photo:'photo IA',barcode:'code-barres',liste:'liste',manuel:'saisie manuelle'};
-const LS_KEYG='cadence-gemini-key',LS_CGU='cadence-cgu';
+let LS_KEYG='cadence-gemini-key',LS_CGU='cadence-cgu';
 let memKey='',memCgu='';
 function getKey(){try{return localStorage.getItem(LS_KEYG)||memKey}catch(e){return memKey}}
 function setKey(k){memKey=k;try{if(k)localStorage.setItem(LS_KEYG,k);else localStorage.removeItem(LS_KEYG)}catch(e){}}
@@ -1043,7 +1130,7 @@ async function gemini(parts,schema){
 }
 function aiErr(e){
   const c=e&&e.code;
-  if(c===400&&/key/i.test(e.msg||''))return 'Clé Gemini invalide. Vérifie-la, ou supprime-la dans les réglages de l\'agenda et ajoute-en une nouvelle.';
+  if(c===400&&/key/i.test(e.msg||''))return 'Clé Gemini invalide. Vérifie-la, ou supprime-la dans Réglages (icône en haut à gauche) et ajoute-en une nouvelle.';
   if(c===401||c===403)return 'Clé refusée par Google. Vérifie-la ou crée-en une nouvelle.';
   if(c===429)return 'Limite gratuite de Gemini atteinte. Réessaie dans une minute.';
   if(c==='net')return 'Pas de connexion internet. Réessaie une fois connecté.';
@@ -1144,7 +1231,7 @@ const LEGAL={
 <h3>12. Droit applicable et contact</h3><p>Ces conditions sont soumises au droit français. En cas de désaccord, écris d'abord à ${m} pour chercher une solution amiable. À défaut, les tribunaux français seront compétents.</p>`},
   conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
 <h3>En résumé</h3><p>Cadence ne collecte aucune donnée personnelle sur un serveur de l'éditeur. Il n'y a ni compte, ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
-<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Agenda, puis Réglages, puis « Effacer toutes mes données », ou en supprimant l'application.</p>
+<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Réglages (icône en haut à gauche), puis « Effacer les données de ce profil », ou en supprimant l'application. Si plusieurs profils existent sur l'appareil, chacun a ses données, son code et sa clé séparés.</p>
 <h3>Ce qui est envoyé à d'autres services</h3><ul>
 <li><b>Hébergeur du site</b> : quand tu ouvres ou mets à jour Cadence, ton adresse IP et des informations techniques peuvent être enregistrées dans les journaux de l'hébergeur, selon sa propre politique.</li>
 <li><b>Open Food Facts</b> (association française) : seulement quand tu cherches un produit, le code-barres et ton adresse IP. Rien d'autre.</li>
@@ -1157,7 +1244,7 @@ function renderLegal(){
   const d=LEGAL[V.doc]?V.doc:'cgu';
   return '<div style="margin-bottom:10px"><button type="button" class="ghost" data-act="legalback">‹ Retour</button></div><div class="modes">'+[['cgu','Conditions'],['conf','Confidentialité'],['mentions','Mentions légales']].map(x=>'<button type="button" data-act="legal" data-doc="'+x[0]+'" aria-pressed="'+(d===x[0])+'">'+x[1]+'</button>').join('')+'</div><article class="legal card">'+LEGAL[d]()+'</article>';
 }
-const LS_LOCK='cadence-lock',LS_LOCKTRY='cadence-lock-try';
+let LS_LOCK='cadence-lock',LS_LOCKTRY='cadence-lock-try';
 const L={entry:'',hiddenAt:0,wasOpen:false,resetArmed:false,timer:null,busy:false};
 function lockCfg(){try{const c=JSON.parse(localStorage.getItem(LS_LOCK)||'null');return c&&c.hash&&c.salt&&c.len?c:null}catch(e){return null}}
 function lockTry(){try{return JSON.parse(localStorage.getItem(LS_LOCKTRY)||'null')||{fails:0,until:0}}catch(e){return {fails:0,until:0}}}
@@ -1173,7 +1260,8 @@ function setLockMsg(m){
 function showLock(){
   if(!IS_PWA||!lockCfg())return false;
   L.entry='';L.resetArmed=false;$('#lock-forgot').hidden=true;
-  const rb=document.querySelector('#lock [data-act=pinreset]');if(rb)rb.textContent='Effacer toutes mes données';
+  const rb=document.querySelector('#lock [data-act=pinreset]');if(rb)rb.textContent='Effacer les données de ce profil';
+  const P=profiles();$('#lock-who').textContent=P.list.length>1?curProfile().name:'';$('#lock-switch').hidden=P.list.length<2;$('#lock-plist').hidden=true;
   $('#lock').hidden=false;drawDots();setLockMsg();return true;
 }
 async function pinKey(d){
@@ -1216,11 +1304,12 @@ function wipeAll(){
 function updateGate(){const g=$('#gate');if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'}
 
 function render(){
-  $('#today-label').textContent=cap(FMT.long.format(today));
+  $('#today-label').textContent=headLabel();
   document.querySelectorAll('.tabs button').forEach(b=>{if(b.dataset.tab===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  {const g=$('.gear');if(g){if(V.tab==='settings')g.setAttribute('aria-current','page');else g.removeAttribute('aria-current')}}
   $('#fab').hidden=!(V.tab==='agenda'||V.tab==='todos'||V.tab==='journal');
   const v=$('#view');
-  v.innerHTML=V.tab==='journal'?renderJournal():V.tab==='legal'?renderLegal():V.tab==='agenda'?renderAgenda():V.tab==='todos'?renderTodos():V.tab==='macros'?renderMacros():renderMeals();
+  v.innerHTML=V.tab==='settings'?renderSettings():V.tab==='poids'?renderPoids():V.tab==='journal'?renderJournal():V.tab==='legal'?renderLegal():V.tab==='agenda'?renderAgenda():V.tab==='todos'?renderTodos():V.tab==='macros'?renderMacros():renderMeals();
   if(V.tab==='macros')updateRateBox();
   updateGate();
 }
@@ -1351,6 +1440,33 @@ document.addEventListener('click',e=>{
   else if(a==='pinon'){pinSave($('#pin-new').value,$('#pin-new2').value,$('#pin-msg')).then(ok=>{if(ok){render();$('#pin-msg').textContent='Code activé.'}})}
   else if(a==='pinchange'){pinChange(false)}
   else if(a==='pinoff'){pinChange(true)}
+  else if(a==='profiledone'){
+    const p=S.profile;
+    if(!calc(p).ok){$('#m-done-msg').textContent='Renseigne un âge (14 à 90 ans), une taille (120 à 230 cm) et un poids (30 à 250 kg).';return}
+    p.done=true;p.custom=true;
+    if(p.weight&&!S.weights.length)S.weights.push({d:todayISO,w:Math.round(p.weight*10)/10});
+    touch();render();window.scrollTo(0,0);
+  }
+  else if(a==='addprofile'){
+    const n=$('#np-name').value.trim().slice(0,30),P=profiles();
+    if(!n){$('#np-msg').textContent='Donne un nom au profil.';return}
+    if(P.list.length>=6){$('#np-msg').textContent='6 profils maximum.';return}
+    const id='p'+Date.now().toString(36);P.list.push({id,name:n});saveProfiles();switchProfile(id);
+  }
+  else if(a==='pickprofile'){switchProfile(b.dataset.pid)}
+  else if(a==='lockprofiles'){
+    const P=profiles(),el=$('#lock-plist');
+    el.innerHTML=P.list.filter(x=>x.id!==P.active).map(x=>'<button type="button" class="ghost" data-act="pickprofile" data-pid="'+x.id+'">'+esc(x.name)+'</button>').join('');
+    el.hidden=false;
+  }
+  else if(a==='delprofile'){
+    if(!V.delpArmed){V.delpArmed=true;b.textContent='Confirmer : supprimer ce profil et ses données';return}
+    V.delpArmed=false;
+    const P=profiles(),pid=P.active;
+    clearTimeout(saveTimer);dirty=false;
+    try{[LS_KEY,LS_FIRED,LS_KEYG,LS_CGU,LS_LOCK,LS_LOCKTRY].forEach(k=>localStorage.removeItem(k))}catch(e){}
+    P.list=P.list.filter(x=>x.id!==pid);P.active=P.list[0].id;saveProfiles();switchProfile(P.active);
+  }
   else if(a==='planday'){V.planDay=+b.dataset.i;render()}
   else if(a==='regen-day'){S.seeds[V.planDay]=Math.floor(Math.random()*9000)+1;S.shop={};touch();render()}
   else if(a==='regen-week'){S.seeds=S.seeds.map(()=>Math.floor(Math.random()*9000)+1);S.shop={};touch();render()}
@@ -1386,8 +1502,8 @@ $('#form').addEventListener('change',e=>{
 });
 function readMacroForm(){
   const p=S.profile;
-  const v=id=>{const x=parseFloat($(id).value);return isNaN(x)?null:x};
-  p.age=v('#m-age');p.height=v('#m-height');p.weight=v('#m-weight');p.activity=parseFloat($('#m-act').value);
+  const v=(id,cur)=>{const el=$(id);if(!el)return cur;const x=parseFloat(el.value);return isNaN(x)?null:x};
+  p.age=v('#m-age',p.age);p.height=v('#m-height',p.height);p.weight=v('#m-weight',p.weight);const ma=$('#m-act');if(ma)p.activity=parseFloat(ma.value);
   const r=n=>{const x=document.querySelector('#macro-form input[name='+n+']:checked');return x?x.value:null};
   p.sex=r('sex')||p.sex;p.goal=r('goal')||p.goal;p.rate=r('rate')||p.rate;
   if(!p.custom){p.custom=true;const ex=$('#m-example');if(ex)ex.remove()}
@@ -1401,10 +1517,13 @@ document.addEventListener('change',e=>{
   if(e.target.id==='meal-count'){S.profile.meals=parseInt(e.target.value,10);S.shop={};touch();render()}
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#account-form'))readAccount()});
+document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('#account-form')&&e.target.type==='radio')readAccount()});
 
 if(IS_PWA&&'serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
 function routeHash(){const map={cgu:'cgu',confidentialite:'conf',mentions:'mentions'},h=(location.hash||'').slice(1);if(!map[h])return false;if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=map[h];return true}
 if(IS_PWA){routeHash();window.addEventListener('hashchange',()=>{if(routeHash()){render();window.scrollTo(0,0)}})}
+if(IS_PWA){applyProfileKeys(profiles().active);loadFired()}
 fillSelects();
 render();
 if(IS_PWA){
