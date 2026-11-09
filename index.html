@@ -569,6 +569,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .ssn{width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
 .ssi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ssi b{font-size:15px}.ssi span{font-size:13px;color:var(--muted)}
 .ssx .vid{margin:0}
+.mvb{display:flex;flex-direction:column;gap:2px;flex:none;margin-left:auto}.mvb button{width:34px;height:26px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font-size:12px;padding:0;min-height:0}.mvb button:disabled{opacity:.3}.wex .mvb{flex-direction:row;margin-left:auto}.wex .mvb button{height:34px}
 .cs-ex summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent);padding:8px 0 0}
 .fbar{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
 .fbar button{flex:none;padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:13px}
@@ -1368,7 +1369,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 62';
+const APP_VERSION='2026.11.10 · 63';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2825,7 +2826,7 @@ function seancesProg(){
 }
 function exoCardHTML(w,e,i){
   const lp=lastPerf(e.name,w);
-  let h='<section class="card wex"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+esc(e.name)+'</h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
+  let h='<section class="card wex"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+esc(e.name)+'</h3><span class="mvb"><button type="button" data-act="wexmove" data-i="'+i+'" data-d="-1" aria-label="Monter"'+(i===0?' disabled':'')+'>▲</button><button type="button" data-act="wexmove" data-i="'+i+'" data-d="1" aria-label="Descendre"'+(i===w.ex.length-1?' disabled':'')+'>▼</button></span><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
   if(lp)h+='<p class="note" style="margin-bottom:8px">Dernière fois ('+esc(FMT.short.format(parseISO(lp.date)))+') : '+esc(perfText(lp.e))+'</p>';
   if(e.kind==='cardio'){
     h+='<div class="r2"><label><span class="lab">Durée (min)</span><input type="number" inputmode="decimal" min="0" data-wi="'+i+'" data-k="min" value="'+esc(e.min)+'"></label><label><span class="lab">Distance (km)</span><input type="number" inputmode="decimal" step="0.01" min="0" data-wi="'+i+'" data-k="km" value="'+esc(e.km)+'"></label></div><p class="note" id="wx-'+i+'">'+cardioPace(e)+'</p>';
@@ -3536,7 +3537,7 @@ function coachCfg(){
   let place=c.place,eq=Array.isArray(c.eq)?c.eq.filter(k=>EQUIP.some(e=>e[0]===k)):null;
   if(!place){place=c.equip==='db'||c.equip==='body'?'home':'gym';if(!eq)eq=c.equip==='db'?['halteres']:[]}
   return {days:[2,3,4,5,6].includes(+c.days)?+c.days:3,level:LVL[c.level]?c.level:'inter',style:STYLES.some(x=>x[0]===c.style)?c.style:'muscu',place:place==='home'?'home':'gym',eq:eq||[],
-    mode:c.mode==='cycles'?'cycles':'prog',focus:FOCUS.some(x=>x[0]===c.focus)?c.focus:'hyper',sport:SPORTS_X.some(x=>x[0]===c.sport)?c.sport:'aucun',sportTxt:String(c.sportTxt||'').slice(0,40),styleTxt:String(c.styleTxt||'').slice(0,40),moves:c.moves&&typeof c.moves==='object'?c.moves:{},lvlAt:+c.lvlAt||0};
+    mode:c.mode==='cycles'?'cycles':'prog',focus:FOCUS.some(x=>x[0]===c.focus)?c.focus:'hyper',sport:SPORTS_X.some(x=>x[0]===c.sport)?c.sport:'aucun',sportTxt:String(c.sportTxt||'').slice(0,40),styleTxt:String(c.styleTxt||'').slice(0,40),moves:c.moves&&typeof c.moves==='object'?c.moves:{},ord:c.ord&&typeof c.ord==='object'?c.ord:{},lvlAt:+c.lvlAt||0};
 }
 const ENDU=['course','natation','tri','velo','spe'];
 const SIDE_E=['course','velo','natation','tri','autre'];
@@ -3884,7 +3885,8 @@ function coachWeek(n){
     list=ks.map(k=>{const s=PL.s[k](li,have);return Object.assign({key:cfg.style+'-'+k,sport:s.sport||PL.sp,focus:''},s)});
   }
   const wn=n||curWeekNo();list=list.map(s=>stravaAdjust(evScale(applyWeek(s,wn),wn),wn));
-  const mv=(S.coach&&S.coach.moves)||{};
+  const mv=(S.coach&&S.coach.moves)||{},od=(S.coach&&S.coach.ord)||{};
+  list.forEach(s=>{const o=od[s.key];if(Array.isArray(o))s.ex=s.ex.map((e,k)=>[e,k]).sort((a,b)=>{const x=o.indexOf(a[0].name),y=o.indexOf(b[0].name);return (x<0?999+a[1]:x)-(y<0?999+b[1]:y)}).map(q=>q[0])});
   return list.map((s,i)=>{s.dur=Math.max(15,Math.round(s.ex.reduce((a,e)=>a+(e.kind==='cardio'?e.min:e.s*((e.hold||40)+(e.restS||60))/60),0)/5)*5);s.idx=i;s.wn=wn;s.wd0=days[i];const m=mv[wn+':'+i];s.wd=m!=null&&m>=0&&m<7?+m:days[i];s.moved=s.wd!==s.wd0;return s}).sort((a,b)=>a.wd-b.wd||a.idx-b.idx);
 }
 function exLine(e){
@@ -3966,7 +3968,7 @@ function openSess(i){
   $('#ss-sub').textContent=cap(FMT.long.format(date))+' · semaine '+Math.min(wn,12)+' · ≈ '+s.dur+' min';
   const p=prefs();
   $('#ss-body').innerHTML='<p class="note" style="margin-bottom:10px">'+esc(s.focus)+'</p>'+s.ex.map((e,k)=>{const a=p.anim!=='never'?animFor(e.name):null;
-    return '<div class="ssx'+(e.ss?' sup':'')+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'</div>'}).join('')
+    return '<div class="ssx'+(e.ss?' sup':'')+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'<span class="mvb"><button type="button" data-act="exmove" data-i="'+i+'" data-k="'+k+'" data-d="-1" aria-label="Monter"'+(k===0?' disabled':'')+'>▲</button><button type="button" data-act="exmove" data-i="'+i+'" data-k="'+k+'" data-d="1" aria-label="Descendre"'+(k===s.ex.length-1?' disabled':'')+'>▼</button></span></div>'}).join('')
    +(cur?'<div class="row" style="margin-top:14px"><button type="button" class="primary" data-act="cstart" data-i="'+i+'" style="flex:1">Commencer</button><button type="button" class="ghost" data-act="cplan" data-i="'+i+'">Agenda</button><button type="button" class="ghost" data-act="cshift" data-i="'+i+'">Décaler</button></div>':'<p class="note" style="margin-top:12px">Cette séance sera disponible à partir du '+esc(FMT.long.format(date))+'.</p><button type="button" class="ghost" data-act="cshift" data-i="'+i+'" style="width:100%;margin-top:8px">Décaler cette séance</button>');
   $('#ssheet').hidden=false;
 }
@@ -4735,6 +4737,10 @@ document.addEventListener('click',e=>{
     touch();render();
     const c=document.querySelectorAll('.wex');if(c.length)c[c.length-1].scrollIntoView({block:'center'});
   }
+  else if(a==='wexmove'){const w=curW();if(!w)return;const i=+b.dataset.i,j=i+(+b.dataset.d);if(j<0||j>=w.ex.length)return;[w.ex[i],w.ex[j]]=[w.ex[j],w.ex[i]];touch();render()}
+  else if(a==='exmove'){const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const k=+b.dataset.k,j=k+(+b.dataset.d);if(j<0||j>=s.ex.length)return;
+    const names=s.ex.map(e=>e.name);[names[k],names[j]]=[names[j],names[k]];
+    S.coach=Object.assign(coachCfg(),{start:progStart()});S.coach.ord=Object.assign({},S.coach.ord,{[s.key]:names});touch();render();openSess(+b.dataset.i)}
   else if(a==='wdelex'){const w=curW();if(w){w.ex.splice(+b.dataset.i,1);touch();render()}}
   else if(a==='waddset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){const l=e.sets[e.sets.length-1];e.sets.push(l?{r:l.r,kg:l.kg}:{r:'',kg:''});touch();render()}}
   else if(a==='wdelset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){e.sets.splice(+b.dataset.j,1);touch();render()}}
