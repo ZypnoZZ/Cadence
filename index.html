@@ -154,11 +154,13 @@ p{margin:0}
 .wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
 .wd span{text-align:center;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.08em}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;touch-action:pan-y;will-change:transform}
-.grid.drag{transition:none}
+.grid.drag,.jswipe.drag{transition:none}
+.jswipe{touch-action:pan-y}
+.jswipe.back{transition:transform .2s ease}
 .grid.back{transition:transform .2s ease}
 @media (prefers-reduced-motion:no-preference){
-  .grid.in-next{animation:inNext .26s cubic-bezier(.2,.8,.3,1)}
-  .grid.in-prev{animation:inPrev .26s cubic-bezier(.2,.8,.3,1)}
+  .in-next{animation:inNext .26s cubic-bezier(.2,.8,.3,1)}
+  .in-prev{animation:inPrev .26s cubic-bezier(.2,.8,.3,1)}
 }
 @keyframes inNext{from{opacity:.2;transform:translateX(40%)}to{opacity:1;transform:none}}
 @keyframes inPrev{from{opacity:.2;transform:translateX(-40%)}to{opacity:1;transform:none}}
@@ -704,7 +706,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 19';
+const APP_VERSION='2026.11.09 · 20';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -986,6 +988,10 @@ function openDay(k){
   $('#dsheet').hidden=false;
 }
 function closeDay(){$('#dsheet').hidden=true;V.dsheet=null}
+function shiftDay(n){
+  V.jday=iso(addDays(parseISO(V.jday),n));render();
+  const g=$('#view .jswipe');if(g){g.classList.add(n>0?'in-next':'in-prev');setTimeout(()=>g.classList.remove('in-next','in-prev'),300)}
+}
 function shiftMonth(n){
   V.month=new Date(V.month.getFullYear(),V.month.getMonth()+n,1);render();
   const g=$('#view .grid');if(g){g.classList.add(n>0?'in-next':'in-prev');setTimeout(()=>g.classList.remove('in-next','in-prev'),300)}
@@ -993,7 +999,7 @@ function shiftMonth(n){
 (function(){
   let x0=0,y0=0,dx=0,on=false,lock=null,g=null;
   document.addEventListener('touchstart',e=>{
-    g=e.target.closest&&e.target.closest('#view .grid');if(!g||e.touches.length>1){g=null;return}
+    g=e.target.closest&&e.target.closest('#view .grid,#view .jswipe');if(!g||e.touches.length>1){g=null;return}
     x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;on=true;lock=null;
   },{passive:true});
   document.addEventListener('touchmove',e=>{
@@ -1008,7 +1014,7 @@ function shiftMonth(n){
     if(lock!=='x')return;
     V.swipedAt=Date.now();
     el.classList.remove('drag');
-    if(Math.abs(dx)>50){el.style.transform='';el.style.opacity='';shiftMonth(dx<0?1:-1)}
+    if(Math.abs(dx)>50){el.style.transform='';el.style.opacity='';(el.classList.contains('jswipe')?shiftDay:shiftMonth)(dx<0?1:-1)}
     else{el.classList.add('back');el.style.transform='';el.style.opacity='';setTimeout(()=>el.classList.remove('back'),220)}
   };
   document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
@@ -1602,8 +1608,11 @@ const r1=x=>Math.round((+x||0)*10)/10;
 function jbar(l,v,t,col){const pct=t>0?Math.min(100,v/t*100):0;return '<div class="mrow"><div class="h"><span style="color:var(--ink);font-weight:600">'+l+'</span><span><b style="font-size:20px">'+num(v,0)+'</b> / '+t+' g</span></div><div class="bar"><i style="width:'+pct.toFixed(0)+'%;background:var('+col+')"></i></div></div>'}
 function renderJournal(){
   const T=calc(S.profile);const list=S.log[V.jday]||[];const t=sumE(list);
-  let h='<div class="cal-head"><h2>Assiette</h2><div class="cal-nav"><button type="button" data-act="jprev" aria-label="Jour précédent">‹</button><button type="button" class="today-btn" data-act="jtoday">Aujourd\'hui</button><button type="button" data-act="jnext" aria-label="Jour suivant">›</button></div></div>';
-  h+='<p class="note" style="margin:-4px 0 12px">'+esc(cap(FMT.long.format(parseISO(V.jday))))+'</p>';
+  const jd=V.jday,isT=jd===todayISO;
+  const lab=isT?"Aujourd'hui":jd===iso(addDays(today,-1))?'Hier':jd===iso(addDays(today,1))?'Demain':cap(FMT.long.format(parseISO(jd)));
+  let h='<div class="cal-head"><label class="mtitle" style="position:relative;cursor:pointer"><h2>'+esc(lab)+'</h2><span class="chev" aria-hidden="true">▾</span><input type="date" id="j-date" value="'+jd+'" aria-label="Choisir le jour" style="position:absolute;inset:0;opacity:0;min-height:0;height:100%;padding:0;border:0;width:100%"></label>'+(isT?'':'<button type="button" class="tbtn" data-act="jtoday">Aujourd\'hui</button>')+'</div>';
+  h+=(!isT&&lab!==cap(FMT.long.format(parseISO(jd)))?'<p class="note" style="margin:-6px 0 12px">'+esc(cap(FMT.long.format(parseISO(jd))))+'</p>':'');
+  h+='<div class="gridwrap"><div class="jswipe">';
   if(T.ok){
     const rest=Math.round(T.kcal-t.k);
     h+='<section class="card"><div class="kcal"><span class="big" style="font-size:52px">'+nf.format(Math.round(t.k))+'</span><span class="u">/ '+nf.format(T.kcal)+' kcal</span></div><p class="sub" style="margin-bottom:10px">'+(rest>=0?'Reste '+nf.format(rest)+' kcal pour atteindre ton objectif':'Objectif dépassé de '+nf.format(-rest)+' kcal')+'</p>'
@@ -1616,6 +1625,7 @@ function renderJournal(){
     else h+='<p class="note">Rien pour l\'instant.</p>';
     h+='<button type="button" class="linkbtn" style="margin-top:6px" data-act="jadd" data-meal="'+k+'">Ajouter</button></section>';
   }
+  h+='</div></div>';
   return h;
 }
 
@@ -2234,6 +2244,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='fs-bcphoto'&&t.files&&t.files[0])scanBarcode(t.files[0]);
 });
 $('#form').addEventListener('submit',submitForm);
+document.addEventListener('change',e=>{if(e.target.id==='j-date'&&e.target.value){V.jday=e.target.value;render()}});
 $('#form').addEventListener('input',e=>{if(e.target.id==='f-time'||e.target.id==='f-date')updateSlot();if(e.target.id==='f-date'||e.target.id==='f-until')updateRepeat();if(e.target.id==='f-colorpick'){V.fColor=e.target.value.toUpperCase();const l=e.target.parentNode;l.style.background=V.fColor;document.querySelectorAll('#f-colors .sw').forEach(x=>x.setAttribute('aria-checked',x===l))}});
 $('#form').addEventListener('change',e=>{
   if(e.target.name==='ftype'){setFormType(e.target.value);renderColors()}
