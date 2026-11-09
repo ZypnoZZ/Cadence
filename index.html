@@ -27,7 +27,7 @@ img{max-width:100%}
   --accent:#5B4CFF; --on-accent:#FFFFFF; --danger:#C62828;
   --grad:linear-gradient(135deg,#7366FF 0%,#A872F5 55%,#F58A6A 100%); --glow:rgba(91,76,255,.28);
   --wash1:rgba(91,76,255,.07); --wash2:rgba(255,106,61,.06);
-  --mp:#0A0A0A; --mc:#6E6E6E; --mf:#B5B5B5;
+  --mp:#6A5CFF; --mc:#E3A21A; --mf:#EE7A55;
   --t-am:#C98A00; --t-pm:#E0561B; --t-eve:#4B47D1; --t-all:#6B6B6B;
   --d-late:#C62828; --d-today:#12804A; --d-tom:#0B7F8C; --d-later:#6B6B6B;
   --font-display:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
@@ -39,7 +39,7 @@ img{max-width:100%}
     --accent:#9C93FF; --on-accent:#0B0A11; --danger:#FF6B66;
     --grad:linear-gradient(135deg,#5E50E8 0%,#8A52D6 55%,#D9694A 100%); --glow:rgba(91,76,255,.35);
     --wash1:rgba(110,96,255,.10); --wash2:rgba(255,120,80,.06);
-    --mp:#F5F5F5; --mc:#9A9A9A; --mf:#5A5A5A;
+    --mp:#9C93FF; --mc:#F2C25A; --mf:#FF9A78;
     --t-am:#FFC233; --t-pm:#FF8A55; --t-eve:#9A97FF; --t-all:#A0A0A0;
     --d-late:#FF6B66; --d-today:#4BD68A; --d-tom:#41CFDB; --d-later:#A0A0A0;
     color-scheme:dark;
@@ -50,7 +50,7 @@ img{max-width:100%}
   --accent:#9C93FF; --on-accent:#0B0A11; --danger:#FF6B66;
   --grad:linear-gradient(135deg,#5E50E8 0%,#8A52D6 55%,#D9694A 100%); --glow:rgba(91,76,255,.35);
   --wash1:rgba(110,96,255,.10); --wash2:rgba(255,120,80,.06);
-  --mp:#F5F5F5; --mc:#9A9A9A; --mf:#5A5A5A;
+  --mp:#9C93FF; --mc:#F2C25A; --mf:#FF9A78;
   --t-am:#FFC233; --t-pm:#FF8A55; --t-eve:#9A97FF; --t-all:#A0A0A0;
   --d-late:#FF6B66; --d-today:#4BD68A; --d-tom:#41CFDB; --d-later:#A0A0A0;
   color-scheme:dark;
@@ -236,6 +236,16 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .seg label:last-child span{border-right:0}
 .seg input:checked+span{background:var(--accent);color:var(--on-accent)}
 .seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:-2px}
+.prow{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink);font-weight:600;font-size:14px;text-align:left;margin-bottom:12px}
+.prow span:last-child{color:var(--muted);font-size:20px;font-weight:400}
+.mcols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.mcol span{display:block;font-size:12px;font-weight:600;color:var(--muted)}
+.mcol b{display:block;font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.mcol b small{font-size:15px;color:var(--muted);font-weight:600;margin-left:2px}
+.mcol .bar{height:5px;margin-top:6px}
+.calc-d{margin-top:14px;font-size:13px;color:var(--muted)}
+.calc-d summary{cursor:pointer;font-weight:600}
+.calc-d p{margin-top:6px}
 .seg-title{font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
 
 /* Macros */
@@ -254,7 +264,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 /* Repas */
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
 .days button{height:44px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font-family:var(--font-display);font-size:17px;font-weight:600}
-.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .meal{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
 .meal .mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
 .meal h3{font-size:21px}
@@ -314,7 +324,7 @@ label.ghost{color:var(--ink);font-weight:600}
 .modes{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px;background:var(--bg)}
 .modes button{flex:1;border:0;background:none;padding:10px 4px;font-size:13px;font-weight:600;color:var(--muted);border-right:1px solid var(--line);min-width:0}
 .modes button:last-child{border-right:0}
-.modes button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.modes button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
 .ck{display:flex!important;gap:10px;align-items:flex-start;font-size:13.5px;font-weight:500;color:var(--ink)!important;margin:10px 0 12px}
 .ck input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--ink)}
 .steps{margin:6px 0 12px;padding-left:20px;display:flex;flex-direction:column;gap:4px}
@@ -706,7 +716,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 20';
+const APP_VERSION='2026.11.09 · 21';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1091,26 +1101,25 @@ function macroResultsHTML(p){
   const T=calc(p);
   if(!T.ok)return '<div class="empty">Renseigne un âge (14 à 90 ans), une taille (120 à 230 cm) et un poids (30 à 250 kg) pour calculer tes macros.</div>';
   const kc=x=>x*4,pp=T.p*4,pc=T.c*4,pf=T.f*9,tot=pp+pc+pf;
-  const row=(label,g,k,col)=>'<div class="mrow"><div class="h"><span style="color:var(--ink);font-weight:600">'+label+'</span><b>'+g+' g</b></div><div class="bar"><i style="width:'+Math.round(k/tot*100)+'%;background:var('+col+')"></i></div><span class="note">'+Math.round(k/tot*100)+' % des calories · '+nf.format(Math.round(k))+' kcal</span></div>';
+  const col=(label,g,k,c)=>'<div class="mcol"><span>'+label+'</span><b>'+g+'<small>g</small></b><div class="bar"><i style="width:'+Math.round(k/tot*100)+'%;background:var('+c+')"></i></div></div>';
   const pctTxt=T.pct===0?'à ton niveau de maintien':(T.pct>0?'+':'−')+Math.abs(Math.round(T.pct*100))+' % par rapport à ta dépense';
   const wk=Math.abs(T.weekly)<0.05?'poids stable':(T.weekly>0?'≈ +':'≈ −')+num(Math.abs(T.weekly),1)+' kg par semaine';
-  return '<div class="kcal"><span class="big">'+nf.format(T.kcal)+'</span><span class="u">kcal par jour</span></div>'
-    +'<p class="sub">Métabolisme de base '+nf.format(Math.round(T.bmr))+' kcal · dépense totale '+nf.format(Math.round(T.tdee))+' kcal · '+pctTxt+' · '+wk+'</p>'
-    +row('Protéines',T.p,pp,'--mp')+row('Glucides',T.c,pc,'--mc')+row('Lipides',T.f,pf,'--mf')
-    +'<p class="note">Repères : '+num(T.gkg,1)+' g de protéines par kg, lipides à au moins 0,8 g par kg, glucides pour le reste.</p>'
+  return '<div class="kcal"><span class="big">'+nf.format(T.kcal)+'</span><span class="u">kcal / jour</span></div>'
+    +'<p class="sub">'+cap(wk)+'</p>'
+    +'<div class="mcols">'+col('Protéines',T.p,pp,'--mp')+col('Glucides',T.c,pc,'--mc')+col('Lipides',T.f,pf,'--mf')+'</div>'
     +T.warn.map(w=>'<div class="warn">'+esc(w)+'</div>').join('')
-    +'<div style="margin-top:14px"><button type="button" class="primary" data-act="tab" data-tab="meals">Planifier mes repas</button></div>';
+    +'<details class="calc-d"><summary>Détails du calcul</summary><p>Métabolisme de base '+nf.format(Math.round(T.bmr))+' kcal · dépense totale '+nf.format(Math.round(T.tdee))+' kcal · '+pctTxt+'.</p><p>'+num(T.gkg,1)+' g de protéines par kg, lipides à au moins 0,8 g par kg, glucides pour le reste.</p></details>';
 }
 function renderMacros(){
   const p=S.profile;
   const radio=(name,val,label,cur)=>'<label><input type="radio" name="'+name+'" value="'+val+'"'+(cur===val?' checked':'')+'><span>'+label+'</span></label>';
   const act=(ACT.find(a=>a[0]===+p.activity)||ACT[2])[1];
-  let h='<h2 style="font-size:30px;margin-bottom:10px">Macros</h2>';
-  if(!p.custom)h+='<section class="card"><p style="margin-bottom:10px">Complète ton profil dans ton compte (sexe, âge, taille, activité) et ajoute ta première pesée. En attendant, les calculs utilisent des valeurs d\'exemple.</p><div class="row" style="justify-content:flex-start"><button type="button" class="primary" data-act="sec" data-sec="account">Compléter mon compte</button><button type="button" class="ghost" data-act="sec" data-sec="poids">Ajouter une pesée</button></div></section>';
-  h+='<section class="card"><div class="row"><div style="min-width:0"><div class="seg-title">'+(p.custom?'Ton profil':'Valeurs d\'exemple')+'</div><b>'+esc((p.sex==='F'?'Femme':'Homme')+' · '+(p.age||'?')+' ans · '+(p.height||'?')+' cm · '+num(+p.weight||0,1)+' kg · '+act)+'</b></div><button type="button" class="ghost" data-act="sec" data-sec="account">Modifier</button></div></section>'
-   +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false"><div class="seg-title">Objectif</div><div class="seg">'+radio('goal','prise','Prise de masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
-   +'<div id="rate-box"><div class="seg-title" id="rate-title"></div><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div></form>';
-  return h+'<section class="card" id="macro-out" aria-live="polite">'+macroResultsHTML(p)+'</section>';
+  let h='<button type="button" class="prow" data-act="sec" data-sec="account"><span>'+(p.custom?esc((p.sex==='F'?'Femme':'Homme')+' · '+(p.age||'?')+' ans · '+(p.height||'?')+' cm · '+nfx(+p.weight||0,1)+' kg · '+act):'Complète ton profil pour des calculs justes')+'</span><span aria-hidden="true">›</span></button>';
+  h+='<section class="card" id="macro-out" aria-live="polite">'+macroResultsHTML(p)+'</section>'
+   +'<form id="macro-form" class="card" autocomplete="off" onsubmit="return false"><div class="seg">'+radio('goal','prise','Masse',p.goal)+radio('goal','maintien','Maintien',p.goal)+radio('goal','seche','Déficit',p.goal)+'</div>'
+   +'<div id="rate-box"><div class="seg" style="margin-bottom:0">'+radio('rate','leger','Léger',p.rate)+radio('rate','modere','Modéré',p.rate)+radio('rate','soutenu','Soutenu',p.rate)+'</div></div></form>'
+   +'<button type="button" class="primary" data-act="nseg" data-seg="repas" style="width:100%">Voir mon plan de repas</button>';
+  return h;
 }
 function renderPoids(){
   return '<h2 style="font-size:30px;margin-bottom:4px">Pesée</h2><p class="note" style="margin-bottom:12px">Pour comparer d\'une fois sur l\'autre, pèse-toi dans les mêmes conditions, par exemple le matin au réveil.</p>'+weightHTML();
@@ -1118,8 +1127,6 @@ function renderPoids(){
 function updateRateBox(){
   const g=S.profile.goal;const box=$('#rate-box');if(!box)return;
   box.hidden=g==='maintien';
-  const t=$('#rate-title');
-  if(t)t.textContent=g==='prise'?'Rythme de prise (+5 %, +10 %, +15 % de calories)':'Rythme de déficit (−10 %, −15 %, −20 % de calories)';
 }
 
 function mealUnit(it){
