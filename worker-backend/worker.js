@@ -233,6 +233,40 @@ export default {
       }
     }
 
+    // POST /change?email=...&plan=coach|base -> change de formule directement, sans passer par Stripe
+    if (url.pathname === '/change') {
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      const plan = url.searchParams.get('plan') === 'coach' ? 'coach' : 'base';
+      const key = 'lic:' + email;
+      const data = JSON.parse((await env.LICENSES.get(key)) || 'null');
+      if (!data || !data.active) return json({ ok: false, error: 'Aucun abonnement actif' }, 404);
+      try {
+        let subId = data.subscriptionId;
+        if (!subId) {
+          const list = await stripeGet(env, 'subscriptions?customer=' + encodeURIComponent(data.customerId) + '&status=active&limit=1');
+          subId = list && list.data && list.data[0] && list.data[0].id;
+        }
+        const sub = subId && await stripeGet(env, 'subscriptions/' + subId);
+        if (!sub || !sub.id || !sub.items || !sub.items.data[0]) return json({ ok: false, error: 'Abonnement introuvable' }, 404);
+        if (cancelAtOf(sub)) return json({ ok: false, error: 'Annule d\'abord la résiliation' }, 409);
+        let cur = sub;
+        if (planOf(env, sub) !== plan) {
+          cur = await stripe(env, 'subscriptions/' + sub.id, {
+            'items[0][id]': sub.items.data[0].id,
+            'items[0][price]': plan === 'coach' ? env.STRIPE_PRICE_COACH : env.STRIPE_PRICE_ID,
+            'metadata[plan]': plan,
+            proration_behavior: plan === 'coach' ? 'always_invoice' : 'create_prorations',
+            payment_behavior: 'error_if_incomplete'
+          });
+        }
+        await saveSub(env, cur);
+        const v = JSON.parse((await env.LICENSES.get(key)) || '{}');
+        return json({ ok: true, active: !!v.active, plan: v.plan || plan, cancelAt: v.cancelAt || null });
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 500);
+      }
+    }
+
     // GET /portal?email=... -> redirige vers le portail client Stripe (gérer/annuler l'abonnement)
     if (url.pathname === '/portal') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
@@ -304,7 +338,8 @@ export default {
         })));
       }
       if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
-        try { await saveSub(env, obj); } catch (e) {}
+        // On relit l'abonnement chez Stripe : évite qu'un évènement arrivé en retard écrase un état plus récent
+        try { const fresh = await stripeGet(env, 'subscriptions/' + obj.id); await saveSub(env, fresh && fresh.id ? fresh : obj); } catch (e) {}
       }
       if (event.type === 'customer.subscription.deleted') {
         try { await saveSub(env, obj, false); } catch (e) {}

@@ -1198,7 +1198,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 45';
+const APP_VERSION='2026.11.09 · 46';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1275,7 +1275,7 @@ function pSheet(o){
   let h=ic+'<h2>'+esc(o.title)+'</h2>'+(o.sub?'<p>'+esc(o.sub)+'</p>':'');
   if(o.days!=null)h+='<div class="pcount"><div class="pc-n" id="pc-n">0</div><div class="pc-l">'+(o.days>1?'jours restants':'jour restant')+'</div><div class="pc-bar"><i style="width:'+Math.max(4,Math.min(100,o.days/31*100))+'%"></i></div>'+(o.until?'<small>Accès complet jusqu\'au '+esc(o.until)+'</small>':'')+'</div>';
   if(!o.loading){
-    h+='<button type="button" class="primary" data-act="pclose" style="width:100%;margin-top:18px">'+esc(o.btn||'OK')+'</button>';
+    h+='<button type="button" class="primary" data-act="'+(o.act||'pclose')+'"'+(o.attrs||'')+' style="width:100%;margin-top:18px">'+esc(o.btn||'OK')+'</button>';
     if(o.link)h+='<button type="button" class="linkbtn" data-act="'+o.link.act+'"'+(o.link.attrs||'')+' style="display:block;margin:10px auto 0">'+esc(o.link.label)+'</button>';
   }
   $('#pcard').innerHTML=h;el.hidden=false;
@@ -1320,9 +1320,16 @@ function celebDone(){
   if(c.kind==='integrate'){S.prefs=Object.assign(prefs(),{coach:true});touch()}
   V.tab='coach';render();window.scrollTo(0,0);
   const b=document.querySelector('.tabs .ctab');if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');setTimeout(()=>b.classList.remove('pop'),700)}
+  if(coachActive()&&!S.tutoC){setTimeout(()=>openTuto(false,'coach'),350);return}
   if(coachActive()&&(c.needOnb||!S.onb)&&$('#onb').hidden){V.onbShown=true;openOnb()}
 }
 /* ---------- Tutoriel de découverte ---------- */
+const TUTO_C=[
+  {k:'c_prog',t:'Ton programme',x:'Réponds à quelques questions : le coach construit 12 semaines selon ton objectif, ton niveau et ton matériel. Tu peux tout modifier dans « Mon programme ».'},
+  {k:'c_week',t:'Ta semaine',x:'La semaine en cours s\'affiche avec la séance du jour. Parcours les 12 semaines, ou ajoute toute la semaine à ton agenda d\'un seul geste.'},
+  {k:'c_sess',t:'Séance guidée',x:'Lance la séance : minuteur de repos, animations des exercices, séries et charges notées pour suivre ta progression.'},
+  {k:'c_more',t:'Récupération et réglages',x:'Des étirements de 12 minutes après une séance ou un jour de repos. Si tu préfères faire tes propres séances, tu peux masquer l\'onglet Coach en bas de cette page.'}
+];
 const TUTO=[
   {k:'welcome',t:'Bienvenue dans Cadence',x:'Ton agenda, tes séances de sport et ton alimentation, au même endroit. Un petit tour de 30 secondes pour tout comprendre.'},
   {k:'agenda',t:'Ton agenda',x:'Note tes rendez-vous, tes tâches et tes séances. Appuie sur « + » pour ajouter, et reçois un rappel au bon moment.'},
@@ -1333,7 +1340,7 @@ const TUTO=[
   {k:'menu',t:'Ton menu',x:'Touche la roue en haut à gauche : ton compte, tes profils, ton abonnement, la sauvegarde et le code de verrouillage.'}
 ];
 function tutoIcon(k){
-  if(k==='welcome'||k==='coach')return CL_BOLT;
+  if(k==='welcome'||k==='coach'||k.indexOf('c_')===0)return CL_BOLT;
   if(k==='menu'){const g=document.querySelector('[data-act=dopen] svg');return g?g.outerHTML:''}
   const g=document.querySelector('.tabs [data-tab="'+k+'"] svg');return g?g.outerHTML:'';
 }
@@ -1343,29 +1350,32 @@ function maybeTuto(){
   if(V.tab==='legal'||licenseExpired())return;
   V.tutoShown=true;openTuto(false);
 }
-function openTuto(replay){
-  V.tuto={i:0,hide:replay?prefs().coach===false:false};
+const tutoSet=()=>V.tuto&&V.tuto.set==='coach'?TUTO_C:TUTO;
+function openTuto(replay,set){
+  V.tuto={i:0,set:set||'main'};
   const tabs=['agenda','seances','coach','journal','nutrition'];
   const src=t=>(document.querySelector('.tabs [data-tab="'+t+'"]')||{}).innerHTML||'';
   $('#tmini').innerHTML=tabs.map(t=>'<div class="ms" data-t="'+t+'">'+(t==='coach'?'<span class="ms-bub">'+CL_BOLT+'</span>Coach':src(t))+'</div>').join('');
+  $('#tmini').hidden=V.tuto.set==='coach';
   $('#tuto').hidden=false;renderTuto(true);
 }
 function renderTuto(first){
   const T=V.tuto;if(!T)return;
-  const st=TUTO[T.i],last=T.i===TUTO.length-1;
-  $('#tuto-dots').innerHTML=TUTO.map((_,i)=>'<i class="'+(i===T.i?'on':'')+'"></i>').join('');
+  const SET=tutoSet(),st=SET[T.i],last=T.i===SET.length-1;
+  $('#tuto-dots').innerHTML=SET.map((_,i)=>'<i class="'+(i===T.i?'on':'')+'"></i>').join('');
   const hero=$('#tuto-hero');hero.innerHTML=tutoIcon(st.k);hero.classList.remove('pop');void hero.offsetWidth;hero.classList.add('pop');
   document.querySelectorAll('#tmini .ms').forEach(m=>m.classList.toggle('on',m.dataset.t===st.k));
   let x=st.x;
   if(st.k==='coach')x=coachUnlocked()?'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il est inclus dans ta formule.':'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il fait partie de la formule Cadence + Coach : sans elle, tu en as un aperçu.';
   $('#tuto-text').innerHTML='<h2>'+esc(st.t)+'</h2><p>'+esc(x)+'</p>'
-    +(st.k==='coach'?'<label class="ck"><input type="checkbox" id="tuto-hide"'+(T.hide?' checked':'')+'><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><p class="tnote">Tu pourras le remettre à tout moment dans Menu › Séances et coach.</p>':'');
+    ;
   $('#tuto-btns').innerHTML=(T.i>0?'<button type="button" class="ghost" data-act="tutoback">‹ Retour</button>':'')
-    +'<button type="button" class="primary big" data-act="'+(last?'tutoskip':'tutonext')+'">'+(T.i===0?'Commencer la visite':last?'C\'est parti':'Suivant')+'</button>';
+    +'<button type="button" class="primary big" data-act="'+(last?'tutoskip':'tutonext')+'">'+(T.i===0&&T.set!=='coach'?'Commencer la visite':last?(T.set==='coach'&&!S.onb?'Créer mon programme':'C\'est parti'):'Suivant')+'</button>';
 }
 function finishTuto(){
-  const T=V.tuto;$('#tuto').hidden=true;V.tuto=null;S.tuto=1;
-  if(T&&T.hide!==(prefs().coach===false))S.prefs=Object.assign(prefs(),{coach:!T.hide});
+  const T=V.tuto;$('#tuto').hidden=true;V.tuto=null;
+  if(T&&T.set==='coach'){S.tutoC=1;touch();V.tab='coach';render();window.scrollTo(0,0);setTimeout(maybeOnb,200);return}
+  S.tuto=1;
   touch();
   if(V.tab==='coach'&&prefs().coach===false)V.tab='seances';
   render();window.scrollTo(0,0);setTimeout(maybeOnb,200);
@@ -2037,12 +2047,12 @@ function renderSettings(){
       if(!live)body+=btn('expsub','Me réabonner','primary',' data-plan="base"');
       else{
         if(l.cancelAt){}
-        else if(l.plan!=='coach')body+=btn('licportal','Passer à Cadence + Coach','primary',' data-flow="update"');
-        else body+=btn('licportal','Changer de formule','ghost',' data-flow="update"');
+        else if(l.plan!=='coach')body+=btn('planchange','Passer à Cadence + Coach','primary',' data-plan="coach"');
+        else body+=btn('planchange','Revenir à Cadence seul','ghost',' data-plan="base"');
         body+=l.cancelAt?btn('licportal','Annuler la résiliation','primary',' data-flow=""'):btn('licportal','Résilier mon abonnement','ghost danger-t',' data-flow="cancel"');
         body+=btn('licportal','Factures et carte bancaire','ghost',' data-flow=""');
       }
-      body+='<p class="note" style="margin-top:10px">Stripe s\'ouvre pour confirmer, puis se referme tout seul : Cadence se met à jour automatiquement.</p>'
+      body+='<p class="note" style="margin-top:10px">Le changement de formule se fait ici, sans quitter Cadence. La résiliation et les factures s\'ouvrent dans Stripe, qui se referme tout seul.</p>'
         +'<button type="button" class="linkbtn" data-act="liclogout" style="display:block;margin:10px auto 0">Se déconnecter</button>';
     }
     return head+'<section class="card"><h2>Mon abonnement</h2>'+body+'</section>';
@@ -3451,7 +3461,7 @@ function maybeOnb(){if(!coachActive())return;if(!S.tuto||!$('#tuto').hidden||!$(
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
 function coachSaleCTA(){return licensePlan()==='base'
-  ?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note cs-fine">Tu paies seulement la différence, au prorata du mois en cours.</p>'
+  ?'<button type="button" class="primary big" data-act="planchange" data-plan="coach" style="width:100%">Passer à Cadence + Coach</button><p class="note cs-fine">Tu paies seulement la différence, au prorata du mois en cours.</p>'
   :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach · '+PRICE_COACH+' / mois</button><p class="note cs-fine">Sans engagement, résiliable à tout moment.</p>'}
 function openCoachSale(){
   $('#ss-head').textContent='Cadence + Coach';
@@ -3521,6 +3531,7 @@ function renderCoach(){
   if(sa&&(strength||cfg.style==='crossfit'))h+='<p class="note" style="margin:4px 2px 12px">'+esc(sportTip(cfg,sa))+'</p>';
   if(cfg.style!=='mobi')h+='<section class="card coach-s"><span class="cday">À tout moment</span><h3>Étirements de récupération</h3><p class="note">12 min, après une séance ou un jour de repos.</p><div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="ghost" data-act="cstretch">Commencer</button></div></section>';
   if(isCur)h+='<button type="button" class="ghost" data-act="cplanall" style="width:100%">Ajouter toute la semaine à l\'agenda</button>';
+  h+='<label class="ck" style="margin-top:14px"><input type="checkbox" id="coach-hide"><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button>';
   if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
 }
@@ -3969,6 +3980,21 @@ document.addEventListener('click',e=>{
     const l=licenseGet();if(!l||!l.email)return;const fl=b.dataset.flow||(b.closest('.sale,.chero,.coachpay')||/Coach/.test(b.textContent)?'update':'');
     location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+(fl?'&flow='+fl:'')+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
+  else if(a==='planchange'){
+    const l=licenseGet();if(!l||!l.email||!licLive(l))return;
+    if(l.cancelAt){pSheet({tone:'warn',icon:'clock',title:'Résiliation en cours',sub:'Annule d\'abord ta résiliation pour changer de formule.',btn:'OK'});return}
+    const to=b.dataset.plan==='coach'?'coach':'base';if((l.plan||'base')===to)return;
+    $('#ssheet').hidden=true;
+    pSheet(to==='coach'?{tone:'info',icon:'info',title:'Passer à Cadence + Coach',sub:'Ta formule passe à '+PRICE_COACH+' / mois. Tu ne paies que la différence, au prorata du mois en cours, sans quitter l\'app.',btn:'Confirmer · '+PRICE_COACH+' / mois',act:'planconfirm',attrs:' data-plan="coach"',link:{label:'Annuler',act:'pclose'}}
+      :{tone:'info',icon:'info',title:'Revenir à Cadence seul',sub:'Ta formule passe à '+PRICE_BASE+' / mois. Le coach est mis de côté, la différence déjà payée est déduite de ta prochaine facture.',btn:'Confirmer · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Annuler',act:'pclose'}})}
+  else if(a==='planconfirm'){
+    const before=licenseGet(),to=b.dataset.plan==='coach'?'coach':'base';if(!before||!before.email)return;
+    pSheet({loading:true,title:'Changement de formule…',sub:'Ça ne prend que quelques secondes.'});
+    fetch(WORKER_URL+'/change?email='+encodeURIComponent(before.email)+'&plan='+to,{method:'POST'}).then(r=>r.json()).then(d=>{
+      if(!d||!d.ok)throw new Error((d&&d.error)||'Erreur');
+      licenseSet({type:'sub',email:before.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
+      V.lic=false;updateGate();render();planFeedback(before,licenseGet());
+    }).catch(e=>pSheet({tone:'warn',icon:'info',title:'Changement impossible',sub:(e&&e.message&&e.message!=='Failed to fetch'?e.message:'Vérifie ta connexion et réessaie.'),btn:'OK'}))}
   else if(a==='liclogout'){licenseLogout()}
   else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
@@ -4016,10 +4042,11 @@ document.addEventListener('click',e=>{
   else if(a==='dopen'){openDrawer()}
   else if(a==='pclose'){pClose()}
   else if(a==='celebdone'){celebDone()}
-  else if(a==='tutonext'){if(V.tuto){V.tuto.i=Math.min(TUTO.length-1,V.tuto.i+1);renderTuto()}}
+  else if(a==='tutonext'){if(V.tuto){V.tuto.i=Math.min(tutoSet().length-1,V.tuto.i+1);renderTuto()}}
   else if(a==='tutoback'){if(V.tuto){V.tuto.i=Math.max(0,V.tuto.i-1);renderTuto()}}
   else if(a==='tutoskip'){finishTuto()}
   else if(a==='tutoopen'){closeDrawer();openTuto(true)}
+  else if(a==='tutocoach'){openTuto(true,'coach')}
   else if(a==='drprofile'){const pid=b.dataset.pid;if(pid===profiles().active){closeDrawer();V.tab='settings';V.sec='account';render();window.scrollTo(0,0);return}closeDrawer();switchProfile(pid);toast('Profil « '+curProfile().name+' »')}
   else if(a==='locknow'){closeDrawer();showLock()}
   else if(a==='drlogout'){
@@ -4160,7 +4187,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{
-  if(e.target.id==='tuto-hide'&&V.tuto)V.tuto.hide=e.target.checked;
+  if(e.target.id==='coach-hide'&&e.target.checked){S.prefs=Object.assign(prefs(),{coach:false});touch();V.barTab=undefined;V.tab='seances';pushSync(true);render();toast('Onglet Coach masqué. Tu peux le remettre dans Menu › Séances et coach.')}
   if(e.target.id==='w-title'){const w=curW();if(w&&!w.ex.length&&hasPrev(w))render()}
   else if(e.target.id==='wp-ex'){V.wpEx=e.target.value;render()}
 });
