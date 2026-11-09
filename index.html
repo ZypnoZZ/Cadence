@@ -156,8 +156,8 @@ p{margin:0}
 .item .m{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
 .item .m{align-items:center}
 .pill{display:inline-block;border-radius:99px;padding:0 9px;font-size:12px;font-weight:600;line-height:1.55;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pill.t{border:2px solid var(--pc);color:var(--ink);line-height:1.35;background:transparent}
 .pill.d{background:var(--pc);color:var(--bg)}
+.when{font-weight:600;font-variant-numeric:tabular-nums;font-size:13px}
 .tag{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
 .type{font-size:12px;color:var(--muted)}
 .item .m.sub{opacity:.85}
@@ -585,7 +585,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 8';
+const APP_VERSION='2026.11.09 · 10';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -780,19 +780,18 @@ function dateLabel(it){
   const t=cap(FMT.short.format(parseISO(it.date)));
   return st==='late'?'En retard · '+t:t;
 }
-function itemHTML(it){
-  const sl=slotOf(it.time);
+function itemHTML(it,showDate){
   const dc=DATE_C[dateState(it)];
-  const label=esc(dateLabel(it))+(it.time?' · '+esc(it.time):'');
-  const top=['<span class="pill d" style="--pc:var('+dc+')">'+label+'</span>','<span class="type">'+esc(TYPES[it.type].label)+'</span>'];
+  const when=[showDate?esc(dateLabel(it)):'',it.time?esc(it.time):''].filter(Boolean).join(' · ');
+  const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':'','<span class="type">'+esc(TYPES[it.type].label)+'</span>'].filter(Boolean);
   const extra=[];
-  if(it.type==='sport'){extra.push(esc(it.sport));if(it.dur)extra.push(esc(it.dur)+' min')}
+  if(it.type==='sport'&&it.dur)extra.push(esc(it.dur)+' min');
   const rl=remindLabel(it);if(rl)extra.push(esc(rl));
   if(it.ex)extra.push('Exemple');
   return '<li class="item'+(it.done?' done':'')+'" style="--c:var('+dc+')">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
-   +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+'</div>'
-   +'<div class="m">'+top.join('')+'</div>'+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
+   +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+(it.type==='sport'?' <span class="type">· '+esc(it.sport)+'</span>':'')+'</div>'
+   +(top.length?'<div class="m">'+top.join('')+'</div>':'')+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
 }
 function updateSlot(){
   const t=$('#f-time').value,d=$('#f-date').value,el=$('#f-slot');
@@ -838,7 +837,8 @@ function renderTodos(){
   let any=false;
   for(const [label,fn,cls] of groups){
     const l=open.filter(fn);if(!l.length)continue;any=true;
-    html+='<h3 class="group-h '+cls+'">'+label+' · '+l.length+'</h3><ul class="list">'+l.map(i=>itemHTML(i,true)).join('')+'</ul>';
+    const showDate=label!=="Aujourd'hui";
+    html+='<h3 class="group-h '+cls+'">'+label+' · '+l.length+'</h3><ul class="list">'+l.map(i=>itemHTML(i,showDate)).join('')+'</ul>';
   }
   if(!any)html+='<div class="empty" style="margin-top:16px">Tout est fait. Touche + pour ajouter une tâche.</div>';
   const done=S.items.filter(i=>i.type!=='sport'&&i.done).sort(byDT).reverse().slice(0,12);
