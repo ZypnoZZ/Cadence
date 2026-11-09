@@ -1350,7 +1350,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 49';
+const APP_VERSION='2026.11.09 · 50';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1475,6 +1475,7 @@ function celebDone(){
   V.tab='coach';render();window.scrollTo(0,0);
   const b=document.querySelector('.tabs .ctab');if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');setTimeout(()=>b.classList.remove('pop'),700)}
   if(!S.tuto||!S.setup){setTimeout(()=>{maybeTuto();maybeOnb()},350);return}
+  if(coachActive())S.tutoC=0;
   if(coachActive()&&!S.tutoC){setTimeout(()=>{V.coachTutoShown=true;openTuto(false,'coach')},350);return}
   if(coachActive()&&(c.needOnb||!S.onb)&&$('#onb').hidden){V.onbShown=true;openOnb()}
 }
@@ -2421,12 +2422,12 @@ function openDrawer(){
   }
   h+='<div class="dr-tiles"><button type="button" class="dr-tile" data-act="sec" data-sec="suivi">'+drSvg('chart')+'Mon suivi</button><button type="button" class="dr-tile" data-act="sec" data-sec="poids">'+drSvg('scale')+'Pesée</button><button type="button" class="dr-tile" data-act="theme">'+drSvg('moon')+(effTheme()==='dark'?'Mode clair':'Mode sombre')+'</button></div>';
   const lk=IS_PWA&&lockCfg();
-  h+=list('Mon espace',[row('account','user','Mon compte','#5b6cff'),IS_PWA?row('profiles','users','Profils','#8b5cf6',P.list.length+' profil'+(P.list.length>1?'s':'')):''].filter(Boolean));
+  h+=list('Mon espace',[row('account','user','Mon compte','#5b6cff'),IS_PWA?row('profiles','users','Profils','#8b5cf6',P.list.length+' profil'+(P.list.length>1?'s':'')):'',row('','info','Revoir le tutoriel','#6366f1','','tutoopen')].filter(Boolean));
   if(IS_PWA){
     h+=list('Abonnement',[row('abo','star','Mon abonnement','#f59e0b',pl)]);
     h+=list('Préférences',[row('train','dumb','Séances et coach','#10b981',prefs().coach?'Coach activé':'Mes séances'),row('notif','bell','Notifications','#ef4444',pushInfo()?'Activées':''),row('theme','moon','Apparence','#334155',{auto:'Auto',light:'Clair',dark:'Sombre'}[themePref()])]);
     h+=fold('sec','Sécurité et données',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
-    h+=fold('aide','Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('','info','Revoir le tutoriel','#6366f1','','tutoopen'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
+    h+=fold('aide','Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
     h+='<div class="dr-list" style="margin-top:18px">'
       +(lk?'<button type="button" class="dr-row" data-act="locknow"><span class="dr-ic" style="--c:#0ea5e9">'+drSvg('lock')+'</span><span class="lbl">Verrouiller maintenant</span></button>':'')
       +'<button type="button" class="dr-row red" data-act="drlogout"><span class="dr-ic">'+drSvg('out')+'</span><span class="lbl">Se déconnecter</span></button></div>'

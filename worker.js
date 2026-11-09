@@ -300,8 +300,8 @@ export default {
         let cur = sub;
         if (sub.status !== 'active' && sub.status !== 'trialing') return json({ ok: false, error: 'Cet abonnement est terminé, réabonne-toi' }, 409);
         if (cancelAtOf(sub)) {
-          const body = { cancel_at_period_end: 'false' };
-          if (sub.cancel_at) body.cancel_at = '';
+          // Stripe refuse les deux paramètres ensemble : un seul suffit
+          const body = sub.cancel_at_period_end ? { cancel_at_period_end: 'false' } : { cancel_at: '' };
           cur = await stripe(env, 'subscriptions/' + sub.id, body);
         }
         await saveSub(env, cur);
