@@ -309,6 +309,10 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .cex li,.ring li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .cex li b,.ring li b{font-weight:600;color:var(--muted);white-space:nowrap;font-size:13px}
 .cset-d{margin:2px 0 6px}
+.clab{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:8px 0 4px}
+.eqs{display:flex;flex-wrap:wrap;gap:8px}
+.eqs button{padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;font-weight:600}
+.eqs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .cset-d summary{font-weight:600;font-size:14px;color:var(--accent);padding:8px 0;cursor:pointer}
 .rsteps{margin:8px 0 0;padding-left:22px}
 .rsteps li{margin-bottom:10px;line-height:1.5}
@@ -745,7 +749,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 24';
+const APP_VERSION='2026.11.09 · 25';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -821,7 +825,7 @@ function normalize(data){
   if(!s.log||typeof s.log!=='object'||Array.isArray(s.log))s.log={};
   {const lim=iso(addDays(today,-180));for(const k of Object.keys(s.log))if(k<lim||!Array.isArray(s.log[k]))delete s.log[k];}
   if(!Array.isArray(s.seeds)||s.seeds.length<7)s.seeds=defaultState().seeds;
-  if(!s.coach||typeof s.coach!=='object')s.coach={days:3,level:'inter',equip:'gym'};
+  if(!s.coach||typeof s.coach!=='object')s.coach={days:3,level:'inter',style:'muscu',place:'gym',eq:[]};
   return s;
 }
 function stable(v){
@@ -1902,7 +1906,7 @@ function haptic(n){
   for(let i=0;i<(n||1);i++)setTimeout(()=>{try{l.click()}catch(e){}},i*110);
 }
 function lockGreet(){const h=new Date().getHours();return h<5?'Bonne nuit':h<18?'Bonjour':'Bonsoir'}
-function playLockEnter(){const l=$('#lock');if(l.hidden||!$('#splash').hidden)return;l.classList.remove('enter','out');void l.offsetWidth;l.classList.add('enter')}
+function playLockEnter(){const l=$('#lock');if(l.hidden||document.hidden||!$('#splash').hidden||L.entered)return;L.entered=true;l.classList.remove('enter','out');void l.offsetWidth;l.classList.add('enter')}
 function runSplash(){
   const sp=$('#splash');if(!sp)return;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -1918,6 +1922,7 @@ function setLockMsg(m){
 function showLock(){
   if(!IS_PWA||!lockCfg())return false;
   L.entry='';L.resetArmed=false;$('#lock-forgot').hidden=true;
+  if($('#lock').hidden)L.entered=false;
   const rb=document.querySelector('#lock [data-act=pinreset]');if(rb)rb.textContent='Effacer les données de ce profil';
   const P=profiles(),nm=(curProfile()||{}).name||'';$('#lock-who').textContent=lockGreet()+(nm?', '+nm:'');$('#lock-dots').classList.remove('ok','bad');$('#lock').classList.remove('out');$('#lock-switch').hidden=P.list.length<2;$('#lock-plist').hidden=true;
   $('#lock').hidden=false;drawDots();setLockMsg();playLockEnter();return true;
@@ -2032,20 +2037,54 @@ function submitForm(e){
 }
 
 /* ---------- Coach ---------- */
-const EXLIB={
-  gym:{squat:'Squat barre',hinge:'Soulevé de terre roumain',hpush:'Développé couché',hpush2:'Développé incliné haltères',vpush:'Développé militaire',hpull:'Rowing barre',vpull:'Tirage vertical',vpull2:'Tractions',lunge:'Fentes marchées',legpress:'Presse à cuisses',legcurl:'Leg curl',core:'Gainage',bi:'Curl haltères',tri:'Extension triceps poulie',lat:'Élévations latérales',calves:'Mollets debout',fly:'Écarté poulie',facepull:'Face pull'},
-  db:{squat:'Goblet squat',hinge:'Soulevé de terre roumain haltères',hpush:'Développé couché haltères',hpush2:'Pompes',vpush:'Développé épaules haltères',hpull:'Rowing haltère un bras',vpull:'Pull-over haltère',vpull2:'Rowing penché haltères',lunge:'Fentes bulgares',legpress:'Squat sumo haltère',legcurl:'Pont fessier haltère',core:'Gainage',bi:'Curl haltères',tri:'Extension triceps haltère',lat:'Élévations latérales',calves:'Mollets haltères',fly:'Écarté haltères',facepull:'Oiseau haltères'},
-  body:{squat:'Squat tempo lent',hinge:'Pont fessier une jambe',hpush:'Pompes',hpush2:'Pompes déclinées',vpush:'Pompes piquées',hpull:'Rowing inversé sous une table',vpull:'Tractions ou superman',vpull2:'Superman',lunge:'Fentes alternées',legpress:'Squat bulgare',legcurl:'Leg curl glissé au sol',core:'Gainage',bi:'Curl serviette',tri:'Dips sur chaise',lat:'Planche latérale',calves:'Mollets une jambe',fly:'Pompes larges',facepull:'Y-T-W au sol'}
+// Équipement possible. À la salle, tout est disponible.
+const EQUIP=[['traction','Barre de traction'],['dips','Barres parallèles / dips'],['anneaux','Anneaux'],['elastiques','Élastiques'],['halteres','Haltères'],['kb','Kettlebell'],['barre','Barre et disques'],['banc','Banc'],['machines','Machines et poulies'],['cardio','Vélo, rameur ou tapis'],['corde','Corde à sauter']];
+const GYM_EQ=['traction','dips','halteres','kb','barre','banc','machines','cardio','elastiques'];
+// Musculation : pour chaque mouvement, la première option dont tout l'équipement est disponible.
+const MUSCU={
+  squat:[['Squat barre',['barre']],['Presse à cuisses',['machines']],['Goblet squat',['halteres']],['Goblet squat kettlebell',['kb']],['Squat bulgare',[]]],
+  hinge:[['Soulevé de terre roumain',['barre']],['Soulevé de terre roumain haltères',['halteres']],['Kettlebell swing',['kb']],['Pont fessier une jambe',[]]],
+  hpush:[['Développé couché',['barre','banc']],['Développé couché haltères',['halteres','banc']],['Développé au sol haltères',['halteres']],['Pompes',[]]],
+  hpush2:[['Développé incliné haltères',['halteres','banc']],['Dips',['dips']],['Écarté poulie',['machines']],['Pompes déclinées',[]]],
+  vpush:[['Développé militaire',['barre']],['Développé épaules haltères',['halteres']],['Développé épaules élastique',['elastiques']],['Pompes piquées',[]]],
+  hpull:[['Rowing barre',['barre']],['Rowing assis poulie',['machines']],['Rowing haltère un bras',['halteres']],['Rowing aux anneaux',['anneaux']],['Rowing élastique',['elastiques']],['Rowing inversé sous une table',[]]],
+  vpull:[['Tractions',['traction']],['Tirage vertical',['machines']],['Tirage élastique',['elastiques']],['Rowing inversé sous une table',[]]],
+  vpull2:[['Tirage vertical',['machines']],['Tractions prise serrée',['traction']],['Pull-over haltère',['halteres','banc']],['Rowing penché haltères',['halteres']],['Superman',[]]],
+  lunge:[['Fentes marchées haltères',['halteres']],['Fentes avant kettlebell',['kb']],['Fentes bulgares',[]]],
+  legpress:[['Presse à cuisses',['machines']],['Squat sumo haltère',['halteres']],['Squat sumo kettlebell',['kb']],['Squat bulgare',[]]],
+  legcurl:[['Leg curl',['machines']],['Pont fessier haltère',['halteres']],['Leg curl glissé au sol',[]]],
+  core:[['Relevés de jambes suspendu',['traction']],['Gainage',[]]],
+  bi:[['Curl barre',['barre']],['Curl haltères',['halteres']],['Curl élastique',['elastiques']],['Tractions supination lentes',['traction']],['Curl serviette isométrique',[]]],
+  tri:[['Extension triceps poulie',['machines']],['Extension triceps haltère',['halteres']],['Dips',['dips']],['Dips sur chaise',[]]],
+  lat:[['Élévations latérales',['halteres']],['Élévations latérales élastique',['elastiques']],['Planche latérale',[]]],
+  calves:[['Mollets à la machine',['machines']],['Mollets haltères',['halteres']],['Mollets une jambe',[]]],
+  fly:[['Écarté poulie',['machines']],['Écarté haltères',['halteres','banc']],['Pompes larges',[]]],
+  facepull:[['Face pull',['machines']],['Face pull élastique',['elastiques']],['Oiseau haltères',['halteres']],['Y-T-W au sol',[]]]
 };
+// Calisthenics : progressions débutant / intermédiaire / avancé.
+const CALI={
+  pushH:[[['anneaux'],['Pompes inclinées','Pompes','Pompes aux anneaux']],[[],['Pompes sur les genoux ou inclinées','Pompes','Pompes archer']]],
+  dips:[[['dips'],['Dips assistés (pieds au sol)','Dips aux barres','Dips lestés']],[['anneaux'],['Dips sur banc','Dips aux anneaux','Dips aux anneaux lents']],[[],['Dips sur chaise','Dips sur chaise pieds surélevés','Pompes diamant']]],
+  vpush:[[[],['Pompes piquées','Pompes piquées pieds surélevés','Pompes en équilibre contre le mur']]],
+  pullV:[[['traction'],['Tractions négatives (5 s)','Tractions','Tractions lestées ou archer']],[['anneaux'],['Rowing aux anneaux incliné','Rowing aux anneaux','Rowing aux anneaux pieds surélevés']],[['elastiques'],['Tirage élastique','Tirage élastique lent','Tirage élastique un bras']],[[],['Rowing inversé genoux pliés','Rowing inversé sous une table','Rowing inversé pieds surélevés']]],
+  pullH:[[['anneaux'],['Rowing aux anneaux incliné','Rowing aux anneaux','Front lever groupé']],[['traction'],['Suspension active (scapulas)','Tractions australiennes','Front lever groupé']],[[],['Rowing inversé genoux pliés','Rowing inversé sous une table','Rowing inversé un bras']]],
+  squat:[[[],['Squat','Squat bulgare','Pistol squat']]],
+  lunge:[[[],['Fentes','Fentes sautées','Shrimp squat']]],
+  hinge:[[[],['Pont fessier','Pont fessier une jambe','Nordic curl (négatif)']]],
+  core:[[['traction'],['Relevés de genoux suspendu','Relevés de jambes suspendu','Toes to bar']],[[],['Gainage','Hollow body','Dragon flag (négatif)']]],
+  skill:[[['dips'],['Gainage planche, épaules en avant','Équilibre contre le mur','L-sit aux barres']],[[],['Gainage planche, épaules en avant','Équilibre contre le mur','L-sit au sol']]],
+  calves:[[[],['Mollets','Mollets une jambe','Mollets une jambe lents']]]
+};
+const HOLD=/gainage|équilibre|l-sit|hollow|front lever|suspension|planche|isométrique/i;
 const SESS={
-  push:{t:'Push',f:'Pectoraux, épaules, triceps',sp:'Push',p:['hpush','vpush','hpush2','lat','tri','fly']},
-  pull:{t:'Pull',f:'Dos, biceps, arrière d\'épaules',sp:'Pull',p:['vpull','hpull','vpull2','facepull','bi','core']},
-  legs:{t:'Jambes',f:'Quadriceps, ischios, fessiers',sp:'Legs',p:['squat','hinge','lunge','legcurl','calves','core']},
-  upper:{t:'Haut du corps',f:'Pectoraux, dos, épaules, bras',sp:'Musculation · Haut du corps',p:['hpush','hpull','vpush','vpull','bi','tri']},
-  lower:{t:'Bas du corps',f:'Jambes et gainage',sp:'Musculation · Bas du corps',p:['squat','hinge','legpress','legcurl','calves','core']},
-  fullA:{t:'Full body A',f:'Tout le corps',sp:'Musculation · Full body',p:['squat','hpush','hpull','lat','core','bi']},
-  fullB:{t:'Full body B',f:'Tout le corps',sp:'Musculation · Full body',p:['hinge','vpush','vpull','lunge','core','tri']},
-  fullC:{t:'Full body C',f:'Tout le corps',sp:'Musculation · Full body',p:['legpress','hpush2','vpull2','facepull','core','calves']},
+  push:{t:'Push',f:'Pectoraux, épaules, triceps',sp:'Push',p:['hpush','vpush','hpush2','lat','tri','fly'],c:['pushH','dips','vpush','skill','core']},
+  pull:{t:'Pull',f:'Dos, biceps, arrière d\'épaules',sp:'Pull',p:['vpull','hpull','vpull2','facepull','bi','core'],c:['pullV','pullH','core','hinge','skill']},
+  legs:{t:'Jambes',f:'Quadriceps, ischios, fessiers',sp:'Legs',p:['squat','hinge','lunge','legcurl','calves','core'],c:['squat','lunge','hinge','calves','core']},
+  upper:{t:'Haut du corps',f:'Pectoraux, dos, épaules, bras',sp:'Musculation · Haut du corps',p:['hpush','hpull','vpush','vpull','bi','tri'],c:['pushH','pullV','dips','pullH','vpush','core']},
+  lower:{t:'Bas du corps',f:'Jambes et gainage',sp:'Musculation · Bas du corps',p:['squat','hinge','legpress','legcurl','calves','core'],c:['squat','lunge','hinge','calves','core','skill']},
+  fullA:{t:'Full body A',f:'Tout le corps',sp:'Musculation · Full body',p:['squat','hpush','hpull','lat','core','bi'],c:['pushH','pullV','squat','core','skill','calves']},
+  fullB:{t:'Full body B',f:'Tout le corps',sp:'Musculation · Full body',p:['hinge','vpush','vpull','lunge','core','tri'],c:['dips','pullH','lunge','hinge','core','vpush']},
+  fullC:{t:'Full body C',f:'Tout le corps',sp:'Musculation · Full body',p:['legpress','hpush2','vpull2','facepull','core','calves'],c:['pushH','pullV','squat','skill','dips','core']},
   cardio:{t:'Cardio',f:'Endurance et dépense',sp:'Cardio',cardio:true}
 };
 const SPLITS={
@@ -2054,30 +2093,38 @@ const SPLITS={
   seche:{2:['fullA','fullB'],3:['fullA','fullB','fullC'],4:['upper','lower','cardio','fullC'],5:['upper','lower','cardio','fullC','cardio'],6:['push','pull','legs','cardio','upper','lower']}
 };
 const DAYMAP={2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,2,4,5],6:[0,1,2,3,4,5]};
-const LVL={deb:{n:4,s:3,l:'Débutant'},inter:{n:5,s:3,l:'Intermédiaire'},conf:{n:6,s:4,l:'Confirmé'}};
-const EQ={gym:'Salle',db:'Haltères',body:'Poids du corps'};
+const LVL={deb:{n:4,s:3,i:0,l:'Débutant'},inter:{n:5,s:3,i:1,l:'Intermédiaire'},conf:{n:6,s:4,i:2,l:'Avancé'}};
 const COMPOUND=['squat','hinge','hpush','vpush','hpull','vpull','legpress'];
-function coachCfg(){const c=S.coach||{};return {days:[2,3,4,5,6].includes(+c.days)?+c.days:3,level:LVL[c.level]?c.level:'inter',equip:EQ[c.equip]?c.equip:'gym'}}
+function coachCfg(){
+  const c=S.coach||{};
+  let place=c.place,eq=Array.isArray(c.eq)?c.eq.filter(k=>EQUIP.some(e=>e[0]===k)):null;
+  if(!place){place=c.equip==='db'||c.equip==='body'?'home':'gym';if(!eq)eq=c.equip==='db'?['halteres']:[]}
+  return {days:[2,3,4,5,6].includes(+c.days)?+c.days:3,level:LVL[c.level]?c.level:'inter',style:c.style==='cali'?'cali':'muscu',place:place==='home'?'home':'gym',eq:eq||[]};
+}
+function eqSet(cfg){return new Set(cfg.place==='gym'?GYM_EQ:cfg.eq)}
+function pickMuscu(pt,have){const o=MUSCU[pt].find(x=>x[1].every(k=>have.has(k)));return o?o[0]:MUSCU[pt][MUSCU[pt].length-1][0]}
+function pickCali(pt,have,li){const o=CALI[pt].find(x=>x[0].every(k=>have.has(k)))||CALI[pt][CALI[pt].length-1];return o[1][li]}
+function cardioEx(goal,have){
+  const mach=have.has('cardio'),rope=have.has('corde');
+  if(goal==='seche')return [{name:mach?'Échauffement vélo ou rameur':'Échauffement : jumping jacks',kind:'cardio',min:8,txt:'8 min facile'},{name:rope?'HIIT corde à sauter : 30 s / 30 s':mach?'HIIT vélo : 30 s rapide / 30 s lent':'HIIT : burpees et montées de genoux, 30 s / 30 s',kind:'cardio',min:15,txt:'15 min'},{name:mach?'Marche inclinée sur tapis':'Marche rapide',kind:'cardio',min:20,txt:'20 min'}];
+  return [{name:mach?'Vélo ou rameur':'Course à pied',kind:'cardio',min:30,txt:'30 min à allure confortable'},{name:'Gainage',kind:'force',s:3,r:'45 s',txt:'3 × 45 s'},{name:'Mobilité et étirements',kind:'cardio',min:10,txt:'10 min'}];
+}
 function buildSession(key,cfg,goal){
-  const s=SESS[key];
-  if(s.cardio){
-    const ex=goal==='seche'
-      ?[{name:'Échauffement vélo ou rameur',kind:'cardio',min:8,txt:'8 min facile'},{name:'HIIT : 30 s rapide / 30 s lent',kind:'cardio',min:15,txt:'15 min'},{name:'Marche inclinée',kind:'cardio',min:20,txt:'20 min, pente 8 à 12 %'}]
-      :[{name:'Course ou vélo',kind:'cardio',min:30,txt:'30 min à allure confortable'},{name:'Gainage',kind:'force',s:3,r:'45 s',txt:'3 × 45 s'},{name:'Mobilité et étirements',kind:'cardio',min:10,txt:'10 min'}];
-    return {key,title:s.t,focus:s.f,sport:s.sp,dur:goal==='seche'?45:50,ex};
+  const s=SESS[key],have=eqSet(cfg),L=LVL[cfg.level];
+  if(s.cardio){const ex=cardioEx(goal,have);return {key,title:s.t,focus:s.f,sport:s.sp,dur:goal==='seche'?45:50,ex}}
+  let ex;
+  if(cfg.style==='cali'){
+    const reps=['8–12','6–12','5–8'][L.i],hold=['20–30 s','30–45 s','10–20 s'][L.i];
+    ex=s.c.map(pt=>{const name=pickCali(pt,have,L.i);const h=HOLD.test(name);return {name,kind:'force',s:L.s+(L.i===2?1:0),r:h?hold:reps,rest:L.i===2?'2 min':'90 s'}});
+  }else{
+    const heavy=goal==='seche'?'6–8':goal==='prise'?'6–10':'8–10',light=goal==='seche'?'10–12':'10–15';
+    ex=s.p.map((pt,i)=>{const comp=COMPOUND.includes(pt)&&i<2;const name=pickMuscu(pt,have);return {name,kind:'force',s:comp?L.s+(cfg.level==='deb'?0:1):L.s,r:HOLD.test(name)?'40 s':comp?heavy:light,rest:comp?'2 min':'75 s'}});
   }
-  const L=LVL[cfg.level],lib=EXLIB[cfg.equip];
-  const heavy=goal==='seche'?'6–8':goal==='prise'?'6–10':'8–10';
-  const light=goal==='seche'?'10–12':'10–15';
-  const ex=s.p.slice(0,L.n).map((pt,i)=>{
-    const comp=COMPOUND.includes(pt)&&i<2;
-    const r=pt==='core'?'40 s':comp?heavy:light;
-    return {name:lib[pt],kind:'force',s:comp?L.s+(cfg.level==='deb'?0:1):L.s,r,rest:comp?'2 min':'75 s'};
-  });
-  const fin=goal==='seche'?{name:'Finisher : 10 min de HIIT',kind:'cardio',min:10,txt:'10 min'}:goal==='maintien'?{name:'Cardio modéré',kind:'cardio',min:10,txt:'10 min'}:null;
+  const seen=new Set();ex=ex.filter(e=>!seen.has(e.name)&&seen.add(e.name)).slice(0,L.n);
+  const fin=goal==='seche'?{name:have.has('corde')?'Finisher : 10 min de corde à sauter':'Finisher : 10 min de HIIT',kind:'cardio',min:10,txt:'10 min'}:goal==='maintien'?{name:'Cardio modéré',kind:'cardio',min:10,txt:'10 min'}:null;
   if(fin)ex.push(fin);
   const dur=Math.round(ex.reduce((a,e)=>a+(e.kind==='cardio'?e.min:e.s*2.6),8)/5)*5;
-  return {key,title:s.t,focus:s.f,sport:s.sp,dur,ex};
+  return {key,title:(cfg.style==='cali'?'Calisthenics · ':'')+s.t,focus:s.f,sport:cfg.style==='cali'&&s.sp.indexOf('Musculation')===0?'Musculation · Full body':s.sp,dur,ex};
 }
 function coachWeek(){
   const cfg=coachCfg(),goal=S.profile.goal||'maintien';
@@ -2089,7 +2136,7 @@ function exLine(e){
   return e.s+' × '+e.r+(e.rest?' · repos '+e.rest:'');
 }
 function sessCard(s,i,big){
-  return '<section class="card coach-s'+(big?' today':'')+'"><div class="row" style="align-items:flex-start"><div style="min-width:0"><span class="cday">'+(big?'Aujourd\'hui':WD[s.wd])+'</span><h3>'+esc(s.title)+'</h3><p class="note">'+esc(s.focus)+' · ≈ '+s.dur+' min</p></div></div>'
+  return '<section class="card coach-s'+(big?' today':'')+'"><span class="cday">'+(big?'Aujourd\'hui':WD[s.wd])+'</span><h3>'+esc(s.title)+'</h3><p class="note">'+esc(s.focus)+' · ≈ '+s.dur+' min</p>'
    +'<ol class="cex">'+s.ex.map(e=>'<li><span>'+esc(e.name)+'</span><b>'+esc(exLine(e))+'</b></li>').join('')+'</ol>'
    +'<div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="primary" data-act="cstart" data-i="'+i+'">Commencer</button><button type="button" class="ghost" data-act="cplan" data-i="'+i+'">Ajouter à l\'agenda</button></div></section>';
 }
@@ -2098,17 +2145,22 @@ function renderCoach(){
   const wk=coachWeek();V.coachWeek=wk;
   const tw=(today.getDay()+6)%7,ti=wk.findIndex(s=>s.wd===tw);
   const gl={prise:'Prise de masse',maintien:'Maintien',seche:'Déficit'}[goal];
-  const tip={prise:'Objectif muscle : charges lourdes, progresse d\'une répétition ou d\'un peu de poids chaque semaine.',maintien:'Objectif forme : force et cardio équilibrés.',seche:'Objectif sèche : garde des charges lourdes pour protéger le muscle, le cardio augmente la dépense.'}[goal];
+  const tip={prise:'Objectif muscle : progresse d\'une répétition ou d\'un peu de charge chaque semaine.',maintien:'Objectif forme : force et cardio équilibrés.',seche:'Objectif sèche : garde de l\'intensité pour protéger le muscle, le cardio augmente la dépense.'}[goal];
   const food=T.ok?(goal==='prise'?'Après la séance : un repas avec des glucides et 30 à 40 g de protéines.':goal==='seche'?'Garde tes '+T.p+' g de protéines et place tes glucides autour de la séance.':'Un repas équilibré 1 à 2 h avant, des protéines après.'):'';
   const opt=(name,cur,list)=>'<div class="modes" style="margin-bottom:8px">'+list.map(x=>'<button type="button" data-act="cset" data-k="'+name+'" data-v="'+x[0]+'" aria-pressed="'+(String(cur)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>';
+  const sum=(cfg.style==='cali'?'Calisthenics':'Musculation')+' · '+(cfg.place==='gym'?'Salle':'Maison')+' · '+cfg.days+' j · '+LVL[cfg.level].l;
   let h='<div class="cal-head"><h2>Coach</h2></div>';
   h+='<div class="coach-goal"><b>'+gl+(T.ok?' · '+nf.format(T.kcal)+' kcal':'')+'</b><span>'+esc(tip)+'</span>'+(food?'<span>'+esc(food)+'</span>':'')+'</div>';
   if(ti>=0)h+=sessCard(wk[ti],ti,true);
   else h+='<section class="card coach-s today"><span class="cday">Aujourd\'hui</span><h3>Repos</h3><p class="note">Récupération : marche 20 à 30 min ou étirements. Les muscles se construisent pendant le repos.</p></section>';
-  h+='<details class="cset-d"'+(V.coachOpen?' open':'')+'><summary>Mon programme · '+cfg.days+' séances · '+LVL[cfg.level].l+' · '+EQ[cfg.equip]+'</summary>'
-   +opt('days',cfg.days,[[2,'2 j'],[3,'3 j'],[4,'4 j'],[5,'5 j'],[6,'6 j']])
-   +opt('level',cfg.level,[['deb','Débutant'],['inter','Intermédiaire'],['conf','Confirmé']])
-   +opt('equip',cfg.equip,[['gym','Salle'],['db','Haltères'],['body','Sans matériel']])+'</details>';
+  h+='<details class="cset-d"'+(V.coachOpen?' open':'')+'><summary>Mon programme · '+esc(sum)+'</summary>'
+   +'<span class="clab">Style</span>'+opt('style',cfg.style,[['muscu','Musculation'],['cali','Calisthenics']])
+   +'<span class="clab">Lieu</span>'+opt('place',cfg.place,[['home','Maison'],['gym','Salle']])
+   +'<span class="clab">Niveau</span>'+opt('level',cfg.level,[['deb','Débutant'],['inter','Intermédiaire'],['conf','Avancé']])
+   +'<span class="clab">Séances par semaine</span>'+opt('days',cfg.days,[[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']])
+   +(cfg.place==='gym'?'<p class="note" style="margin:4px 0 8px">À la salle, le coach utilise tout le matériel habituel.</p>'
+     :'<span class="clab">Mon équipement</span><div class="eqs">'+EQUIP.map(e=>'<button type="button" data-act="ceq" data-k="'+e[0]+'" aria-pressed="'+cfg.eq.includes(e[0])+'">'+e[1]+'</button>').join('')+'</div><p class="note" style="margin:6px 0 8px">'+(cfg.eq.length?'Le programme n\'utilise que ce que tu as coché.':'Rien de coché : séances au poids du corps.')+'</p>')
+   +'</details>';
   h+='<h3 class="group-h">Ta semaine</h3>'+wk.map((s,i)=>i===ti?'':sessCard(s,i,false)).join('');
   h+='<button type="button" class="ghost" data-act="cplanall" style="width:100%">Ajouter toute la semaine à l\'agenda</button>';
   return h;
@@ -2176,7 +2228,8 @@ document.addEventListener('click',e=>{
   else if(a==='dayclose'){closeDay()}
   else if(a==='recipe'){openRecipe(+b.dataset.i)}
   else if(a==='rclose'){$('#rsheet').hidden=true}
-  else if(a==='cset'){S.coach=Object.assign(coachCfg(),{[b.dataset.k]:b.dataset.k==='days'?+b.dataset.v:b.dataset.v});V.coachOpen=true;touch();render()}
+  else if(a==='cset'){S.coach=Object.assign(coachCfg(),{[b.dataset.k]:b.dataset.k==='days'?+b.dataset.v:b.dataset.v});delete S.coach.equip;V.coachOpen=true;touch();render()}
+  else if(a==='ceq'){const c=coachCfg(),k=b.dataset.k;c.eq=c.eq.includes(k)?c.eq.filter(x=>x!==k):c.eq.concat(k);S.coach=c;V.coachOpen=true;touch();render()}
   else if(a==='cstart'){const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const w=coachToWorkout(s);S.workouts.push(w);V.tab='seances';V.wEdit=w.id;touch();render();window.scrollTo(0,0)}
   else if(a==='cplan'){const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const ok=coachPlan(s);touch();b.textContent=ok?'Ajoutée le '+FMT.long.format(parseISO(nextDateFor(s.wd))).replace(/^\w+ /,''):'Déjà dans l\'agenda';b.disabled=true}
   else if(a==='cplanall'){let n=0;for(const s of (V.coachWeek||[]))if(coachPlan(s))n++;touch();b.textContent=n?n+' séance'+(n>1?'s':'')+' ajoutée'+(n>1?'s':'')+' à l\'agenda':'Déjà dans l\'agenda';b.disabled=true}
@@ -2508,7 +2561,7 @@ if(IS_PWA){
     if(!lockCfg())return;
     if(document.hidden){L.hiddenAt=Date.now();L.wasOpen=$('#lock').hidden;showLock()}
     else if(L.wasOpen&&Date.now()-L.hiddenAt<60000){$('#lock').hidden=true;L.wasOpen=false}
-    else{L.wasOpen=false;playLockEnter()}
+    else{L.wasOpen=false;if(L.hiddenAt)playLockEnter()}
   });
 }
 setSync('pending');
