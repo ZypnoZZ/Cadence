@@ -86,6 +86,38 @@ p{margin:0}
 .drawer-in{position:absolute;top:0;bottom:0;left:0;width:min(320px,86vw);background:var(--surface);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px));box-shadow:4px 0 24px rgba(0,0,0,.25)}
 @media (prefers-reduced-motion:no-preference){.drawer-in{animation:drin .2s ease-out}}
 @keyframes drin{from{transform:translateX(-100%)}}
+.dr-top{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+.dr-top>span{font-family:var(--font-display);font-size:24px;font-weight:700}
+.dr-me{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.dr-me .avatar{background:var(--grad,var(--accent));color:#fff;width:50px;height:50px;font-size:22px}
+.dr-me-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dr-me-t b{font-size:17px;overflow-wrap:anywhere}
+.dr-me-t small{color:var(--muted);font-size:13px}
+.dr-badge{display:inline-block;align-self:flex-start;margin-top:4px;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--soft);color:var(--accent)}
+.dr-badge.pro{background:var(--grad,var(--accent));color:#fff}
+.dr-me .go,.dr-row .go{color:var(--muted);font-size:20px;flex:none}
+.dr-profs{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.dr-profs::-webkit-scrollbar{display:none}
+.dr-prof{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;width:58px;background:none;border:0;padding:0;color:var(--ink);font:inherit;font-size:12px}
+.dr-prof .avatar{width:44px;height:44px;font-size:18px;background:var(--soft);color:var(--ink);border:2px solid transparent}
+.dr-prof.on .avatar{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.dr-prof .avatar.add{background:none;border:2px dashed var(--line);color:var(--muted);font-size:22px}
+.dr-prof span:last-child{max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.dr-tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600}
+.dr-tile svg,.dr-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dr-tile svg{color:var(--accent);width:22px;height:22px}
+.dr-sec{margin:18px 2px 6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dr-list{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg)}
+.dr-row{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;padding:8px 12px;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500;text-align:left}
+.dr-row:first-child{border-top:0}
+.dr-row[aria-current="page"]{background:var(--soft)}
+.dr-row .lbl{flex:1;min-width:0}
+.dr-row .val{color:var(--muted);font-size:13.5px;flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-ic{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;flex:none;color:#fff;background:var(--c,var(--accent))}
+.dr-row.red{color:var(--danger,#d33)}
+.dr-row.red .dr-ic{background:var(--danger,#d33)}
+.dr-foot{margin:18px 0 0;text-align:center;color:var(--muted);font-size:12.5px}
 .drawer-head{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .drawer-head b{display:block;font-size:17px;overflow-wrap:anywhere}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex:none}
@@ -351,7 +383,8 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .pl-nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
 .pl-end{text-align:center;padding:40px 0}
 .onb{z-index:91}
-.tabs.nocoach{grid-template-columns:repeat(4,1fr)}
+.tabs .stab{display:none}
+.tabs.nocoach .stab{display:flex}
 .tabs.nocoach .ctab{display:none}
 .plans{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .plan{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
@@ -567,6 +600,7 @@ label.ghost{color:var(--ink);font-weight:600}
 .ritem input[type=text],.ritem input[type=number]{min-height:40px;padding:6px 8px;min-width:0}
 .ritem .mm{grid-column:2/4;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .ritem input[type=checkbox]{width:22px;height:22px;margin:0;accent-color:var(--ink)}
+#license.busy .plans,#license.busy details,#license.busy [data-act=liccheck]{opacity:.4;pointer-events:none}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
@@ -655,6 +689,7 @@ label.ghost{color:var(--ink);font-weight:600}
   <i class="tabind" aria-hidden="true"></i>
   <button data-act="tab" data-tab="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
   <button data-act="tab" data-tab="seances"><svg viewBox="0 0 24 24"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>Séances</button>
+  <button data-act="tab" data-tab="suivi" class="stab"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg>Suivi</button>
   <button data-act="tab" data-tab="coach" class="ctab"><span class="cbub"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span>Coach</button>
   <button data-act="tab" data-tab="journal"><svg viewBox="0 0 24 24"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>Assiette</button>
   <button data-act="tab" data-tab="nutrition"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Nutrition</button>
@@ -662,7 +697,7 @@ label.ghost{color:var(--ink);font-weight:600}
 
 <div id="drawer" class="drawer" hidden>
   <nav class="drawer-in" aria-label="Menu">
-    <div class="drawer-head"><span class="avatar" id="dr-av" aria-hidden="true"></span><div style="flex:1;min-width:0"><b id="dr-name"></b><p class="note" id="dr-sub"></p></div><button type="button" class="x" data-act="dclose" aria-label="Fermer le menu">×</button></div>
+    <div class="dr-top"><span>Menu</span><button type="button" class="x" data-act="dclose" aria-label="Fermer le menu">×</button></div>
     <div id="dr-items"></div>
   </nav>
 </div>
@@ -1004,7 +1039,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 39';
+const APP_VERSION='2026.11.09 · 40';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1014,6 +1049,42 @@ function licenseSet(v){try{localStorage.setItem(LS_LICENSE,JSON.stringify(v))}ca
 function licensePlan(){const l=licenseGet();if(!l)return null;if(l.type==='admin')return 'coach';if(l.type==='sub'&&l.active)return l.plan==='coach'?'coach':'base';return null}
 function coachUnlocked(){return !IS_PWA||licensePlan()==='coach'}
 function coachActive(){return prefs().coach&&coachUnlocked()}
+const LS_LASTEMAIL='cadence-last-email';
+function licenseLogout(){
+  const l=licenseGet();try{if(l&&l.email)localStorage.setItem(LS_LASTEMAIL,l.email);localStorage.removeItem(LS_LICENSE)}catch(e){}
+  V.tab='agenda';updateGate();render();toast('Déconnecté. Tes données restent sur ce téléphone.');
+}
+function rememberCheckout(email,plan){
+  const l=licenseGet()||{};
+  try{localStorage.setItem(LS_LASTEMAIL,email)}catch(e){}
+  if(l.type==='admin')return;
+  licenseSet({type:'sub',email,active:l.email===email&&!!l.active,plan:l.email===email?(l.plan||'base'):'base',checked:0,want:plan,pending:Date.now()});
+}
+// Après le paiement Stripe : on vérifie l'abonnement tout seul (le webhook peut mettre quelques secondes).
+async function licenseActivate(){
+  const l=licenseGet(),msg=$('#lic-msg'),em=$('#lic-email');
+  if(!l||l.type!=='sub'||!l.email){V.lic=true;updateGate();if(msg)msg.textContent='Paiement reçu ! Entre l\'email utilisé pour le paiement, puis « J\'ai déjà un abonnement ».';return}
+  const want=l.want||'base',was=!!l.active;
+  if(em)em.value=l.email;
+  $('#license').classList.add('busy');
+  if(msg)msg.innerHTML='<span class="spinner" aria-hidden="true"></span> Paiement reçu, activation de ton abonnement…';
+  for(let i=0;i<15;i++){
+    try{
+      const d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json();
+      if(d.active&&(want!=='coach'||d.plan==='coach')){
+        licenseSet({type:'sub',email:l.email,active:true,plan:d.plan||'base',checked:Date.now()});
+        $('#license').classList.remove('busy');if(msg)msg.textContent='';V.lic=false;
+        updateGate();render();
+        toast(was?(d.plan==='coach'?'Cadence + Coach activé 🎉':'Abonnement mis à jour'):'Bienvenue dans Cadence 🎉');
+        return;
+      }
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,i<5?1500:3000));
+  }
+  $('#license').classList.remove('busy');
+  const cur=licenseGet();if(cur){delete cur.pending;licenseSet(cur)}
+  if(msg)msg.textContent='Paiement bien reçu, la validation prend un peu plus de temps. Appuie sur « J\'ai déjà un abonnement » dans une minute.';
+}
 function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return !!l.active;return false}
 async function sha256Hex(str){const d=new TextEncoder().encode(str);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function licenseRecheckIfStale(){
@@ -1697,21 +1768,55 @@ function renderSettings(){
   if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
   return head+'<section class="card"><h2>Données</h2><p class="note" style="margin-bottom:8px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe">Effacer les données de ce profil</button></section>';
 }
+const DR_IC={
+  user:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  users:'<path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 3.5a4 4 0 0 1 0 7.5M22 21a7 7 0 0 0-4-6.3"/>',
+  chart:'<path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/>',
+  scale:'<rect x="3" y="4" width="18" height="16" rx="4"/><path d="M8.5 10a5 5 0 0 1 7 0L12 13"/>',
+  bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  dumb:'<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  moon:'<path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"/>',
+  lock:'<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  save:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>',
+  sync:'<path d="M20 12a8 8 0 0 1-14.3 4.9M4 12A8 8 0 0 1 18.3 7.1"/><path d="M18 3v4.5h-4.5M6 21v-4.5h4.5"/>',
+  doc:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  out:'<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/>',
+  trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>'
+};
+const drSvg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+DR_IC[k]+'</svg>';
+function planLabel(){const l=licenseGet();if(!IS_PWA)return '';if(!l)return 'Aucun abonnement';if(l.type==='admin')return 'Accès complet';if(l.type==='sub'&&l.active)return l.plan==='coach'?'Cadence + Coach':'Cadence';return 'Abonnement inactif'}
 function openDrawer(){
-  const p=S.profile,name=IS_PWA?curProfile().name:'Mon compte';
-  $('#dr-av').textContent=(name.trim()[0]||'?').toUpperCase();
-  $('#dr-name').textContent=name;
-  $('#dr-sub').textContent=p.custom?[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.weight?num(+p.weight,1)+' kg':''].filter(Boolean).join(' · '):'Profil à compléter';
-  const G=[['Compte',[['account','Mon compte'],['suivi','Mon suivi'],['poids','Pesée']].concat(IS_PWA?[['profiles','Profils']]:[])]];
-  if(IS_PWA)G.push(['Sécurité',[['security',AI_ON?'Code et clé Gemini':'Code de verrouillage'],['abo','Mon abonnement']]],['Préférences',[['train','Séances et coach'],['theme','Apparence'],['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['cgu','Conditions d\'utilisation'],['conf','Confidentialité'],['mentions','Mentions légales']]],['Données',[['data','Effacer mes données']]]);
+  const p=S.profile,name=IS_PWA?curProfile().name:'Mon compte',P=IS_PWA?profiles():null;
+  const ini=n=>(String(n).trim()[0]||'?').toUpperCase();
+  const sub=p.custom?[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.weight?num(+p.weight,1)+' kg':''].filter(Boolean).join(' · '):'Profil à compléter';
   const cur=V.tab==='suivi'?'suivi':V.tab==='poids'?'poids':V.tab==='legal'?V.doc:V.tab==='settings'?V.sec:'';
-  if(!V.drOpen){V.drOpen=new Set();const curGroup=G.findIndex(g=>g[1].some(x=>x[0]===cur));V.drOpen.add(curGroup<0?0:curGroup)}
-  $('#dr-items').innerHTML=G.map((g,i)=>{
-    const open=V.drOpen.has(i);
-    return '<button type="button" class="dr-group" data-act="drgroup" data-grp="'+i+'" aria-expanded="'+open+'"><span>'+g[0]+'</span><span class="chev" aria-hidden="true">▾</span></button>'
-     +'<div class="dr-wrap"'+(open?'':' hidden')+'>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')+'</div>';
-  }).join('');
-  $('#dr-items').insertAdjacentHTML('beforeend','<button type="button" class="dr-ver" data-act="updcheck"><span>Version '+APP_VERSION+'</span><span>Rechercher une mise à jour</span></button>');
+  const pl=planLabel(),pro=licensePlan()==='coach';
+  const row=(sec,ic,lbl,col,val,act)=>'<button type="button" class="dr-row" data-act="'+(act||'sec')+'"'+(act?'':' data-sec="'+sec+'"')+(sec===cur&&!act?' aria-current="page"':'')+'><span class="dr-ic" style="--c:'+col+'">'+drSvg(ic)+'</span><span class="lbl">'+lbl+'</span>'+(val?'<span class="val">'+esc(val)+'</span>':'')+'<span class="go" aria-hidden="true">›</span></button>';
+  const list=(t,rows)=>'<p class="dr-sec">'+t+'</p><div class="dr-list">'+rows.join('')+'</div>';
+  let h='<button type="button" class="dr-me" data-act="sec" data-sec="account"><span class="avatar" aria-hidden="true">'+esc(ini(name))+'</span><span class="dr-me-t"><b>'+esc(name)+'</b><small>'+esc(sub)+'</small>'+(pl?'<span class="dr-badge'+(pro?' pro':'')+'">'+esc(pl)+'</span>':'')+'</span><span class="go" aria-hidden="true">›</span></button>';
+  if(IS_PWA){
+    h+='<div class="dr-profs" role="group" aria-label="Changer de profil">'+P.list.map(x=>'<button type="button" class="dr-prof'+(x.id===P.active?' on':'')+'" data-act="drprofile" data-pid="'+x.id+'"'+(x.id===P.active?' aria-current="true"':'')+'><span class="avatar" aria-hidden="true">'+esc(ini(x.name))+'</span><span>'+esc(x.name)+(lockedProfile(x.id)?' 🔒':'')+'</span></button>').join('')
+      +(P.list.length<6?'<button type="button" class="dr-prof" data-act="sec" data-sec="profiles"><span class="avatar add" aria-hidden="true">+</span><span>Ajouter</span></button>':'')+'</div>';
+  }
+  h+='<div class="dr-tiles"><button type="button" class="dr-tile" data-act="sec" data-sec="suivi">'+drSvg('chart')+'Mon suivi</button><button type="button" class="dr-tile" data-act="sec" data-sec="poids">'+drSvg('scale')+'Pesée</button><button type="button" class="dr-tile" data-act="theme">'+drSvg('moon')+(effTheme()==='dark'?'Mode clair':'Mode sombre')+'</button></div>';
+  const lk=IS_PWA&&lockCfg();
+  h+=list('Mon espace',[row('account','user','Mon compte','#5b6cff'),IS_PWA?row('profiles','users','Profils','#8b5cf6',P.list.length+' profil'+(P.list.length>1?'s':'')):''].filter(Boolean));
+  if(IS_PWA){
+    h+=list('Abonnement',[row('abo','star','Mon abonnement','#f59e0b',pl)]);
+    h+=list('Préférences',[row('train','dumb','Séances et coach','#10b981',prefs().coach?'Coach activé':'Mes séances'),row('notif','bell','Notifications','#ef4444',pushInfo()?'Activées':''),row('theme','moon','Apparence','#334155',{auto:'Auto',light:'Clair',dark:'Sombre'}[themePref()])]);
+    h+=list('Sécurité et données',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
+    h+=list('Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
+    h+='<div class="dr-list" style="margin-top:18px">'
+      +(lk?'<button type="button" class="dr-row" data-act="locknow"><span class="dr-ic" style="--c:#0ea5e9">'+drSvg('lock')+'</span><span class="lbl">Verrouiller maintenant</span></button>':'')
+      +'<button type="button" class="dr-row red" data-act="drlogout"><span class="dr-ic">'+drSvg('out')+'</span><span class="lbl">Se déconnecter</span></button></div>'
+      +'<div class="dr-list" style="margin-top:10px"><button type="button" class="dr-row red" data-act="sec" data-sec="data"><span class="dr-ic">'+drSvg('trash')+'</span><span class="lbl">Effacer les données du profil</span><span class="go" aria-hidden="true">›</span></button></div>';
+  }
+  h+='<p class="dr-foot">Cadence · version '+esc(APP_VERSION)+'</p>';
+  $('#dr-items').innerHTML=h;
+  V.drLogoutArmed=false;
   $('#drawer').hidden=false;
 }
 function closeDrawer(){$('#drawer').hidden=true}
@@ -2590,7 +2695,7 @@ function wipeAll(){
 function updateGate(){
   const lic=$('#license'),g=$('#gate');
   const needLic=IS_PWA&&(!licenseOK()||V.lic)&&V.tab!=='legal';
-  if(lic)lic.hidden=!needLic;
+  if(lic){lic.hidden=!needLic;if(needLic){const em=$('#lic-email');if(em&&!em.value){const l=licenseGet();let v=l&&l.email;if(!v)try{v=localStorage.getItem(LS_LASTEMAIL)}catch(e){}if(v)em.value=v}}}
   if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'||needLic;
 }
 
@@ -3400,7 +3505,7 @@ document.addEventListener('click',e=>{
     V.tab='agenda';V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;
     render();window.scrollTo({top:0,behavior:'smooth'});
   }
-  else if(a==='theme'){setTheme(effTheme()==='dark'?'light':'dark');if(V.tab==='settings')render()}
+  else if(a==='theme'){setTheme(effTheme()==='dark'?'light':'dark');if(V.tab==='settings')render();if(!$('#drawer').hidden)openDrawer()}
   else if(a==='settheme'){setTheme(b.dataset.t);render()}
   else if(a==='mpick'){openMonthPicker()}
   else if(a==='mclose'){closeMonthPicker()}
@@ -3520,14 +3625,15 @@ document.addEventListener('click',e=>{
     const email=($('#lic-email').value||'').trim().toLowerCase();
     const msg=$('#lic-msg');
     if(!email){msg.textContent="Entre ton email avant de t'abonner.";return}
+    rememberCheckout(email,b.dataset.plan==='coach'?'coach':'base');
     location.href=WORKER_URL+'/checkout?plan='+(b.dataset.plan==='coach'?'coach':'base')+'&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
-  else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
+  else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}rememberCheckout(email,'coach');location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='licportal'){
     const l=licenseGet();if(!l||!l.email)return;
     location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
-  else if(a==='liclogout'){try{localStorage.removeItem(LS_LICENSE)}catch(e){}updateGate();render()}
+  else if(a==='liclogout'){licenseLogout()}
   else if(a==='wipe'){
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
     V.wipeArmed=false;wipeAll();
@@ -3566,6 +3672,12 @@ document.addEventListener('click',e=>{
     P.list=P.list.filter(x=>x.id!==pid);P.active=P.list[0].id;saveProfiles();switchProfile(P.active);
   }
   else if(a==='dopen'){openDrawer()}
+  else if(a==='drprofile'){const pid=b.dataset.pid;if(pid===profiles().active){closeDrawer();V.tab='settings';V.sec='account';render();window.scrollTo(0,0);return}closeDrawer();switchProfile(pid);toast('Profil « '+curProfile().name+' »')}
+  else if(a==='locknow'){closeDrawer();showLock()}
+  else if(a==='drlogout'){
+    if(!V.drLogoutArmed){V.drLogoutArmed=true;b.querySelector('.lbl').textContent='Confirmer la déconnexion';setTimeout(()=>{if(V.drLogoutArmed&&b.isConnected){V.drLogoutArmed=false;b.querySelector('.lbl').textContent='Se déconnecter'}},4000);return}
+    V.drLogoutArmed=false;licenseLogout();closeDrawer();
+  }
   else if(a==='dclose'){closeDrawer()}
   else if(a==='drgroup'){const i=+b.dataset.grp;if(!V.drOpen)V.drOpen=new Set();if(V.drOpen.has(i))V.drOpen.delete(i);else V.drOpen.add(i);openDrawer();return}
   else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else if(x==='suivi')V.tab='suivi';else if(x==='cgu'||x==='conf'||x==='mentions'){if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=x}else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0)}
@@ -3770,9 +3882,11 @@ fillSelects();
 if(IS_PWA){
   try{
     const qs=new URLSearchParams(location.search);
-    if(qs.get('lic')==='ok'){const l=licenseGet();if(l)l.checked=0;if(l)licenseSet(l);history.replaceState(null,'',location.pathname)}
+    if(qs.get('lic')==='ok'){V.licReturn=true;history.replaceState(null,'',location.pathname)}
+    else if(qs.get('lic')==='cancel'){const l=licenseGet();if(l&&l.pending){delete l.pending;delete l.want;licenseSet(l)}history.replaceState(null,'',location.pathname);setTimeout(()=>toast('Paiement annulé'),300)}
   }catch(e){}
-  licenseRecheckIfStale().then(()=>render());
+  if(V.licReturn)setTimeout(licenseActivate,50);
+  else licenseRecheckIfStale().then(()=>render());
 }
 render();
 if(IS_PWA){
