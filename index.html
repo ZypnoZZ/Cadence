@@ -568,7 +568,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .ssx img{width:64px;height:44px;object-fit:cover;border-radius:8px;flex:none;background:#fff}
 .ssn{width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
 .ssi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ssi b{font-size:15px}.ssi span{font-size:13px;color:var(--muted)}
-.ssx .vid{margin:0}
+.ssx .vid{margin:0}.jedit{background:none;border:0;color:var(--muted);font-size:16px;padding:6px;cursor:pointer;line-height:1}.wxin{width:100%;font:inherit;font-size:18px;font-weight:700;padding:6px 8px;border-radius:10px;border:1px solid var(--line,#ccc);background:var(--card,#fff);color:inherit}
 .dgh{flex:none;width:34px;height:40px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;touch-action:none;cursor:grab;padding:0;min-height:0;-webkit-user-select:none;user-select:none}.ssx .dgh{margin-left:auto}
 .dragging{position:relative;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,.28);background:var(--surface);border-radius:14px;transition:none!important}
 body.dg-on{-webkit-user-select:none;user-select:none;overscroll-behavior:none}
@@ -1371,7 +1371,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 64';
+const APP_VERSION='2026.11.10 · 65';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2874,7 +2874,7 @@ document.addEventListener('keydown',e=>{
 });
 function exoCardHTML(w,e,i){
   const lp=lastPerf(e.name,w);
-  let h='<section class="card wex" data-dg="1" data-dgt="w" data-di="'+i+'"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+DGH+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+esc(e.name)+'</h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
+  let h='<section class="card wex" data-dg="1" data-dgt="w" data-di="'+i+'"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+DGH+(e.name&&e.kind!=='cardio'?vidA(e.name):'')+'<span class="wxn" style="min-width:0;flex:1">'+esc(e.name)+'</span><button type="button" class="jedit" data-act="wrenex" data-i="'+i+'" aria-label="Renommer '+esc(e.name)+'" title="Renommer">✎</button></h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
   if(lp)h+='<p class="note" style="margin-bottom:8px">Dernière fois ('+esc(FMT.short.format(parseISO(lp.date)))+') : '+esc(perfText(lp.e))+'</p>';
   if(e.kind==='cardio'){
     h+='<div class="r2"><label><span class="lab">Durée (min)</span><input type="number" inputmode="decimal" min="0" data-wi="'+i+'" data-k="min" value="'+esc(e.min)+'"></label><label><span class="lab">Distance (km)</span><input type="number" inputmode="decimal" step="0.01" min="0" data-wi="'+i+'" data-k="km" value="'+esc(e.km)+'"></label></div><p class="note" id="wx-'+i+'">'+cardioPace(e)+'</p>';
@@ -4785,6 +4785,7 @@ document.addEventListener('click',e=>{
     touch();render();
     const c=document.querySelectorAll('.wex');if(c.length)c[c.length-1].scrollIntoView({block:'center'});
   }
+  else if(a==='wrenex'){const w=curW(),i=+b.dataset.i,sp=b.parentNode.querySelector('.wxn');if(w&&w.ex[i]&&sp&&!sp.querySelector('input')){const inp=document.createElement('input');inp.type='text';inp.className='wxin';inp.value=w.ex[i].name;inp.maxLength=60;inp.setAttribute('aria-label','Nom de l\'exercice');sp.textContent='';sp.appendChild(inp);inp.focus();inp.select();let done=false;const fin=ok=>{if(done)return;done=true;const v=inp.value.trim();if(ok&&v&&v!==w.ex[i].name){w.ex[i].name=v;touch()}render()};inp.addEventListener('blur',()=>fin(true));inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();fin(true)}else if(ev.key==='Escape'){fin(false)}})}}
   else if(a==='wdelex'){const w=curW();if(w){w.ex.splice(+b.dataset.i,1);touch();render()}}
   else if(a==='waddset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){const l=e.sets[e.sets.length-1];e.sets.push(l?{r:l.r,kg:l.kg}:{r:'',kg:''});touch();render()}}
   else if(a==='wdelset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){e.sets.splice(+b.dataset.j,1);touch();render()}}
