@@ -283,6 +283,35 @@ export default {
       }
     }
 
+    // POST /resume?email=... -> annule une résiliation programmée, sans passer par Stripe
+    if (url.pathname === '/resume') {
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      const key = 'lic:' + email;
+      const data = JSON.parse((await env.LICENSES.get(key)) || 'null');
+      if (!data || !data.customerId) return json({ ok: false, error: 'Aucun abonnement trouvé' }, 404);
+      try {
+        let subId = data.subscriptionId;
+        if (!subId) {
+          const list = await stripeGet(env, 'subscriptions?customer=' + encodeURIComponent(data.customerId) + '&status=active&limit=1');
+          subId = list && list.data && list.data[0] && list.data[0].id;
+        }
+        const sub = subId && await stripeGet(env, 'subscriptions/' + subId);
+        if (!sub || !sub.id) return json({ ok: false, error: 'Abonnement introuvable' }, 404);
+        let cur = sub;
+        if (sub.status !== 'active' && sub.status !== 'trialing') return json({ ok: false, error: 'Cet abonnement est terminé, réabonne-toi' }, 409);
+        if (cancelAtOf(sub)) {
+          const body = { cancel_at_period_end: 'false' };
+          if (sub.cancel_at) body.cancel_at = '';
+          cur = await stripe(env, 'subscriptions/' + sub.id, body);
+        }
+        await saveSub(env, cur);
+        const v = JSON.parse((await env.LICENSES.get(key)) || '{}');
+        return json({ ok: true, active: !!v.active, plan: v.plan || 'base', cancelAt: v.cancelAt || null });
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 500);
+      }
+    }
+
     // GET /portal?email=... -> redirige vers le portail client Stripe (gérer/annuler l'abonnement)
     if (url.pathname === '/portal') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();

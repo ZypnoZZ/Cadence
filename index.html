@@ -888,6 +888,28 @@ label.ghost{color:var(--ink);font-weight:600}
 .needs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border:1px solid var(--line);border-radius:18px;background:var(--surface);padding:14px 8px;margin-bottom:12px;text-align:center;animation:accIn .45s both}
 .needs div{display:flex;flex-direction:column;gap:2px}.needs b{font-size:17px}.needs span{font-size:11px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.acc,.needs{animation:none}.acc-b,.acc-b>div,.acc-c{transition:none}}
+
+.csc .pin{position:absolute;z-index:3;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent,#fff);font-weight:800;font-size:12px;display:grid;place-items:center;animation:cscPinIn .5s both,cscPin 1.8s 1s infinite}
+@keyframes cscPinIn{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes cscPin{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+.csc .hl{animation:cscHl 1.8s infinite}
+.csc .hlr{border-radius:50%;animation:cscHl 1.8s infinite}
+@keyframes cscHl{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 70%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 20%,transparent)}}
+.csc .lg{position:absolute;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px}
+.csc .lg span{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border-radius:99px;background:var(--soft);font-size:11.5px;font-weight:700;color:var(--ink);animation:cscTag .5s both}
+.csc .lg i{width:18px;height:18px;border-radius:50%;background:var(--accent);color:var(--on-accent,#fff);font-style:normal;display:grid;place-items:center;font-size:11px}
+
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}::view-transition-new(root){z-index:2}
+
+.acc-p{flex:none;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:var(--soft);color:var(--muted)}
+.acc-p.on{background:color-mix(in srgb,var(--d-today) 16%,transparent);color:var(--d-today)}
+.dr-fold{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 4px);background:none;border:0;font:inherit;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;cursor:pointer;margin-top:18px;padding:6px 2px}
+.dr-fold svg{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s ease}
+.dr-fold.open svg{transform:rotate(180deg)}
+.dr-fb{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}
+.dr-fb.open{grid-template-rows:1fr}
+.dr-fb>div{min-height:0;overflow:hidden}
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
 </head>
@@ -1328,7 +1350,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 48';
+const APP_VERSION='2026.11.09 · 49';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1419,7 +1441,7 @@ function planFeedback(before,now){
     if(!S.tuto){pSheet({tone:'ok',icon:'check',title:'Bienvenue dans Cadence + Coach',sub:'Ton abonnement est actif. Un petit tour, quelques questions, et ton coach se met en place.',btn:'C\'est parti'});return}
     $('#psheet').hidden=true;celebrate(prefs().coach===false?'integrate':'unlock');return}
   if(now.cancelAt&&(!bl||(before.cancelAt||null)!==now.cancelAt)){
-    pSheet({tone:'warn',icon:'clock',title:'Résiliation enregistrée',sub:'Tu gardes tout Cadence jusqu\'à la fin de la période payée. Ensuite, l\'app se verrouille et il faudra te réabonner pour la retrouver.',days:dLeft(now.cancelAt),until:fmtEnd(now.cancelAt),btn:'Compris',link:{label:'Finalement, je garde mon abonnement',act:'licportal',attrs:' data-flow=""'}});return}
+    pSheet({tone:'warn',icon:'clock',title:'Résiliation enregistrée',sub:'Tu gardes tout Cadence jusqu\'à la fin de la période payée. Ensuite, l\'app se verrouille et il faudra te réabonner pour la retrouver.',days:dLeft(now.cancelAt),until:fmtEnd(now.cancelAt),btn:'Compris',link:{label:'Finalement, je garde mon abonnement',act:'planresume',attrs:''}});return}
   if(bl&&before.cancelAt&&!now.cancelAt){pSheet({tone:'ok',icon:'undo',title:'Résiliation annulée',sub:'Ton abonnement continue normalement. Rien ne change.',btn:'Super'});return}
   if(wasCoach&&now.plan==='base'){pSheet({tone:'info',icon:'info',title:'Formule Cadence',sub:'Le coach est mis de côté. Tu peux le reprendre quand tu veux depuis l\'onglet Coach.',btn:'OK'});return}
   if(!bl){pSheet({tone:'ok',icon:'check',title:'Bienvenue dans Cadence',sub:'Ton abonnement est actif. Tout est prêt !',btn:'C\'est parti'});return}
@@ -1472,40 +1494,38 @@ const TUTO=[
   {k:'nutrition',t:'Ta nutrition',x:'Tes objectifs de calories et de macros, des menus, ta liste de courses et ton suivi.'},
   {k:'menu',t:'Ton menu',x:'Touche la roue en haut à gauche : ton compte, tes profils, ton abonnement, la sauvegarde et le code de verrouillage.'}
 ];
-const ARW=(st,d,hd)=>'<svg class="arw" style="'+st+'" viewBox="0 0 44 44"><path pathLength="1" d="'+d+'"/><path pathLength="1" d="'+hd+'"/></svg>';
+const PIN=(n,l,t)=>'<span class="pin" style="left:'+l+'px;top:'+t+'px;animation-delay:'+(n*.25)+'s">'+n+'</span>';
+const LEG=(top,arr)=>'<div class="lg" style="top:'+top+'px">'+arr.map((t,i)=>'<span style="animation-delay:'+(.5+i*.25)+'s"><i>'+(i+1)+'</i>'+t+'</span>').join('')+'</div>';
 function coachScene(k){
   if(k==='c_prog')return '<div class="csc">'
-    +'<span class="a lb" style="left:16px;top:14px">1 · TON NIVEAU</span>'
-    +['Débutant','Inter.','Avancé'].map((t,i)=>'<span class="a chip" style="left:'+(14+i*106)+'px;top:36px;width:98px;animation-delay:'+(i*1.5)+'s">'+t+'</span>').join('')
-    +ARW('left:148px;top:78px','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
-    +'<span class="tg" style="left:200px;top:92px">Le coach s\'adapte</span>'
-    +'<div class="a box" style="left:14px;right:14px;top:132px;height:104px;padding:12px 14px"><b style="font-size:15px">Mon programme</b><div class="lb" style="margin:2px 0 12px">12 semaines · selon ton objectif et ton matériel</div>'
-    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+Array.from({length:12},(_,i)=>'<i class="dot" style="animation-delay:'+(i*.18)+'s"></i>').join('')+'</div></div></div>';
+    +'<span class="a lb" style="left:16px;top:12px">TON NIVEAU</span>'
+    +['Débutant','Inter.','Avancé'].map((t,i)=>'<span class="a chip" style="left:'+(14+i*106)+'px;top:32px;width:98px;animation-delay:'+(i*1.5)+'s">'+t+'</span>').join('')
+    +PIN(1,310,22)
+    +'<div class="a box hl" style="left:14px;right:14px;top:84px;height:100px;padding:11px 14px"><b style="font-size:15px">Mon programme</b><div class="lb" style="margin:2px 0 10px">12 semaines · selon ton objectif et ton matériel</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+Array.from({length:12},(_,i)=>'<i class="dot" style="animation-delay:'+(i*.18)+'s"></i>').join('')+'</div></div>'
+    +PIN(2,310,76)+LEG(204,['Tes réponses','Programme sur mesure'])+'</div>';
   if(k==='c_week')return '<div class="csc">'
-    +'<span class="a lb" style="left:16px;top:12px">SEMAINE 3 SUR 12</span>'
-    +'<div class="a" style="left:12px;top:32px;display:flex;gap:6px">'+['L','M','M','J','V','S','D'].map((d,i)=>'<span class="day'+([0,2,4,5].includes(i)?' on':'')+(i===2?' now':'')+'">'+d+'</span>').join('')+'</div>'
-    +ARW('left:86px;top:74px;transform:rotate(180deg) scaleX(-1)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29').replace('rotate(180deg) scaleX(-1)','rotate(0deg)')
-    +'<span class="tg" style="left:122px;top:84px">Ta séance du jour</span>'
-    +'<div class="a box" style="left:14px;right:14px;top:122px;height:50px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between"><span><b>Haut du corps</b><br><span class="lb">45 min · 6 exercices</span></span><span class="btn p" style="width:84px">C\'est parti</span></div>'
-    +'<span class="a btn g" style="left:14px;right:14px;top:184px;height:34px">Ajouter la semaine à l\'agenda</span>'
-    +'<span class="tg" style="left:14px;top:224px;animation:cscTag .6s .9s both">↑ en un seul geste</span></div>';
+    +'<span class="a lb" style="left:16px;top:10px">SEMAINE 3 SUR 12</span>'
+    +'<div class="a" style="left:12px;top:28px;display:flex;gap:6px">'+['L','M','M','J','V','S','D'].map((d,i)=>'<span class="day'+([0,2,4,5].includes(i)?' on':'')+(i===2?' now':'')+'">'+d+'</span>').join('')+'</div>'
+    +PIN(1,114,20)
+    +'<div class="a box hl" style="left:14px;right:14px;top:88px;height:52px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between"><span><b>Haut du corps</b><br><span class="lb">45 min · 6 exercices</span></span><span class="btn p" style="width:84px">C\'est parti</span></div>'
+    +PIN(2,310,80)
+    +'<span class="a btn g" style="left:14px;right:14px;top:150px;height:34px">Ajouter la semaine à l\'agenda</span>'
+    +PIN(3,310,142)+LEG(204,['Jour en cours','Séance guidée','Tout l\'agenda'])+'</div>';
   if(k==='c_sess')return '<div class="csc">'
-    +'<span class="a lb" style="left:16px;top:14px">SÉANCE GUIDÉE</span>'
-    +'<div class="a" style="left:14px;top:40px;width:104px;height:104px"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" pathLength="1" cx="52" cy="52" r="44"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1"><span><b style="font-size:17px">Repos</b><br><span class="lb">60 s</span></span></div></div>'
-    +ARW('left:44px;top:150px;transform:rotate(180deg)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
-    +'<span class="tg" style="left:12px;top:204px">Minuteur de repos</span>'
-    +'<div class="a" style="left:136px;right:14px;top:40px;display:grid;gap:8px">'
+    +'<span class="a lb" style="left:16px;top:12px">SÉANCE GUIDÉE</span>'
+    +'<div class="a hlr" style="left:16px;top:36px;width:104px;height:104px"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" pathLength="1" cx="52" cy="52" r="44"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1"><span><b style="font-size:17px">Repos</b><br><span class="lb">60 s</span></span></div></div>'
+    +PIN(1,104,30)
+    +'<div class="a hl" style="left:138px;right:14px;top:36px;display:grid;gap:8px;padding:6px;border-radius:16px">'
     +[['Pompes','4×12'],['Rowing','4×10'],['Gainage','3×40 s']].map((e,i)=>'<span class="ex"><span>'+e[0]+'</span><span class="lb">'+e[1]+'</span><i style="animation-delay:'+(i*1.2)+'s">✓</i></span>').join('')+'</div>'
-    +ARW('left:150px;top:150px;transform:rotate(180deg)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
-    +'<span class="tg" style="left:168px;top:204px">Charges notées</span></div>';
+    +PIN(2,310,26)+LEG(204,['Minuteur de repos','Charges notées'])+'</div>';
   return '<div class="csc">'
-    +'<span class="a lb" style="left:16px;top:12px">ÉTIREMENTS · 12 MIN</span>'
-    +'<div class="a" style="left:18px;top:34px;display:flex;gap:6px;align-items:flex-end;height:46px">'+[.9,.5,1,.6,.8,.45,.95,.55].map((h,i)=>'<i class="bar" style="height:'+Math.round(h*44)+'px;animation-delay:'+(i*.14)+'s"></i>').join('')+'</div>'
-    +'<span class="a lb" style="right:16px;top:44px;text-align:right;line-height:1.4">Après une séance<br>ou un jour de repos</span>'
-    +'<div class="a ckrow" style="left:14px;right:14px;top:104px"><i class="ckb"></i><span>Je fais mes propres séances : masquer l\'onglet Coach</span></div>'
-    +ARW('right:30px;top:140px','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29').replace('top:140px','top:142px;transform:rotate(180deg)')
-    +'<span class="tg" style="left:14px;top:156px">En bas de la page Coach</span>'
-    +'<div class="a mtabs" style="left:0;right:0;bottom:0"><i></i><i></i><b></b><i></i><i></i></div></div>';
+    +'<span class="a lb" style="left:16px;top:10px">ÉTIREMENTS · 12 MIN</span>'
+    +'<div class="a" style="left:18px;top:30px;display:flex;gap:6px;align-items:flex-end;height:40px">'+[.9,.5,1,.6,.8,.45,.95,.55].map((h,i)=>'<i class="bar" style="height:'+Math.round(h*38)+'px;animation-delay:'+(i*.14)+'s"></i>').join('')+'</div>'
+    +'<span class="a lb" style="right:16px;top:38px;text-align:right;line-height:1.4">Après une séance<br>ou un jour de repos</span>'
+    +'<div class="a ckrow hl" style="left:14px;right:14px;top:84px"><i class="ckb"></i><span>Je fais mes propres séances : masquer l\'onglet Coach</span></div>'
+    +PIN(1,310,76)+LEG(146,['En bas de la page Coach','L\'onglet disparaît'])
+    +'<div class="a mtabs" style="left:0;right:0;bottom:0"><i></i><i></i><b></b><i></i><i></i></div>'+PIN(2,148,196)+'</div>';
 }
 function tutoIcon(k){
   if(k==='welcome'||k==='coach'||k.indexOf('c_')===0)return CL_BOLT;
@@ -1985,6 +2005,22 @@ function applyTheme(){
   const b=document.getElementById('themebtn');
   if(b){b.innerHTML=eff==='dark'?ICON_SUN:ICON_MOON;b.setAttribute('aria-label',eff==='dark'?'Passer en thème clair':'Passer en thème sombre')}
 }
+function themeSwap(t,ev){
+  const W=innerWidth,H=innerHeight,x=(ev&&ev.clientX)||W-40,y=(ev&&ev.clientY)||40,r=Math.hypot(Math.max(x,W-x),Math.max(y,H-y));
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const apply=()=>{setTheme(t);if(V.tab==='settings')render();if(!$('#drawer').hidden)openDrawer()};
+  if(reduce){apply();return}
+  if(document.startViewTransition){
+    try{const tr=document.startViewTransition(apply);
+      tr.ready.then(()=>document.documentElement.animate({clipPath:['circle(0px at '+x+'px '+y+'px)','circle('+r+'px at '+x+'px '+y+'px)']},{duration:700,easing:'cubic-bezier(.5,0,.2,1)',pseudoElement:'::view-transition-new(root)'})).catch(()=>{});
+      return}catch(e){}
+  }
+  const dark=(t==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches):t==='dark');
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;background:'+(dark?'#0B0A11':'#F6F5FB')+';clip-path:circle(0px at '+x+'px '+y+'px);transition:clip-path .55s cubic-bezier(.5,0,.2,1),opacity .35s ease .55s';
+  document.body.appendChild(o);void o.offsetWidth;o.style.clipPath='circle('+r+'px at '+x+'px '+y+'px)';
+  setTimeout(()=>{apply();o.style.opacity='0'},560);setTimeout(()=>o.remove(),950);
+}
 function setTheme(p){try{localStorage.setItem(LS_THEME,p)}catch(e){}applyTheme()}
 function renderMonthPicker(){
   const y=V.pyear;$('#m-year').textContent=y;
@@ -2215,9 +2251,10 @@ function switchProfile(pid){
 /* ---------- Réglages ---------- */
 const ACC_ICON={perso:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',rythme:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',diet:'<path d="M5 3v8a3 3 0 0 0 3 3v7M11 3v8a3 3 0 0 1-3 3M17 21V3c-2 1-3.5 4-3.5 8 0 2 1.2 3 3.5 3"/>',coach:'<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>',seance:'<path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
 const isAcc=(k,def)=>V.acc&&k in V.acc?!!V.acc[k]:!!def;
-function acc(key,ic,title,sum,body,def){
+function acc(key,ic,title,sum,body,def,pill){
   const o=isAcc(key,def);
-  return '<section class="acc'+(o?' open':'')+'" data-k="'+key+'"><button type="button" class="acc-h" data-act="acc" aria-expanded="'+o+'"><span class="acc-i"><svg viewBox="0 0 24 24">'+(ACC_ICON[ic]||'')+'</svg></span><span class="acc-t"><b>'+title+'</b><small>'+sum+'</small></span><svg class="acc-c" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-b"><div>'+body+'</div></div></section>';
+  const pl=pill?'<span class="acc-p'+(pill[1]?' on':'')+'">'+pill[0]+'</span>':'';
+  return '<section class="acc'+(o?' open':'')+'" data-k="'+key+'"><button type="button" class="acc-h" data-act="acc" aria-expanded="'+o+'"><span class="acc-i"><svg viewBox="0 0 24 24">'+(ACC_ICON[ic]||'')+'</svg></span><span class="acc-t"><b>'+title+'</b><small>'+sum+'</small></span>'+pl+'<svg class="acc-c" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-b"><div>'+body+'</div></div></section>';
 }
 const GOAL_L={prise:'Prise de masse',maintien:'Maintien',seche:'Déficit'};
 function accountHTML(){
@@ -2275,8 +2312,9 @@ function renderSettings(){
     const lockHTML=lk
       ?'<p class="note" style="margin-bottom:8px">Code activé. Cadence le demande à chaque ouverture et après 1 minute en arrière-plan.</p><div class="r3">'+pinIn('pin-cur','Code actuel')+pinIn('pin-new','Nouveau code')+pinIn('pin-new2','Confirmer')+'</div><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="pinchange">Changer le code</button><button type="button" class="ghost" data-act="pinoff">Désactiver</button></div>'
       :'<p class="note" style="margin-bottom:8px">Protège ce profil avec un code de 4 à 6 chiffres. Si tu l\'oublies, il faudra effacer les données du profil.</p><div class="r2">'+pinIn('pin-new','Code')+pinIn('pin-new2','Confirmer le code')+'</div><button type="button" class="primary" data-act="pinon">Activer le code</button>';
-    return head+'<section class="card"><h2>Sécurité</h2><h3 class="group-h" style="margin-top:6px">Code de verrouillage</h3>'+lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>'
-     +(!AI_ON?'':'<h3 class="group-h">Clé Gemini (photo des repas)</h3>'+(key?'<p class="note" style="margin-bottom:8px">Clé enregistrée sur ce téléphone, pour ce profil.</p><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="testkey">Tester ma clé</button><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button></div><p class="note" id="key-msg" style="margin-top:8px"></p>':'<p class="note">Aucune clé. Ajoute-la depuis Assiette, bouton +, puis Photo.</p>'))+'</section>';
+    return head+'<h2 class="pg-t">Sécurité</h2>'
+     +acc('s-code','perso','Code de verrouillage',lk?'Demandé à chaque ouverture':'Protège ce profil',lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>',!lk,[lk?'Activé':'Désactivé',!!lk])
+     +(!AI_ON?'':acc('s-key','save','Clé Gemini','Photo des repas',(key?'<p class="note" style="margin-bottom:8px">Clé enregistrée sur ce téléphone, pour ce profil.</p><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="testkey">Tester ma clé</button><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button></div><p class="note" id="key-msg" style="margin-top:8px"></p>':'<p class="note">Aucune clé. Ajoute-la depuis Assiette, bouton +, puis Photo.</p>'),false,[key?'Enregistrée':'Aucune',!!key]));
   }
   if(sec==='abo'){
     const l=licenseGet();
@@ -2295,7 +2333,7 @@ function renderSettings(){
         if(l.cancelAt){}
         else if(l.plan!=='coach')body+=btn('planchange','Passer à Cadence + Coach','primary',' data-plan="coach"');
         else body+=btn('planchange','Revenir à Cadence seul','ghost',' data-plan="base"');
-        body+=l.cancelAt?btn('licportal','Annuler la résiliation','primary',' data-flow=""'):btn('licportal','Résilier mon abonnement','ghost danger-t',' data-flow="cancel"');
+        body+=l.cancelAt?btn('planresume','Annuler la résiliation','primary',''):btn('licportal','Résilier mon abonnement','ghost danger-t',' data-flow="cancel"');
         body+=btn('licportal','Factures et carte bancaire','ghost',' data-flow=""');
       }
       body+='<p class="note" style="margin-top:10px">Le changement de formule se fait ici, sans quitter Cadence. La résiliation et les factures s\'ouvrent dans Stripe, qui se referme tout seul.</p>'
@@ -2307,9 +2345,9 @@ function renderSettings(){
     const p=prefs(),row=(k,cur,list,lab,note)=>'<span class="clab">'+lab+'</span><div class="modes" style="margin-bottom:4px">'+list.map(x=>'<button type="button" data-act="pset" data-k="'+k+'" data-v="'+x[0]+'" aria-pressed="'+(String(cur)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>'+(note?'<p class="note" style="margin-bottom:8px">'+note+'</p>':'');
     const onoff=v=>v?'Activé':'Désactivé';
     return head+'<h2 class="pg-t">Séances et coach</h2>'
-     +acc('t-coach','coach','Coach personnel',esc(onoff(p.coach)+(coachActive()?' · programme actif':'')),
+     +acc('t-coach','coach','Coach personnel',esc(coachActive()?'Programme actif':coachUnlocked()?'Programme à créer':'Cadence + Coach'),
         row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Onglet Coach','Désactivé : l\'onglet Coach disparaît et tu crées tes propres séances dans Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
-        +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:6px">Refaire le questionnaire</button><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:8px auto 0">Revoir le tutoriel du coach</button>':''),true)
+        +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:6px">Refaire le questionnaire</button><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:8px auto 0">Revoir le tutoriel du coach</button>':''),true,[onoff(p.coach),!!p.coach])
      +acc('t-pend','seance','Pendant la séance',esc('Animations : '+({ask:'demander',always:'toujours',never:'jamais'}[p.anim]||'demander')+' · Minuteur : '+(p.timer?'oui':'non')),
         row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
         +row('video',p.video,[[true,'Afficher'],[false,'Masquer']],'Vidéos explicatives','')
@@ -2331,7 +2369,7 @@ function renderSettings(){
     const opts=[['off','Aucun'],['07:00','7 h'],['08:00','8 h'],['12:00','12 h'],['17:00','17 h']];
     const st=!pushSupported()?'Non disponible ici':perm==='denied'?'Refusées':pi?'Activées':'Désactivées';
     return head+'<h2 class="pg-t">Notifications</h2>'
-     +acc('n-push','bell','Rappels push',esc(st),n+'<p class="note" id="push-msg" style="margin-top:8px" aria-live="polite"></p>',true)
+     +acc('n-push','bell','Rappels push',esc(pi?'Même app fermée':'Pour tes séances'),n+'<p class="note" id="push-msg" style="margin-top:8px" aria-live="polite"></p>',true,[pi?'Activés':'Désactivés',!!pi])
      +acc('n-ag','bell','Séances de l\'agenda','Selon le réglage de chaque séance','<p class="note">Le rappel suit le réglage choisi sur chaque séance (à l\'heure, 30 min avant, la veille…).</p>')
      +(coachActive()?acc('n-coach','coach','Séance du jour du coach',esc(pr.coachH==='off'||!pr.coachH?'Aucun rappel':'Rappel à '+String(pr.coachH).slice(0,2)+' h'),'<div class="modes" style="margin-bottom:4px">'+opts.map(x=>'<button type="button" data-act="pset" data-k="coachH" data-v="'+x[0]+'" aria-pressed="'+(pr.coachH===x[0])+'">'+x[1]+'</button>').join('')+'</div><p class="note">Un rappel le matin des jours où le coach a prévu une séance.</p>'):'');
   }
@@ -2345,7 +2383,7 @@ function renderSettings(){
      +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
   }
   if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
-  return head+'<section class="card"><h2>Données</h2><p class="note" style="margin-bottom:8px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe">Effacer les données de ce profil</button></section>';
+  return head+'<h2 class="pg-t">Données</h2>'+acc('d-wipe','save','Effacer ce profil','Action définitive','<p class="note" style="margin-bottom:10px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe" style="width:100%">Effacer les données de ce profil</button>');
 }
 const DR_IC={
   user:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',
@@ -2375,6 +2413,7 @@ function openDrawer(){
   const pl=planLabel(),pro=licensePlan()==='coach';
   const row=(sec,ic,lbl,col,val,act)=>'<button type="button" class="dr-row" data-act="'+(act||'sec')+'"'+(act?'':' data-sec="'+sec+'"')+(sec===cur&&!act?' aria-current="page"':'')+'><span class="dr-ic" style="--c:'+col+'">'+drSvg(ic)+'</span><span class="lbl">'+lbl+'</span>'+(val?'<span class="val">'+esc(val)+'</span>':'')+'<span class="go" aria-hidden="true">›</span></button>';
   const list=(t,rows)=>'<p class="dr-sec">'+t+'</p><div class="dr-list">'+rows.join('')+'</div>';
+  const fold=(k,t,rows)=>{const o=V.drf&&V.drf[k];return '<button type="button" class="dr-sec dr-fold'+(o?' open':'')+'" data-act="drfold" data-k="'+k+'" aria-expanded="'+!!o+'"><span>'+t+'</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="dr-fb'+(o?' open':'')+'"><div><div class="dr-list">'+rows.join('')+'</div></div></div>'};
   let h='<button type="button" class="dr-me" data-act="sec" data-sec="account"><span class="avatar" aria-hidden="true">'+esc(ini(name))+'</span><span class="dr-me-t"><b>'+esc(name)+'</b><small>'+esc(sub)+'</small>'+(pl?'<span class="dr-badge'+(pro?' pro':'')+'">'+esc(pl)+'</span>':'')+'</span><span class="go" aria-hidden="true">›</span></button>';
   if(IS_PWA){
     h+='<div class="dr-profs" role="group" aria-label="Changer de profil">'+P.list.map(x=>'<button type="button" class="dr-prof'+(x.id===P.active?' on':'')+'" data-act="drprofile" data-pid="'+x.id+'"'+(x.id===P.active?' aria-current="true"':'')+'><span class="avatar" aria-hidden="true">'+esc(ini(x.name))+'</span><span>'+esc(x.name)+(lockedProfile(x.id)?' 🔒':'')+'</span></button>').join('')
@@ -2386,8 +2425,8 @@ function openDrawer(){
   if(IS_PWA){
     h+=list('Abonnement',[row('abo','star','Mon abonnement','#f59e0b',pl)]);
     h+=list('Préférences',[row('train','dumb','Séances et coach','#10b981',prefs().coach?'Coach activé':'Mes séances'),row('notif','bell','Notifications','#ef4444',pushInfo()?'Activées':''),row('theme','moon','Apparence','#334155',{auto:'Auto',light:'Clair',dark:'Sombre'}[themePref()])]);
-    h+=list('Sécurité et données',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
-    h+=list('Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('','info','Revoir le tutoriel','#6366f1','','tutoopen'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
+    h+=fold('sec','Sécurité et données',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
+    h+=fold('aide','Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('','info','Revoir le tutoriel','#6366f1','','tutoopen'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
     h+='<div class="dr-list" style="margin-top:18px">'
       +(lk?'<button type="button" class="dr-row" data-act="locknow"><span class="dr-ic" style="--c:#0ea5e9">'+drSvg('lock')+'</span><span class="lbl">Verrouiller maintenant</span></button>':'')
       +'<button type="button" class="dr-row red" data-act="drlogout"><span class="dr-ic">'+drSvg('out')+'</span><span class="lbl">Se déconnecter</span></button></div>'
@@ -4112,8 +4151,8 @@ document.addEventListener('click',e=>{
     V.tab='agenda';V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;
     render();window.scrollTo({top:0,behavior:'smooth'});
   }
-  else if(a==='theme'){setTheme(effTheme()==='dark'?'light':'dark');if(V.tab==='settings')render();if(!$('#drawer').hidden)openDrawer()}
-  else if(a==='settheme'){setTheme(b.dataset.t);render()}
+  else if(a==='theme'){themeSwap(effTheme()==='dark'?'light':'dark',e)}
+  else if(a==='settheme'){themeSwap(b.dataset.t,e)}
   else if(a==='mpick'){openMonthPicker()}
   else if(a==='mclose'){closeMonthPicker()}
   else if(a==='myear'){V.pyear+=+b.dataset.d;renderMonthPicker()}
@@ -4238,6 +4277,8 @@ document.addEventListener('click',e=>{
   else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}rememberCheckout(email,'coach');location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='licportal'){
     const l=licenseGet();if(!l||!l.email)return;const fl=b.dataset.flow||(b.closest('.sale,.chero,.coachpay')||/Coach/.test(b.textContent)?'update':'');
+    if(fl==='cancel'&&l.plan==='coach'&&!b.dataset.force){
+      pSheet({tone:'warn',icon:'info',title:'Résilier Cadence + Coach ?',sub:'Tu peux garder Cadence normal à '+PRICE_BASE+' / mois et perdre seulement le coach. Sinon, tout s\'arrête à la fin de la période payée.',btn:'Garder Cadence · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Tout résilier',act:'licportal',attrs:' data-flow="cancel" data-force="1"'}});return}
     location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+(fl?'&flow='+fl:'')+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
   else if(a==='planchange'){
@@ -4247,6 +4288,14 @@ document.addEventListener('click',e=>{
     $('#ssheet').hidden=true;
     pSheet(to==='coach'?{tone:'info',icon:'info',title:'Passer à Cadence + Coach',sub:'Ta carte enregistrée est débitée tout de suite de la différence, au prorata du mois en cours. Ensuite, '+PRICE_COACH+' / mois.',btn:'Confirmer · '+PRICE_COACH+' / mois',act:'planconfirm',attrs:' data-plan="coach"',link:{label:'Annuler',act:'pclose'}}
       :{tone:'info',icon:'info',title:'Revenir à Cadence seul',sub:'Aucun paiement : le coach est mis de côté et la différence déjà payée est déduite de ta prochaine facture. Ensuite, '+PRICE_BASE+' / mois.',btn:'Confirmer · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Annuler',act:'pclose'}})}
+  else if(a==='planresume'){
+    const before=licenseGet();if(!before||!before.email)return;
+    pSheet({loading:true,title:'Annulation de la résiliation…',sub:'Ça ne prend que quelques secondes.'});
+    fetch(WORKER_URL+'/resume?email='+encodeURIComponent(before.email),{method:'POST'}).then(r=>r.json()).then(d=>{
+      if(!d||!d.ok)throw new Error((d&&d.error)||'Erreur');
+      licenseSet({type:'sub',email:before.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
+      V.lic=false;updateGate();render();planFeedback(before,licenseGet());
+    }).catch(e=>pSheet({tone:'warn',icon:'info',title:'Action impossible',sub:(e&&e.message&&e.message!=='Failed to fetch'?e.message:'Vérifie ta connexion et réessaie.'),btn:'OK'}))}
   else if(a==='planconfirm'){
     const before=licenseGet(),to=b.dataset.plan==='coach'?'coach':'base';if(!before||!before.email)return;
     pSheet({loading:true,title:'Changement de formule…',sub:'Ça ne prend que quelques secondes.'});
@@ -4306,6 +4355,7 @@ document.addEventListener('click',e=>{
   else if(a==='tutoback'){if(V.tuto){V.tuto.i=Math.max(0,V.tuto.i-1);renderTuto()}}
   else if(a==='tutoskip'){finishTuto()}
   else if(a==='tutoopen'){closeDrawer();openTuto(true)}
+  else if(a==='drfold'){const o=b.classList.toggle('open');b.setAttribute('aria-expanded',o);const nx=b.nextElementSibling;if(nx)nx.classList.toggle('open',o);V.drf=V.drf||{};V.drf[b.dataset.k]=o}
   else if(a==='acc'){const sc=b.closest('.acc');if(sc){const o=sc.classList.toggle('open');b.setAttribute('aria-expanded',o);V.acc=V.acc||{};V.acc[sc.dataset.k]=o}}
   else if(a==='pgoal'){const k=b.dataset.k;S.profile[k]=b.dataset.v;if(k==='goal'&&b.dataset.v==='maintien')S.profile.rate='modere';touch();render()}
   else if(a==='setupredo'){S.setup=0;V.setupShown=false;V.tab='agenda';render();maybeSetup()}
