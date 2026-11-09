@@ -111,6 +111,9 @@ p{margin:0}
 .ptable td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
 .ptable td:last-child{text-align:right;color:var(--muted);padding-left:10px}
 .curw{font-family:var(--font-display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.homebtn{all:unset;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.homebtn:active{opacity:.7}
+.homebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .top h1{font-size:34px;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:2px}
 #today-label{color:var(--muted);font-size:13px;margin-top:2px}
 .chip{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:99px;white-space:nowrap;background:var(--surface)}
@@ -407,7 +410,7 @@ label.ghost{color:var(--ink);font-weight:600}
   <header class="top">
     <button type="button" class="gear" data-act="dopen" aria-label="Ouvrir le menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div>
-      <h1>Cadence</h1>
+      <h1><button type="button" class="homebtn" data-act="home" aria-label="Revenir au calendrier">Cadence</button></h1>
       <p id="today-label"></p>
     </div>
     <button type="button" class="gear" id="themebtn" data-act="theme" aria-label="Changer de thème"></button>
@@ -716,7 +719,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 21';
+const APP_VERSION='2026.11.09 · 22';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2022,6 +2025,11 @@ document.addEventListener('click',e=>{
   else if(a==='today'){V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;render()}
   else if(a==='pick'){if(Date.now()-(V.swipedAt||0)<400)return;V.sel=b.dataset.date;const d=parseISO(V.sel);V.month=new Date(d.getFullYear(),d.getMonth(),1);render();openDay(V.sel)}
   else if(a==='dayclose'){closeDay()}
+  else if(a==='home'){
+    closeDrawer();closeDay();if(!$('#msheet').hidden)closeMonthPicker();
+    V.tab='agenda';V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;
+    render();window.scrollTo({top:0,behavior:'smooth'});
+  }
   else if(a==='theme'){setTheme(effTheme()==='dark'?'light':'dark');if(V.tab==='settings')render()}
   else if(a==='settheme'){setTheme(b.dataset.t);render()}
   else if(a==='mpick'){openMonthPicker()}
