@@ -405,6 +405,14 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .cpbar-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .cpbar-t span{font-size:13px;color:var(--muted)}
 .cpbar-go{flex:none;font-weight:700;font-size:14px;color:var(--accent)}
+.cp-price{margin:0 0 4px;color:var(--muted)}
+.cp-price b{font-size:22px;color:var(--ink)}
+.cp-how{margin:4px 0 16px;padding:12px 14px;border-radius:14px;background:var(--soft);font-size:14px}
+.cp-how ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.cprev-mini .wkstrip{margin:8px 0 12px}
+.cpm-s{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.cpm-s ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.cpm-s li.more{list-style:none;margin-left:-18px;color:var(--muted)}
 .cprev-h{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .cprev-h::after{content:'';flex:1;height:1px;background:var(--line,rgba(127,127,127,.25))}
 .cprev .coach-s .primary,.cprev .progcard .pc-go{opacity:.55}
@@ -605,6 +613,14 @@ label.ghost{color:var(--ink);font-weight:600}
 .ritem .mm{grid-column:2/4;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .ritem input[type=checkbox]{width:22px;height:22px;margin:0;accent-color:var(--ink)}
 #license.busy .plans,#license.busy details,#license.busy [data-act=liccheck]{opacity:.4;pointer-events:none}
+.expcard{text-align:left}
+.expcard{padding:14px 16px}
+.exp-h{display:flex;gap:12px;align-items:flex-start}
+.expcard h2{font-size:19px;margin:2px 0 2px}
+.exp-ic{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--soft);font-size:17px;flex:none}
+.exp-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.exp-plans .plan{padding:10px 12px}
+.lockprev{position:relative;filter:blur(3px) saturate(.7);opacity:.6;pointer-events:none;user-select:none;-webkit-user-select:none;max-height:760px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
@@ -1043,7 +1059,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 41';
+const APP_VERSION='2026.11.09 · 42';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1089,12 +1105,21 @@ async function licenseActivate(){
   const cur=licenseGet();if(cur){delete cur.pending;licenseSet(cur)}
   if(msg)msg.textContent='Paiement bien reçu, la validation prend un peu plus de temps. Appuie sur « J\'ai déjà un abonnement » dans une minute.';
 }
+function licenseExpired(){const l=licenseGet();return IS_PWA&&!!l&&l.type==='sub'&&!!l.email&&!l.active}
+function renderExpiredCard(){
+  const l=licenseGet()||{};
+  return '<section class="card expcard"><div class="exp-h"><span class="exp-ic" aria-hidden="true">🔒</span><div><h2>Abonnement terminé</h2><p class="note">Tes données sont gardées. Voici un aperçu : réabonne-toi pour tout débloquer.</p></div></div>'
+   +'<div class="exp-plans"><button type="button" class="plan" data-act="expsub" data-plan="base"><b>Cadence</b><span>'+PRICE_BASE+' / mois</span></button>'
+   +'<button type="button" class="plan" data-act="expsub" data-plan="coach"><b>+ Coach</b><span>'+PRICE_COACH+' / mois</span></button></div>'
+   +'<div class="row" style="margin-top:8px;justify-content:space-between"><button type="button" class="linkbtn" data-act="expcheck">J\'ai déjà réactivé</button><button type="button" class="linkbtn" data-act="liclogout">Changer d\'email</button></div>'
+   +'<p class="note" id="exp-msg" style="margin-top:2px;font-size:12.5px" aria-live="polite">Compte : '+esc(l.email||'')+'</p></section>';
+}
 function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return !!l.active;return false}
 async function sha256Hex(str){const d=new TextEncoder().encode(str);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function licenseRecheckIfStale(){
   const l=licenseGet();
   if(!l||l.type!=='sub'||!l.email)return;
-  if(l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
+  if(l.active&&l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
   try{
     const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email));
     const d=await r.json();
@@ -1736,7 +1761,7 @@ function renderSettings(){
     const l=licenseGet();
     const body=!l?'<p class="note">Aucune licence active.</p>'
       :l.type==='admin'?'<p class="note">Accès administrateur (gratuit), coach inclus.</p>'
-      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'formule '+(l.plan==='coach'?'Cadence + Coach':'Cadence')+' active.':'abonnement inactif.')+'</p>'+(l.active&&l.plan!=='coach'?'<button type="button" class="primary" data-act="licportal" style="width:100%;margin-bottom:8px">Passer à Cadence + Coach</button>':'')
+      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'formule '+(l.plan==='coach'?'Cadence + Coach':'Cadence')+' active.':'abonnement inactif.')+'</p>'+(!l.active?'<button type="button" class="primary" data-act="expsub" data-plan="base" style="width:100%;margin-bottom:8px">Me réabonner</button>':'')+(l.active&&l.plan!=='coach'?'<button type="button" class="primary" data-act="licportal" style="width:100%;margin-bottom:8px">Passer à Cadence + Coach</button>':'')
        +'<div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="licportal">Gérer / annuler l\'abonnement</button><button type="button" class="ghost" data-act="liclogout">Se déconnecter</button></div>';
     return head+'<section class="card"><h2>Mon abonnement</h2>'+body+'</section>';
   }
@@ -2698,7 +2723,7 @@ function wipeAll(){
 }
 function updateGate(){
   const lic=$('#license'),g=$('#gate');
-  const needLic=IS_PWA&&(!licenseOK()||V.lic)&&V.tab!=='legal';
+  const needLic=IS_PWA&&((!licenseOK()&&!licenseExpired())||V.lic)&&V.tab!=='legal';
   if(lic){lic.hidden=!needLic;if(needLic){const em=$('#lic-email');if(em&&!em.value){const l=licenseGet();let v=l&&l.email;if(!v)try{v=localStorage.getItem(LS_LASTEMAIL)}catch(e){}if(v)em.value=v}}}
   if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'||needLic;
 }
@@ -2724,6 +2749,10 @@ function render(){
   $('#fab').hidden=!(V.tab==='agenda'||V.tab==='todos'||V.tab==='journal');
   const v=$('#view');
   v.innerHTML=V.tab==='coach'?renderCoach():V.tab==='suivi'?renderSuivi():V.tab==='seances'?renderSeances():V.tab==='nutrition'?renderNutrition():V.tab==='settings'?renderSettings():V.tab==='poids'?renderPoids():V.tab==='journal'?renderJournal():V.tab==='legal'?renderLegal():V.tab==='agenda'?renderAgenda():V.tab==='todos'?renderTodos():V.tab==='macros'?renderMacros():renderMeals();
+  if(licenseExpired()&&!['settings','legal'].includes(V.tab)){
+    v.innerHTML=renderExpiredCard()+'<div class="lockprev" inert aria-hidden="true">'+v.innerHTML+'</div>';
+    $('#fab').hidden=true;
+  }
   if(V.tab==='macros'||(V.tab==='nutrition'&&(V.nseg||'macros')==='macros'))updateRateBox();
   updateGate();
   if(V.dsheet&&!$('#dsheet').hidden)openDay(V.dsheet);
@@ -3132,13 +3161,31 @@ function finishOnb(){
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
 function maybeOnb(){if(!coachActive())return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+const PRICE_BASE='5 €',PRICE_COACH='9 €';
 function renderCoachLocked(){
-  const l=licenseGet(),base=licensePlan()==='base';
-  return '<section class="card coachpay"><span class="cp-bub" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span><span class="cday">Formule supérieure</span><h2>Cadence + Coach</h2><p class="note">Ton coach personnel, qui s\'adapte à ton objectif, ton niveau, ton matériel et ton sport.</p>'
-   +'<ul class="cp-list"><li>Programme sur 12 semaines qui progresse tout seul</li><li>Séance du jour guidée, avec minuteur et animations</li><li>Musculation, calisthenics, CrossFit, course, vélo, triathlon, mobilité</li><li>Exercices pour ton sport à côté</li><li>Séances que tu peux décaler et rappels push</li></ul>'
-   +(base?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note" style="margin-top:8px">Tu changes de formule dans ton espace d\'abonnement : la différence est calculée au prorata.</p>'
+  const base=licensePlan()==='base';
+  return '<section class="card coachpay"><span class="cday">Formule supérieure</span><h2>Cadence + Coach</h2>'
+   +'<p class="cp-price"><b>'+PRICE_COACH+'</b> / mois · sans engagement</p>'
+   +'<ul class="cp-list"><li>Un programme de 12 semaines fait pour toi</li><li>Ta séance du jour guidée, minuteur compris</li><li>Il s\'adapte à ton niveau, ton matériel et ton sport</li><li>Rappels push et séances que tu peux décaler</li></ul>'
+   +'<div class="cp-how"><b>Comment ça marche</b><ol><li>Tu réponds à quelques questions (1 min)</li><li>Le coach crée ton programme</li><li>Chaque jour, tu lances ta séance</li></ol></div>'
+   +(base?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note" style="margin-top:8px">Tu paies seulement la différence, au prorata du mois en cours.</p>'
      :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach</button>')
-   +'</section>';
+   +'<p class="note" style="margin-top:8px">Résiliable à tout moment depuis Menu › Mon abonnement.</p></section>';
+}
+function renderCoachPreview(){
+  const wk=coachWeek(1),s0=wk[0];
+  let h='<div class="cal-head"><h2>Coach</h2></div>'
+   +'<p class="note" style="margin:-4px 2px 12px">Ton coach personnel crée et fait évoluer tes séances. Voici à quoi ressemble une semaine.</p>'
+   +'<section class="card cprev-mini" aria-label="Exemple de programme"><span class="cday">Exemple de semaine</span>'
+   +'<div class="wkstrip">'+WD.map((d,i)=>{const x=wk.find(y=>y.wd===i);return '<div class="'+(x?'on':'')+'"><span>'+d.slice(0,1)+'</span><b>'+(x?esc(x.title.replace('Calisthenics · ','').split(' ')[0]):'Repos')+'</b></div>'}).join('')+'</div>';
+  if(s0){
+    const n=s0.ex.length;
+    h+='<div class="cpm-s"><b>'+esc(s0.title)+'</b><span class="note">⏱ '+s0.dur+' min · '+n+' exercice'+(n>1?'s':'')+'</span>'
+     +'<ul>'+s0.ex.slice(0,2).map(e=>'<li>'+esc(e.name)+'</li>').join('')+(n>2?'<li class="more">+ '+(n-2)+' autre'+(n>3?'s':'')+' 🔒</li>':'')+'</ul></div>';
+  }
+  h+='</section>'+renderCoachLocked()
+   +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
+  return h;
 }
 const COACH_LOCKED_ACTS=['cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
 function coachPaywallNudge(){
@@ -3147,7 +3194,8 @@ function coachPaywallNudge(){
   const c=$('.coachpay');if(c){c.scrollIntoView({behavior:'smooth',block:'center'});c.classList.remove('pulse');void c.offsetWidth;c.classList.add('pulse')}
 }
 function renderCoach(){
-  const locked=!coachUnlocked();
+  if(!coachUnlocked())return renderCoachPreview();
+  const locked=false;
   const cfg=coachCfg(),p=S.profile,T=calc(p),goal=p.goal||'maintien';
   if(!locked&&(!S.coach||!S.coach.start)){S.coach=Object.assign(coachCfg(),{start:progStart()});delete S.coach.equip;touch()}
   const cw=curWeekNo(),vw=Math.max(1,Math.min(12,V.cweek||Math.min(cw,12)));
@@ -3638,6 +3686,12 @@ document.addEventListener('click',e=>{
     location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
   else if(a==='liclogout'){licenseLogout()}
+  else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
+  else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
+    fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
+      licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
+      if(d.active){render();toast('Content de te revoir 🎉')}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
+    }).catch(()=>{const m2=$('#exp-msg');if(m2)m2.textContent='Impossible de vérifier pour le moment.'})}
   else if(a==='wipe'){
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
     V.wipeArmed=false;wipeAll();
