@@ -4,6 +4,7 @@
 //   STRIPE_SECRET_KEY     clé secrète Stripe (sk_live_... ou sk_test_...)
 //   STRIPE_WEBHOOK_SECRET  clé du endpoint webhook (whsec_...)
 //   STRIPE_PRICE_ID        id du prix récurrent créé dans Stripe (price_...)
+//   GEMINI_KEY             (facultatif) clé Google AI Studio pour l'analyse photo sans clé perso
 // Et une liaison KV (Settings > Bindings > KV Namespace) nommée : LICENSES
 
 const CORS = {
@@ -101,6 +102,26 @@ export default {
       } catch (e) {
         return json({ error: e.message }, 500);
       }
+    }
+
+    // POST /ai -> analyse photo Gemini avec la clé du serveur (secret GEMINI_KEY), pour les utilisateurs sans clé
+    if (url.pathname === '/ai' && request.method === 'POST') {
+      if (!env.GEMINI_KEY) return json({ error: 'GEMINI_KEY manquant sur le serveur' }, 500);
+      const body = await request.text();
+      if (body.length > 6000000) return json({ error: 'Image trop lourde' }, 413);
+      // Limite simple : 30 analyses par heure et par adresse IP
+      const ip = request.headers.get('CF-Connecting-IP') || 'x', k = 'ai:' + ip + ':' + Math.floor(Date.now() / 3600000);
+      const n = +(await env.LICENSES.get(k) || 0);
+      if (n >= 30) return json({ error: 'Trop d\'analyses, réessaie dans une heure' }, 429);
+      await env.LICENSES.put(k, String(n + 1), { expirationTtl: 3700 });
+      for (const m of ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-2.5-flash']) {
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + m + ':generateContent', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_KEY }, body
+        });
+        if (r.status === 404) continue;
+        return new Response(await r.text(), { status: r.status, headers: { 'Content-Type': 'application/json', ...CORS } });
+      }
+      return json({ error: 'Aucun modèle Gemini disponible' }, 502);
     }
 
     // POST /webhook -> Stripe appelle cette URL sur chaque évènement d'abonnement
