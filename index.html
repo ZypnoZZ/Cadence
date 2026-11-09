@@ -372,10 +372,27 @@ label.ghost{color:var(--ink);font-weight:600}
   </div>
 </div>
 
+<div id="license" class="scrim gate" hidden>
+  <div class="panel" role="dialog" aria-labelledby="lic-h">
+    <h2 id="lic-h" style="font-size:28px;margin-bottom:8px">Cadence</h2>
+    <p style="margin-bottom:14px">Application sur abonnement. Entre ton email pour vérifier ton abonnement, ou ton code si tu en as un.</p>
+    <label><span class="lab">Email</span><input type="email" id="lic-email" autocomplete="email" placeholder="toi@exemple.com"></label>
+    <div class="row2" style="margin-top:10px">
+      <button type="button" class="primary" data-act="liccheck">J'ai déjà un abonnement</button>
+      <button type="button" data-act="licsub">S'abonner</button>
+    </div>
+    <details style="margin-top:16px"><summary class="note">J'ai un code</summary>
+      <label style="margin-top:8px"><span class="lab">Code</span><input type="text" id="lic-code" autocomplete="off" spellcheck="false"></label>
+      <button type="button" style="margin-top:8px" data-act="licadmin">Valider le code</button>
+    </details>
+    <p class="note" id="lic-msg" style="margin-top:10px" aria-live="polite"></p>
+  </div>
+</div>
+
 <div id="gate" class="scrim gate" hidden>
   <div class="panel" role="dialog" aria-labelledby="gate-h">
     <h2 id="gate-h" style="font-size:30px;margin-bottom:8px">Bienvenue dans Cadence</h2>
-    <p style="margin-bottom:10px">Agenda de sport, tâches, macros, repas et journal alimentaire. Gratuit, sans compte, sans publicité.</p>
+    <p style="margin-bottom:10px">Agenda de sport, tâches, macros, repas et journal alimentaire. Sans publicité.</p>
     <ul class="steps">
       <li>Tes données restent sur ce téléphone. Personne d'autre n'y a accès.</li>
       <li>Les calculs et les analyses de photos sont des estimations, pas un avis médical.</li>
@@ -562,7 +579,28 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 7';
+const APP_VERSION='2026.11.09 · 8';
+const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
+const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
+const LS_LICENSE='cadence-license';
+const LIC_RECHECK_MS=12*3600*1000;
+function licenseGet(){try{return JSON.parse(localStorage.getItem(LS_LICENSE)||'null')}catch(e){return null}}
+function licenseSet(v){try{localStorage.setItem(LS_LICENSE,JSON.stringify(v))}catch(e){}}
+function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return !!l.active;return false}
+async function sha256Hex(str){const d=new TextEncoder().encode(str);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function licenseRecheckIfStale(){
+  const l=licenseGet();
+  if(!l||l.type!=='sub'||!l.email)return;
+  if(l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
+  try{
+    const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email));
+    const d=await r.json();
+    licenseSet({type:'sub',email:l.email,active:!!d.active,checked:Date.now()});
+    updateGate();
+  }catch(e){}
+  return true;
+}
+
 const ZXING_URL='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
 const GEMINI_MODELS=['gemini-flash-latest','gemini-2.5-flash'];
 /* ---------- Application ---------- */
@@ -1020,6 +1058,14 @@ function renderSettings(){
     return head+'<section class="card"><h2>Sécurité</h2><h3 class="group-h" style="margin-top:6px">Code de verrouillage</h3>'+lockHTML+'<p class="note" id="pin-msg" style="margin-top:8px"></p>'
      +'<h3 class="group-h">Clé Gemini (photo des repas)</h3>'+(key?'<p class="note" style="margin-bottom:8px">Clé enregistrée sur ce téléphone, pour ce profil.</p><button type="button" class="ghost" data-act="delkey">Supprimer ma clé</button>':'<p class="note">Aucune clé. Ajoute-la depuis Assiette, bouton +, puis Photo.</p>')+'</section>';
   }
+  if(sec==='abo'){
+    const l=licenseGet();
+    const body=!l?'<p class="note">Aucune licence active.</p>'
+      :l.type==='admin'?'<p class="note">Accès administrateur (gratuit).</p>'
+      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'abonnement actif.':'abonnement inactif.')+'</p>'
+       +'<div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="licportal">Gérer / annuler l\'abonnement</button><button type="button" class="ghost" data-act="liclogout">Se déconnecter</button></div>';
+    return head+'<section class="card"><h2>Mon abonnement</h2>'+body+'</section>';
+  }
   if(sec==='notif'){
     const hasN='Notification' in window,perm=hasN?Notification.permission:'none';
     let n;
@@ -1040,7 +1086,7 @@ function openDrawer(){
   $('#dr-name').textContent=name;
   $('#dr-sub').textContent=p.custom?[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.weight?num(+p.weight,1)+' kg':''].filter(Boolean).join(' · '):'Profil à compléter';
   const G=[['Compte',[['account','Mon compte'],['poids','Pesée']].concat(IS_PWA?[['profiles','Profils']]:[])]];
-  if(IS_PWA)G.push(['Sécurité',[['security','Code et clé Gemini']]],['Préférences',[['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['cgu','Conditions d\'utilisation'],['conf','Confidentialité'],['mentions','Mentions légales']]],['Données',[['data','Effacer mes données']]]);
+  if(IS_PWA)G.push(['Sécurité',[['security','Code et clé Gemini'],['abo','Mon abonnement']]],['Préférences',[['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['cgu','Conditions d\'utilisation'],['conf','Confidentialité'],['mentions','Mentions légales']]],['Données',[['data','Effacer mes données']]]);
   const cur=V.tab==='poids'?'poids':V.tab==='legal'?V.doc:V.tab==='settings'?V.sec:'';
   $('#dr-items').innerHTML=G.map(g=>'<div class="dr-group">'+g[0]+'</div>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')).join('');
   $('#dr-items').insertAdjacentHTML('beforeend','<p class="note" style="margin:20px 8px 0">Version '+APP_VERSION+'</p>');
@@ -1602,7 +1648,12 @@ function wipeAll(){
   try{[LS_KEY,LS_FIRED,LS_KEYG,LS_CGU,LS_LOCK,LS_LOCKTRY].forEach(k=>localStorage.removeItem(k))}catch(e){}
   memKey='';memCgu='';S=defaultState();fired=new Set();V.tab='agenda';$('#lock').hidden=true;render();
 }
-function updateGate(){const g=$('#gate');if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'}
+function updateGate(){
+  const lic=$('#license'),g=$('#gate');
+  const needLic=IS_PWA&&!licenseOK()&&V.tab!=='legal';
+  if(lic)lic.hidden=!needLic;
+  if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'||needLic;
+}
 
 function render(){
   $('#today-label').textContent=headLabel();
@@ -1738,6 +1789,37 @@ document.addEventListener('click',e=>{
     if(!$('#gate-ok').checked){$('#gate-msg').textContent='Coche la case pour continuer.';return}
     memCgu=CGU_VERSION;try{localStorage.setItem(LS_CGU,CGU_VERSION)}catch(e){}render();
   }
+  else if(a==='licadmin'){
+    const code=($('#lic-code').value||'').trim();
+    const msg=$('#lic-msg');
+    if(!code){msg.textContent='Entre un code.';return}
+    sha256Hex(code).then(h=>{
+      if(h===ADMIN_HASH){licenseSet({type:'admin'});msg.textContent='';updateGate();render()}
+      else msg.textContent='Code incorrect.';
+    });
+  }
+  else if(a==='liccheck'){
+    const email=($('#lic-email').value||'').trim().toLowerCase();
+    const msg=$('#lic-msg');
+    if(!email){msg.textContent='Entre ton email.';return}
+    msg.textContent='Vérification…';
+    fetch(WORKER_URL+'/status?email='+encodeURIComponent(email)).then(r=>r.json()).then(d=>{
+      licenseSet({type:'sub',email,active:!!d.active,checked:Date.now()});
+      if(d.active){msg.textContent='';updateGate();render()}
+      else msg.textContent="Aucun abonnement actif pour cet email. Clique sur \"S'abonner\".";
+    }).catch(()=>{msg.textContent='Impossible de vérifier pour le moment. Réessaie plus tard.'});
+  }
+  else if(a==='licsub'){
+    const email=($('#lic-email').value||'').trim().toLowerCase();
+    const msg=$('#lic-msg');
+    if(!email){msg.textContent="Entre ton email avant de t'abonner.";return}
+    location.href=WORKER_URL+'/checkout?email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
+  }
+  else if(a==='licportal'){
+    const l=licenseGet();if(!l||!l.email)return;
+    location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname);
+  }
+  else if(a==='liclogout'){try{localStorage.removeItem(LS_LICENSE)}catch(e){}updateGate();render()}
   else if(a==='wipe'){
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
     V.wipeArmed=false;wipeAll();
@@ -1909,6 +1991,13 @@ function routeHash(){const map={cgu:'cgu',confidentialite:'conf',mentions:'menti
 if(IS_PWA){routeHash();window.addEventListener('hashchange',()=>{if(routeHash()){render();window.scrollTo(0,0)}})}
 if(IS_PWA){applyProfileKeys(profiles().active);loadFired()}
 fillSelects();
+if(IS_PWA){
+  try{
+    const qs=new URLSearchParams(location.search);
+    if(qs.get('lic')==='ok'){const l=licenseGet();if(l)l.checked=0;if(l)licenseSet(l);history.replaceState(null,'',location.pathname)}
+  }catch(e){}
+  licenseRecheckIfStale().then(()=>render());
+}
 render();
 if(IS_PWA){
   showLock();
