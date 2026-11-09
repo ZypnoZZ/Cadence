@@ -1367,7 +1367,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 59';
+const APP_VERSION='2026.11.10 · 60';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3851,7 +3851,13 @@ function sideEndu(list,cfg,wn){
   ];
   const add=[];
   for(let i=0;i<nSl;i++){const k=pick[i](),x=PL.s[k](li,have);add.push(Object.assign({key:K+'-'+k,sport:x.sport||PL.sp,focus:''},x))}
-  return list.slice(0,list.length-nSl).concat(add);
+  // Le sport à côté travaille déjà les jambes : on retire d'abord une 2e séance de jambes (il en reste toujours une), puis une séance du haut.
+  const legOnly=q=>/jambes|legs|bas du corps/i.test(q.title+' '+q.sport);
+  const legs=list.map((q,i)=>i).filter(i=>legOnly(list[i])),rm=[];
+  legs.slice(1).reverse().forEach(i=>{if(rm.length<nSl)rm.push(i)});
+  list.map((q,i)=>i).filter(i=>!legOnly(list[i])).reverse().forEach(i=>{if(rm.length<nSl&&!rm.includes(i))rm.push(i)});
+  for(let i=list.length-1;rm.length<nSl&&i>=0;i--)if(!rm.includes(i))rm.push(i);
+  return list.filter((q,i)=>!rm.includes(i)).concat(add);
 }
 function coachWeek(n){
   const cfg=coachCfg(),goal=S.profile.goal||'maintien',days=DAYMAP[cfg.days];
