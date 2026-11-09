@@ -309,6 +309,9 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .cex li,.ring li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .cex li b,.ring li b{font-weight:600;color:var(--muted);white-space:nowrap;font-size:13px}
 .cset-d{margin:2px 0 6px}
+.vid{flex:none;width:28px;height:28px;border-radius:50%;background:var(--grad);display:inline-grid;place-items:center;margin-right:8px;vertical-align:middle;box-shadow:0 3px 8px var(--glow)}
+.vid svg{width:13px;height:13px;fill:#fff;margin-left:2px}
+.cexn{display:flex;align-items:center;min-width:0}
 .clab{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:8px 0 4px}
 .eqs{display:flex;flex-wrap:wrap;gap:8px}
 .eqs button{padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;font-weight:600}
@@ -507,6 +510,7 @@ label.ghost{color:var(--ink);font-weight:600}
     </div>
     <label><span class="lab">Rappel</span><select id="f-remind"></select></label>
     <p class="note" id="f-remnote" style="margin:-4px 0 10px">Sans heure, le rappel est calculé sur 9 h.</p>
+    <p class="note" id="f-repinfo" hidden style="margin:-2px 0 10px">↻</p>
     <div id="f-repwrap">
       <label><span class="lab">Répétition</span>
         <select id="f-repeat"><option value="none">Une seule fois</option><option value="day">Tous les jours</option><option value="wd">Du lundi au vendredi</option><option value="week">Chaque semaine</option><option value="2week">Toutes les 2 semaines</option><option value="month">Chaque mois</option><option value="days">Certains jours…</option></select>
@@ -749,7 +753,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 25';
+const APP_VERSION='2026.11.09 · 26';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -949,6 +953,7 @@ const PALETTE=['#E53935','#FB8C00','#F4B400','#43A047','#00ACC1','#1E88E5','#5E3
 const okHex=c=>typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c);
 function itemColor(it){return okHex(it.color)?it.color:'var('+TYPES[it.type].c+')'}
 const WD_L=['L','M','M','J','V','S','D'];
+const REP_L={day:'tous les jours',wd:'du lundi au vendredi',week:'chaque semaine','2week':'toutes les 2 semaines',month:'chaque mois',days:'certains jours'};
 function repDates(start,mode,until,days){
   if(mode==='none')return [start];
   const d0=parseISO(start);let end=parseISO(until||start);
@@ -989,7 +994,7 @@ function renderColors(){
 function itemHTML(it,showDate){
   const dc=DATE_C[dateState(it)];
   const when=[showDate?esc(dateLabel(it)):'',it.time?esc(it.time):''].filter(Boolean).join(' · ');
-  const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':''].filter(Boolean);
+  const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':'',it.rid?'<span class="type">↻ '+esc(REP_L[it.rep]||'répété')+'</span>':''].filter(Boolean);
   const extra=[];
   if(it.type==='sport'&&it.dur)extra.push(esc(it.dur)+' min');
 
@@ -1115,7 +1120,7 @@ function renderAgenda(){
 }
 
 function renderTodos(){
-  const open=S.items.filter(i=>i.type!=='sport'&&!i.done&&i.date!==V.sel).sort(byDT);
+  const seenR=new Set();const open=S.items.filter(i=>i.type!=='sport'&&!i.done&&i.date!==V.sel).sort(byDT).filter(i=>!i.rid||(!seenR.has(i.rid)&&seenR.add(i.rid)));
   const wk=iso(addDays(today,7));
   const groups=[['En retard',i=>i.date<todayISO,'late'],["Aujourd'hui",i=>i.date===todayISO,'today'],['Cette semaine',i=>i.date>todayISO&&i.date<=wk,''],['Plus tard',i=>i.date>wk,'']];
   let html='<h2 style="font-size:24px;margin-bottom:2px">À faire</h2>';
@@ -1531,7 +1536,7 @@ function seancesProg(){
 }
 function exoCardHTML(w,e,i){
   const lp=lastPerf(e.name,w);
-  let h='<section class="card wex"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere">'+esc(e.name)+'</h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
+  let h='<section class="card wex"><div class="row" style="flex-wrap:nowrap"><h3 style="font-size:20px;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px">'+(e.name&&e.kind!=='cardio'?'<a class="vid" href="'+vidURL(e.name)+'" target="_blank" rel="noopener" aria-label="Vidéo : '+esc(e.name)+'">'+VID_ICON+'</a>':'')+esc(e.name)+'</h3><button type="button" class="jdel" data-act="wdelex" data-i="'+i+'" aria-label="Retirer '+esc(e.name)+'">×</button></div>';
   if(lp)h+='<p class="note" style="margin-bottom:8px">Dernière fois ('+esc(FMT.short.format(parseISO(lp.date)))+') : '+esc(perfText(lp.e))+'</p>';
   if(e.kind==='cardio'){
     h+='<div class="r2"><label><span class="lab">Durée (min)</span><input type="number" inputmode="decimal" min="0" data-wi="'+i+'" data-k="min" value="'+esc(e.min)+'"></label><label><span class="lab">Distance (km)</span><input type="number" inputmode="decimal" step="0.01" min="0" data-wi="'+i+'" data-k="km" value="'+esc(e.km)+'"></label></div><p class="note" id="wx-'+i+'">'+cardioPace(e)+'</p>';
@@ -2007,7 +2012,8 @@ function openSheet(it,defaults){
   $('#f-title').value=d.title||'';$('#f-date').value=d.date;$('#f-time').value=d.time||'';
   $('#f-sport').value=d.sport||SPORTS[0];$('#f-dur').value=d.dur||60;$('#f-notes').value=d.notes||'';
   $('#f-remind').value=String(it?it.remind:DEF_REMIND[d.type]);
-  $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=!!it;
+  $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=!!(it&&it.rid);
+  {const ri=$('#f-repinfo');if(it&&it.rid){ri.hidden=false;ri.textContent='Répétition : '+(REP_L[it.rep]||'série')+' · '+S.items.filter(x=>x.rid===it.rid&&x.date>=it.date).length+' à venir'}else ri.hidden=true}
   V.fColor=it&&okHex(it.color)?it.color:'';
   const ds=$('#f-delser');ds.hidden=!(it&&it.rid&&S.items.filter(x=>x.rid===it.rid).length>1);ds.textContent='Supprimer cette date et les suivantes';V.delSerArmed=false;
   const del=$('#f-del');del.hidden=!it;del.textContent='Supprimer';
@@ -2023,13 +2029,21 @@ function submitForm(e){
   if(okHex(V.fColor))base.color=V.fColor;
   if(!base.title||!base.date)return;
   if(type==='sport'){base.sport=$('#f-sport').value;base.dur=parseInt($('#f-dur').value,10)||0}
+  const mode=$('#f-repeat').value;
   if(V.editId){
     const i=S.items.findIndex(x=>x.id===V.editId);
-    if(i>=0){const old=S.items[i];const it=Object.assign({},old,base,{done:old.done});delete it.ex;if(!okHex(V.fColor))delete it.color;if(type!=='sport'){delete it.sport;delete it.dur}S.items[i]=it;markSilent(it)}
+    if(i>=0){
+      const old=S.items[i];const it=Object.assign({},old,base,{done:old.done});delete it.ex;if(!okHex(V.fColor))delete it.color;if(type!=='sport'){delete it.sport;delete it.dur}S.items[i]=it;markSilent(it);
+      if(!old.rid&&mode!=='none'){
+        const dates=repDates(base.date,mode,$('#f-until').value,V.repDays).filter(d=>d!==base.date);
+        if(dates.length){const rid=uid();it.rid=rid;it.rep=mode;const b2=Object.assign({},it);delete b2.id;delete b2.done;
+          for(const dt of dates){const n=Object.assign({id:uid()},b2,{date:dt,done:false});S.items.push(n);markSilent(n)}}
+      }
+    }
   }else{
-    const dates=repDates(base.date,$('#f-repeat').value,$('#f-until').value,V.repDays);
+    const dates=repDates(base.date,mode,$('#f-until').value,V.repDays);
     const rid=dates.length>1?uid():null;
-    for(const dt of dates){const it=Object.assign({id:uid()},base,{date:dt});if(rid)it.rid=rid;S.items.push(it);markSilent(it)}
+    for(const dt of dates){const it=Object.assign({id:uid()},base,{date:dt});if(rid){it.rid=rid;it.rep=mode}S.items.push(it);markSilent(it)}
   }
   V.lastType=type;V.sel=base.date;
   const d=parseISO(base.date);V.month=new Date(d.getFullYear(),d.getMonth(),1);
@@ -2131,13 +2145,15 @@ function coachWeek(){
   const split=SPLITS[goal][cfg.days],days=DAYMAP[cfg.days];
   return split.map((k,i)=>Object.assign(buildSession(k,cfg,goal),{wd:days[i]}));
 }
+function vidURL(n){return 'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
+const VID_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
 function exLine(e){
   if(e.kind==='cardio')return e.txt||(e.min+' min');
   return e.s+' × '+e.r+(e.rest?' · repos '+e.rest:'');
 }
 function sessCard(s,i,big){
   return '<section class="card coach-s'+(big?' today':'')+'"><span class="cday">'+(big?'Aujourd\'hui':WD[s.wd])+'</span><h3>'+esc(s.title)+'</h3><p class="note">'+esc(s.focus)+' · ≈ '+s.dur+' min</p>'
-   +'<ol class="cex">'+s.ex.map(e=>'<li><span>'+esc(e.name)+'</span><b>'+esc(exLine(e))+'</b></li>').join('')+'</ol>'
+   +'<ol class="cex">'+s.ex.map(e=>'<li><span class="cexn">'+(e.kind==='cardio'?'':'<a class="vid" href="'+vidURL(e.name)+'" target="_blank" rel="noopener" aria-label="Vidéo : '+esc(e.name)+'">'+VID_ICON+'</a>')+esc(e.name)+'</span><b>'+esc(exLine(e))+'</b></li>').join('')+'</ol>'
    +'<div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="primary" data-act="cstart" data-i="'+i+'">Commencer</button><button type="button" class="ghost" data-act="cplan" data-i="'+i+'">Ajouter à l\'agenda</button></div></section>';
 }
 function renderCoach(){
@@ -2542,7 +2558,7 @@ if(IS_PWA){
 }
 render();
 if(IS_PWA){
-  runSplash();
+  if(!lockCfg())runSplash();
   showLock();
   {
     const pad=$('#lock .pad');
