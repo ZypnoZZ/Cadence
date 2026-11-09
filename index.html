@@ -548,6 +548,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .wkstrip .today{outline:2px solid var(--accent);outline-offset:1px}
 .cs-top{display:flex;justify-content:space-between;align-items:center}
 .cdone{font-size:12px;font-weight:700;color:var(--d-today)}
+.acc-sw{display:flex;gap:10px;flex-wrap:wrap}.acc-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;min-width:56px;border-radius:14px;border:2px solid transparent;background:none;font-size:12px}.acc-sw i{width:36px;height:36px;border-radius:50%;display:block;transition:transform .25s}.acc-sw button[aria-pressed=true]{border-color:var(--accent)}.acc-sw button[aria-pressed=true] i{transform:scale(1.12)}
 .xbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;margin-left:8px}
 .cs-top .xbadge{margin-right:auto}
 .evcard{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:14px;border-radius:16px;margin-bottom:12px}
@@ -1358,7 +1359,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 53';
+const APP_VERSION='2026.11.09 · 54';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2016,10 +2017,22 @@ const ICON_MOON='<svg viewBox="0 0 24 24"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 
 const ICON_AUTO='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5z" fill="currentColor"/></svg>';
 function themePref(){try{return localStorage.getItem(LS_THEME)||'auto'}catch(e){return 'auto'}}
 function effTheme(){const p=themePref();if(p!=='auto')return p;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
+const LS_ACCENT='cadence-accent';
+const ACCENTS=[['violet','Violet',null],['bleu','Bleu','#1E6BFF','#7FB0FF','#3B82F6','#06B6D4','#22D3A5'],['vert','Vert','#0E9F6E','#4ADE9A','#10B981','#34D399','#A3E635'],['rose','Rose','#D6336C','#FF8FB3','#EC4899','#F472B6','#FB923C'],['orange','Orange','#E8590C','#FFA566','#F97316','#F59E0B','#EF4444']];
+function accentPref(){try{const v=localStorage.getItem(LS_ACCENT);return ACCENTS.some(a=>a[0]===v)?v:'violet'}catch(e){return 'violet'}}
+function setAccent(k){try{localStorage.setItem(LS_ACCENT,k)}catch(e){}applyAccent()}
+function applyAccent(){
+  const r=document.documentElement,a=ACCENTS.find(x=>x[0]===accentPref()),P=['--accent','--grad','--glow','--wash1'];
+  if(!a||!a[2]){P.forEach(k=>r.style.removeProperty(k));return}
+  const dark=effTheme()==='dark',c=dark?a[3]:a[2],n=parseInt(a[2].slice(1),16),rgb=(n>>16)+','+((n>>8)&255)+','+(n&255);
+  r.style.setProperty('--accent',c);r.style.setProperty('--grad','linear-gradient(135deg,'+a[4]+' 0%,'+a[5]+' 55%,'+a[6]+' 100%)');
+  r.style.setProperty('--glow','rgba('+rgb+',.3)');r.style.setProperty('--wash1','rgba('+rgb+',.07)');
+}
 function applyTheme(){
   const p=themePref(),r=document.documentElement,eff=effTheme();
   if(p==='auto')delete r.dataset.theme;else r.dataset.theme=p;
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{const md=m.getAttribute('media')||'';m.setAttribute('content',p==='auto'?(md.indexOf('dark')>=0?'#0B0A11':'#F6F5FB'):(eff==='dark'?'#0B0A11':'#F6F5FB'))});
+  applyAccent();
   const b=document.getElementById('themebtn');
   if(b){b.innerHTML=eff==='dark'?ICON_SUN:ICON_MOON;b.setAttribute('aria-label',eff==='dark'?'Passer en thème clair':'Passer en thème sombre')}
 }
@@ -2376,7 +2389,8 @@ function renderSettings(){
   }
   if(sec==='theme'){
     const p=themePref(),opt=[['auto','Auto',ICON_AUTO],['light','Clair',ICON_SUN],['dark','Sombre',ICON_MOON]];
-    return head+'<h2 class="pg-t">Apparence</h2><section class="card"><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>';
+    return head+'<h2 class="pg-t">Apparence</h2><section class="card"><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>'
+     +'<h3 class="group-h">Couleur</h3><section class="card"><div class="acc-sw">'+ACCENTS.map(a=>'<button type="button" data-act="setaccent" data-v="'+a[0]+'" aria-pressed="'+(accentPref()===a[0])+'" aria-label="'+a[1]+'"><i style="background:'+(a[2]?'linear-gradient(135deg,'+a[4]+','+a[6]+')':'linear-gradient(135deg,#7366FF,#F58A6A)')+'"></i><span>'+a[1]+'</span></button>').join('')+'</div></section>';
   }
   if(sec==='notif'){
     const hasN='Notification' in window,perm=hasN?Notification.permission:'none',pi=pushInfo(),pr=prefs();
@@ -4256,6 +4270,7 @@ document.addEventListener('click',e=>{
     V.tab='agenda';V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;
     render();window.scrollTo({top:0,behavior:'smooth'});
   }
+  else if(a==='setaccent'){setAccent(b.dataset.v);render()}
   else if(a==='theme'){themeSwap(effTheme()==='dark'?'light':'dark',e)}
   else if(a==='settheme'){themeSwap(b.dataset.t,e)}
   else if(a==='mpick'){openMonthPicker()}
