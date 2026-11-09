@@ -753,7 +753,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 26';
+const APP_VERSION='2026.11.09 · 27';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2145,7 +2145,27 @@ function coachWeek(){
   const split=SPLITS[goal][cfg.days],days=DAYMAP[cfg.days];
   return split.map((k,i)=>Object.assign(buildSession(k,cfg,goal),{wd:days[i]}));
 }
-function vidURL(n){return 'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
+// Vidéos choisies : liens vers YouTube (la vidéo reste chez son auteur, rien n'est copié dans l'app).
+const VIDEOS=[
+ [/shrimp/i,null],[/pistol/i,'QNKrVCRDC58'],[/tractions lestées/i,'z7CCVwDfn0I'],[/archer/i,'JZ0sdynlezg'],[/équilibre contre le mur|handstand/i,'LXseptXjONY'],[/piqu|pike/i,'S9B1vHwD0H0'],
+ [/l-sit|équerre/i,'vVlV_RQLE7E'],[/front lever/i,'BwhZYpIdhro'],[/hollow/i,'G5i11cyxSL4'],[/dragon flag/i,'1XZWuiyDAi4'],[/nordic/i,'kNfR1jycNmA'],
+ [/toes to bar/i,'wHrnM4KAFqw'],[/relevés de genoux/i,'bnWwYmguF3k'],[/relevés de jambes/i,'56Y4fS-aNpk'],
+ [/tractions négatives/i,'Cb4xGI1BmX4'],[/australienne|rowing inversé/i,'SoQJra2hpMg'],[/rowing aux anneaux/i,'vEl4awgWGQA'],[/traction/i,'z7CCVwDfn0I'],[/tirage vertical/i,'UUroZKE5gNo'],
+ [/dips sur (banc|chaise)/i,'e5Gyc1D_BxM'],[/dips/i,'Dbih-r0vMmw'],
+ [/développé au sol/i,'BnloYEwSlBE'],[/développé couché haltères/i,'HBXn_SAlPw0'],[/développé incliné/i,'utaOtBFPQqM'],[/développé couché/i,'feWp7jZopI8'],
+ [/développé militaire/i,'WmwFNLeuHd8'],[/développé épaules élastique/i,'7E9WNtkvxaI'],[/développé épaules/i,'Krdz8dgb2WU'],
+ [/pompe/i,'jgJHg3rAOVg'],
+ [/goblet/i,'JO7D6GJ98wY'],[/bulgare/i,'j1k-fOnFQLs'],[/sumo/i,'GS1PBIHcDRI'],[/presse à cuisses/i,'h5NxegwgEkU'],[/squat/i,'ZyDTYe9iL6I'],
+ [/soulevé de terre roumain haltères/i,'JDbXiGO0Q-U'],[/soulevé de terre/i,'QrgidWFKaYs'],[/swing/i,'JhEsv_M6K1Y'],
+ [/pont fessier haltère|hip thrust/i,'MQ_pHfRk8xI'],[/pont fessier/i,'9Wma4mC8wpw'],
+ [/fentes sautées/i,'9OhpJtHYQKY'],[/fente/i,'ngQwoow31KY'],[/^leg curl$/i,'jVyjWSIsv9s'],
+ [/gainage|planche latérale/i,'hoPwUu8vvvw'],
+ [/rowing haltère|rowing penché/i,'VLzDhlGdpS0'],[/rowing barre/i,'tE6YfTP5DzY'],
+ [/^curl (haltères|barre)/i,'8wvflicHXXw'],[/extension triceps poulie/i,'T0V3FZkPIow'],
+ [/élévations latérales élastique/i,'zz9D2QulpBs'],[/élévations latérales/i,'phPRurX-roQ'],
+ [/face pull/i,'KSVAJ6y5klg'],[/mollets/i,'L_A3pFgYcA8']
+];
+function vidURL(n){const v=VIDEOS.find(x=>x[0].test(n));return v&&v[1]?'https://www.youtube.com/watch?v='+v[1]:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
 const VID_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
 function exLine(e){
   if(e.kind==='cardio')return e.txt||(e.min+' min');
