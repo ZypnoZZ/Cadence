@@ -297,19 +297,60 @@ label.ghost{color:var(--ink);font-weight:600}
 .legal a{color:var(--ink)}
 .gate{z-index:80}
 .gate .panel{max-height:96%}
-.lock{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
-.lock-in{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-block:16px}
-.lock-in h2{font-size:40px}
-.pdots{display:flex;gap:14px;height:16px}
-.pdots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:block}
-.pdots i.on{background:var(--ink)}
-.pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px 22px;margin-top:6px}
-.pad button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-family:var(--font-display);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}
-.pad button:active{background:var(--soft)}
+.lock{position:fixed;inset:0;z-index:95;background:#07080C;color:#fff;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));overflow-x:hidden;overflow-y:auto}
+.aur{position:fixed;inset:0;pointer-events:none;overflow:hidden;filter:blur(70px);opacity:.5}
+.aur i{position:absolute;border-radius:50%;width:70vmax;height:70vmax}
+.aur i:nth-child(1){background:#5B4CFF;top:-35vmax;left:-30vmax}
+.aur i:nth-child(2){background:#FF6A3D;bottom:-40vmax;right:-35vmax}
+.aur i:nth-child(3){background:#F4B400;top:35%;left:20%;width:40vmax;height:40vmax;opacity:.45}
+@media (prefers-reduced-motion:no-preference){
+  .aur i:nth-child(1){animation:drift1 16s ease-in-out infinite alternate}
+  .aur i:nth-child(2){animation:drift2 18s ease-in-out infinite alternate}
+  .aur i:nth-child(3){animation:drift3 20s ease-in-out infinite alternate}
+}
+@keyframes drift1{to{transform:translate(18vw,14vh) scale(1.15)}}
+@keyframes drift2{to{transform:translate(-16vw,-12vh) scale(1.1)}}
+@keyframes drift3{to{transform:translate(-20vw,10vh) scale(.85)}}
+.lock-in{position:relative;width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-block:16px}
+.logo{width:68px;height:68px;border-radius:21px;background:linear-gradient(135deg,#5B4CFF 0%,#B44CFF 50%,#FF6A3D 100%);display:grid;place-items:center;box-shadow:0 12px 40px rgba(91,76,255,.45);flex:none}
+.logo svg{width:58%;height:58%}
+.lock-in h2{font-size:34px;color:#fff;margin:2px 0 0}
+.lock-hello{color:rgba(255,255,255,.72);font-size:15px;font-weight:500;margin-top:-10px}
+#lock-msg{color:rgba(255,255,255,.6);min-height:1.4em}
+.lock .linkbtn{color:rgba(255,255,255,.75);font-size:14px}
+.lock .note{color:rgba(255,255,255,.65)}
+.pdots{display:flex;gap:16px;height:16px;margin:4px 0 6px}
+.pdots i{width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);display:block;transition:background .1s,border-color .1s,transform .1s}
+.pdots i.on{background:#fff;border-color:#fff;transform:scale(1.18)}
+.pdots.ok i{background:#4BD68A;border-color:#4BD68A;transform:scale(1.18)}
+.pdots.bad i{border-color:#FF6B66}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:16px 24px;margin-top:4px}
+.pad button{width:76px;height:76px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.09);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-family:var(--font-display);font-size:31px;font-weight:500;font-variant-numeric:tabular-nums;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;transition:background .22s ease,transform .22s ease}
+.pad button.press{background:rgba(255,255,255,.34);transform:scale(.9);transition:none}
 .pad .blank{visibility:hidden}
-.pad .del{font-size:22px;border:0;background:none}
-@media (prefers-reduced-motion:no-preference){.shake{animation:shake .35s}}
-@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pad .del{font-size:24px;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.pad .del.press{background:rgba(255,255,255,.12)}
+@media (prefers-reduced-motion:no-preference){
+  .shake{animation:shake .4s}
+  .lock.enter .logo{animation:pop .6s cubic-bezier(.2,1.5,.4,1) both}
+  .lock.enter h2{animation:up .45s .08s ease both}
+  .lock.enter .lock-hello,.lock.enter #lock-msg{animation:up .45s .14s ease both}
+  .lock.enter .pdots{animation:up .45s .2s ease both}
+  .lock.enter .pad button{animation:up .4s ease both;animation-delay:calc(.24s + var(--i,0)*.03s)}
+  .lock.out{animation:out .32s ease forwards}
+  .splash .logo{animation:pop .75s cubic-bezier(.2,1.5,.4,1) both}
+  .splash b{animation:up .5s .3s ease both}
+  .splash small{animation:up .5s .45s ease both}
+  .splash.out{animation:out .4s ease forwards}
+}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes out{to{opacity:0;transform:scale(1.06)}}
+.splash{position:fixed;inset:0;z-index:99;background:#07080C;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.splash .logo{width:96px;height:96px;border-radius:29px}
+.splash b{font-family:var(--font-display);font-size:38px;font-weight:700;letter-spacing:-.01em}
+.splash small{color:rgba(255,255,255,.6);font-size:14px;margin-top:-6px}
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
 </head>
@@ -431,17 +472,20 @@ label.ghost{color:var(--ink);font-weight:600}
   </div>
 </div>
 
+<div id="splash" class="splash" hidden><div class="aur" aria-hidden="true"><i></i><i></i><i></i></div><div class="logo" style="position:relative"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round"><path d="M29.5 12A12 12 0 1 0 29.5 28"/><circle cx="30.5" cy="20" r="2.8" fill="#fff" stroke="none"/></svg></div><b style="position:relative">Cadence</b><small style="position:relative">Sport · Tâches · Nutrition</small></div>
 <div id="lock" class="lock" hidden>
+  <div class="aur" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="lock-in">
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round"><path d="M29.5 12A12 12 0 1 0 29.5 28"/><circle cx="30.5" cy="20" r="2.8" fill="#fff" stroke="none"/></svg></div>
     <h2>Cadence</h2>
-    <p id="lock-who" style="font-weight:600;margin-top:-8px"></p>
+    <p id="lock-who" class="lock-hello"></p>
     <p id="lock-msg" class="note" aria-live="polite">Entre ton code</p>
     <div class="pdots" id="lock-dots" aria-hidden="true"></div>
     <div class="pad">
-      <button type="button" data-act="pin" data-d="1">1</button><button type="button" data-act="pin" data-d="2">2</button><button type="button" data-act="pin" data-d="3">3</button>
-      <button type="button" data-act="pin" data-d="4">4</button><button type="button" data-act="pin" data-d="5">5</button><button type="button" data-act="pin" data-d="6">6</button>
-      <button type="button" data-act="pin" data-d="7">7</button><button type="button" data-act="pin" data-d="8">8</button><button type="button" data-act="pin" data-d="9">9</button>
-      <span class="blank"></span><button type="button" data-act="pin" data-d="0">0</button><button type="button" class="del" data-act="pin" data-d="del" aria-label="Effacer un chiffre">⌫</button>
+      <button type="button" style="--i:0" data-act="pin" data-d="1">1</button><button type="button" style="--i:1" data-act="pin" data-d="2">2</button><button type="button" style="--i:2" data-act="pin" data-d="3">3</button>
+      <button type="button" style="--i:3" data-act="pin" data-d="4">4</button><button type="button" style="--i:4" data-act="pin" data-d="5">5</button><button type="button" style="--i:5" data-act="pin" data-d="6">6</button>
+      <button type="button" style="--i:6" data-act="pin" data-d="7">7</button><button type="button" style="--i:7" data-act="pin" data-d="8">8</button><button type="button" style="--i:8" data-act="pin" data-d="9">9</button>
+      <span class="blank"></span><button type="button" style="--i:9" data-act="pin" data-d="0">0</button><button type="button" style="--i:10" class="del" data-act="pin" data-d="del" aria-label="Effacer un chiffre">⌫</button>
     </div>
     <button type="button" class="linkbtn" data-act="pinforgot">Code oublié ?</button>
     <button type="button" class="linkbtn" id="lock-switch" data-act="lockprofiles" hidden>Changer de profil</button>
@@ -605,7 +649,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 12';
+const APP_VERSION='2026.11.09 · 13';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1669,7 +1713,15 @@ function lockCfg(){try{const c=JSON.parse(localStorage.getItem(LS_LOCK)||'null')
 function lockTry(){try{return JSON.parse(localStorage.getItem(LS_LOCKTRY)||'null')||{fails:0,until:0}}catch(e){return {fails:0,until:0}}}
 function saveTry(t){try{localStorage.setItem(LS_LOCKTRY,JSON.stringify(t))}catch(e){}}
 async function pinHash(code,salt){const d=new TextEncoder().encode(salt+':'+code);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-function drawDots(){const c=lockCfg();if(!c)return;$('#lock-dots').innerHTML=Array.from({length:c.len},(_,i)=>'<i class="'+(i<L.entry.length?'on':'')+'"></i>').join('')}
+function drawDots(){const c=lockCfg();if(!c)return;const el=$('#lock-dots');if(el.children.length!==c.len)el.innerHTML='<i></i>'.repeat(c.len);for(let i=0;i<el.children.length;i++)el.children[i].classList.toggle('on',i<L.entry.length)}
+function lockGreet(){const h=new Date().getHours();return h<5?'Bonne nuit':h<18?'Bonjour':'Bonsoir'}
+function playLockEnter(){const l=$('#lock');if(l.hidden||!$('#splash').hidden)return;l.classList.remove('enter','out');void l.offsetWidth;l.classList.add('enter')}
+function runSplash(){
+  const sp=$('#splash');if(!sp)return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  sp.hidden=false;
+  setTimeout(()=>{sp.classList.add('out');setTimeout(()=>{sp.hidden=true;sp.classList.remove('out');playLockEnter()},380)},1050);
+}
 function setLockMsg(m){
   clearTimeout(L.timer);
   const w=Math.ceil((lockTry().until-Date.now())/1000),el=$('#lock-msg');
@@ -1680,8 +1732,8 @@ function showLock(){
   if(!IS_PWA||!lockCfg())return false;
   L.entry='';L.resetArmed=false;$('#lock-forgot').hidden=true;
   const rb=document.querySelector('#lock [data-act=pinreset]');if(rb)rb.textContent='Effacer les données de ce profil';
-  const P=profiles();$('#lock-who').textContent=P.list.length>1?curProfile().name:'';$('#lock-switch').hidden=P.list.length<2;$('#lock-plist').hidden=true;
-  $('#lock').hidden=false;drawDots();setLockMsg();return true;
+  const P=profiles(),nm=(curProfile()||{}).name||'';$('#lock-who').textContent=lockGreet()+(nm?', '+nm:'');$('#lock-dots').classList.remove('ok','bad');$('#lock').classList.remove('out');$('#lock-switch').hidden=P.list.length<2;$('#lock-plist').hidden=true;
+  $('#lock').hidden=false;drawDots();setLockMsg();playLockEnter();return true;
 }
 async function pinKey(d){
   const c=lockCfg();if(!c||L.busy)return;
@@ -1693,12 +1745,19 @@ async function pinKey(d){
   L.busy=true;
   const ok=(await pinHash(L.entry,c.salt))===c.hash;
   L.busy=false;L.entry='';
-  if(ok){saveTry({fails:0,until:0});$('#lock').hidden=true;checkReminders();return}
+  if(ok){
+    saveTry({fails:0,until:0});
+    const dots=$('#lock-dots'),lk=$('#lock');dots.classList.add('ok');L.busy=true;
+    setTimeout(()=>{lk.classList.add('out');setTimeout(()=>{lk.hidden=true;lk.classList.remove('out','enter');dots.classList.remove('ok');L.busy=false;drawDots()},300)},140);
+    checkReminders();return;
+  }
   const t=lockTry();t.fails=(t.fails||0)+1;
   if(t.fails>=5)t.until=Date.now()+30000*Math.pow(2,Math.min(t.fails-5,6));
   saveTry(t);
-  const dots=$('#lock-dots');dots.classList.add('shake');
-  setTimeout(()=>{dots.classList.remove('shake');drawDots()},350);
+  const dots=$('#lock-dots');dots.classList.add('shake','bad');
+  for(const d of dots.children)d.classList.add('on');
+  try{navigator.vibrate&&navigator.vibrate(80)}catch(e){}
+  setTimeout(()=>{dots.classList.remove('shake','bad');drawDots()},420);
   setLockMsg('Code incorrect');
 }
 async function pinSave(a,b,msg){
@@ -1908,7 +1967,7 @@ document.addEventListener('click',e=>{
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
     V.wipeArmed=false;wipeAll();
   }
-  else if(a==='pin'){pinKey(b.dataset.d)}
+  else if(a==='pin'){if(Date.now()-(L.pd||0)>700)pinKey(b.dataset.d)}
   else if(a==='pinforgot'){$('#lock-forgot').hidden=false}
   else if(a==='pinreset'){if(!L.resetArmed){L.resetArmed=true;b.textContent='Confirmer : tout effacer';return}wipeAll()}
   else if(a==='pinon'){pinSave($('#pin-new').value,$('#pin-new2').value,$('#pin-msg')).then(ok=>{if(ok){render();$('#pin-msg').textContent='Code activé.'}})}
@@ -2086,12 +2145,26 @@ if(IS_PWA){
 }
 render();
 if(IS_PWA){
+  runSplash();
   showLock();
+  {
+    const pad=$('#lock .pad');
+    pad.addEventListener('pointerdown',e=>{
+      const b=e.target.closest('button[data-d]');if(!b)return;
+      L.pd=Date.now();b.classList.add('press');setTimeout(()=>b.classList.remove('press'),110);
+      pinKey(b.dataset.d);
+    });
+    document.addEventListener('keydown',e=>{
+      if($('#lock').hidden||e.metaKey||e.ctrlKey)return;
+      if(/^[0-9]$/.test(e.key)){e.preventDefault();pinKey(e.key)}
+      else if(e.key==='Backspace'){e.preventDefault();pinKey('del')}
+    });
+  }
   document.addEventListener('visibilitychange',()=>{
     if(!lockCfg())return;
     if(document.hidden){L.hiddenAt=Date.now();L.wasOpen=$('#lock').hidden;showLock()}
     else if(L.wasOpen&&Date.now()-L.hiddenAt<60000){$('#lock').hidden=true;L.wasOpen=false}
-    else L.wasOpen=false;
+    else{L.wasOpen=false;playLockEnter()}
   });
 }
 setSync('pending');
