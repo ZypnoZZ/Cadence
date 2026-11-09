@@ -137,6 +137,7 @@ p{margin:0}
 .day.out{background:transparent;color:var(--muted);border-color:transparent}
 .day.today{border:2px solid var(--accent)}
 .day.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:root{--sport:var(--t-eve);--important:var(--t-pm);--todo:var(--t-am)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 4px}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 .legend b{color:var(--ink);font-weight:600;min-width:44px}
@@ -585,7 +586,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 10';
+const APP_VERSION='2026.11.09 · 11';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -743,7 +744,7 @@ function checkReminders(){
 function pushAlert(it){
   const box=$('#alerts');
   const el=document.createElement('div');
-  el.className='alert';el.style.setProperty('--c','var('+SLOT_C[slotOf(it.time)]+')');
+  el.className='alert';el.style.setProperty('--c','var('+TYPES[it.type].c+')');
   const when=(it.date===todayISO?"Aujourd'hui":cap(FMT.short.format(parseISO(it.date))))+(it.time?' · '+it.time:'');
   el.innerHTML='<div><small>Rappel · '+esc(TYPES[it.type].label)+'</small><b>'+esc(it.title)+'</b><small style="text-transform:none;letter-spacing:0;font-weight:400">'+esc(when)+'</small></div><button type="button">OK</button>';
   el.querySelector('button').addEventListener('click',()=>el.remove());
@@ -788,7 +789,7 @@ function itemHTML(it,showDate){
   if(it.type==='sport'&&it.dur)extra.push(esc(it.dur)+' min');
   const rl=remindLabel(it);if(rl)extra.push(esc(rl));
   if(it.ex)extra.push('Exemple');
-  return '<li class="item'+(it.done?' done':'')+'" style="--c:var('+dc+')">'
+  return '<li class="item'+(it.done?' done':'')+'" style="--c:var('+TYPES[it.type].c+')">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
    +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+(it.type==='sport'?' <span class="type">· '+esc(it.sport)+'</span>':'')+'</div>'
    +(top.length?'<div class="m">'+top.join('')+'</div>':'')+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
@@ -807,9 +808,9 @@ function renderAgenda(){
   const by=groupBy();let cells='';
   for(let i=0;i<42;i++){
     const d=addDays(start,i),k=iso(d),its=by[k]||[];
-    const types=[...new Set(its.map(x=>slotOf(x.time)))].sort((x,y)=>['am','pm','eve','all'].indexOf(x)-['am','pm','eve','all'].indexOf(y));
+    const types=['sport','important','todo'].filter(t=>its.some(x=>x.type===t));
     const cls=['day'];if(d.getMonth()!==mo)cls.push('out');if(k===todayISO)cls.push('today');if(k===V.sel)cls.push('sel');
-    cells+='<button type="button" class="'+cls.join(' ')+'" data-act="pick" data-date="'+k+'" aria-label="'+esc(FMT.long.format(d))+(its.length?', '+its.length+' élément'+(its.length>1?'s':''):'')+'"'+(k===V.sel?' aria-pressed="true"':'')+'><span class="n">'+d.getDate()+'</span><span class="dots">'+types.map(t=>'<i style="background:var('+SLOT_C[t]+')"></i>').join('')+'</span></button>';
+    cells+='<button type="button" class="'+cls.join(' ')+'" data-act="pick" data-date="'+k+'" aria-label="'+esc(FMT.long.format(d))+(its.length?', '+its.length+' élément'+(its.length>1?'s':''):'')+'"'+(k===V.sel?' aria-pressed="true"':'')+'><span class="n">'+d.getDate()+'</span><span class="dots">'+types.map(t=>'<i style="background:var('+TYPES[t].c+')"></i>').join('')+'</span></button>';
   }
   const ws=addDays(today,-((today.getDay()+6)%7)),we=addDays(ws,6);
   const sp=S.items.filter(i=>i.type==='sport'&&i.date>=iso(ws)&&i.date<=iso(we));
@@ -819,8 +820,7 @@ function renderAgenda(){
   return '<div class="cal-head"><h2>'+esc(cap(FMT.month.format(m)))+'</h2><div class="cal-nav"><button type="button" data-act="prev" aria-label="Mois précédent">‹</button><button type="button" class="today-btn" data-act="today">Aujourd\'hui</button><button type="button" data-act="next" aria-label="Mois suivant">›</button></div></div>'
    +'<div class="wd" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>'
    +'<div class="grid">'+cells+'</div>'
-   +'<div class="legend"><b>Heure</b>'+['am','pm','eve','all'].map(k=>'<span><i style="background:var('+SLOT_C[k]+')"></i>'+SLOT_L[k]+'</span>').join('')+'</div>'
-   +'<div class="legend" style="margin-top:0"><b>Date</b>'+[['late','En retard'],['today',"Aujourd'hui"],['tom','Demain'],['later','Plus tard']].map(x=>'<span><i style="background:var('+DATE_C[x[0]]+')"></i>'+x[1]+'</span>').join('')+'</div>'
+   +'<div class="legend">'+Object.keys(TYPES).map(k=>'<span><i style="background:var('+TYPES[k].c+')"></i>'+TYPES[k].label+'</span>').join('')+'</div>'
    +'<p class="week-line">Cette semaine : <b>'+spDone+'</b> séance'+(spDone>1?'s':'')+' faite'+(spDone>1?'s':'')+' sur <b>'+sp.length+'</b> prévue'+(sp.length>1?'s':'')+'.</p>'
    +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2><span class="note">'+dayItems.length+' élément'+(dayItems.length>1?'s':'')+'</span></div>'
    +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu ce jour-là. Touche + pour ajouter une séance, une échéance ou une tâche.</div>')
