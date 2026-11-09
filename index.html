@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -56,6 +56,8 @@ img{max-width:100%}
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100%;overscroll-behavior-x:none}
+.gridwrap{overflow:hidden;overflow:clip;margin:0 -4px;padding:0 4px 8px}
 [hidden]{display:none!important}
 body{
   background:radial-gradient(130% 55% at 0% 0%,var(--wash1),transparent 65%) no-repeat,radial-gradient(110% 50% at 100% 100%,var(--wash2),transparent 65%) no-repeat,var(--bg);background-color:var(--bg);min-height:100vh; color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.45;
@@ -320,8 +322,9 @@ label.ghost{color:var(--ink);font-weight:600}
 .gate{z-index:80}
 .gate .panel{max-height:96%}
 .lock{position:fixed;inset:0;z-index:95;background:#07080C;color:#fff;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));overflow-x:hidden;overflow-y:auto}
-.aur{position:fixed;inset:-25%;pointer-events:none;background:radial-gradient(38% 30% at 22% 28%,rgba(91,76,255,.55),transparent 70%),radial-gradient(40% 32% at 80% 82%,rgba(255,106,61,.42),transparent 70%),radial-gradient(28% 24% at 55% 58%,rgba(244,180,0,.22),transparent 70%)}
-@media (prefers-reduced-motion:no-preference){.aur{animation:drift 18s ease-in-out infinite alternate}}
+.aur{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.aur::before{content:"";position:absolute;inset:-25%;background:radial-gradient(38% 30% at 22% 28%,rgba(91,76,255,.55),transparent 70%),radial-gradient(40% 32% at 80% 82%,rgba(255,106,61,.42),transparent 70%),radial-gradient(28% 24% at 55% 58%,rgba(244,180,0,.22),transparent 70%)}
+@media (prefers-reduced-motion:no-preference){.aur::before{animation:drift 18s ease-in-out infinite alternate}}
 @keyframes drift{to{transform:translate(6%,-5%) rotate(8deg) scale(1.08)}}
 .lock-in{position:relative;width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-block:16px}
 .logo{width:68px;height:68px;border-radius:21px;background:linear-gradient(135deg,#5B4CFF 0%,#B44CFF 50%,#FF6A3D 100%);display:grid;place-items:center;box-shadow:0 12px 40px rgba(91,76,255,.45);flex:none}
@@ -362,7 +365,7 @@ label.ghost{color:var(--ink);font-weight:600}
 @keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
 @keyframes pop{from{opacity:0;transform:scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes out{to{opacity:0;transform:scale(1.06)}}
+@keyframes out{to{opacity:0}}
 .splash{position:fixed;inset:0;z-index:99;background:#07080C;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .splash .logo{width:96px;height:96px;border-radius:29px}
 .splash b{font-family:var(--font-display);font-size:38px;font-weight:700;letter-spacing:-.01em}
@@ -676,7 +679,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 17';
+const APP_VERSION='2026.11.09 · 18';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1003,7 +1006,7 @@ function renderAgenda(){
   const exNote=S.items.some(i=>i.ex)?'<div class="card note" style="margin-top:14px">Des exemples sont affichés pour te montrer l\'agenda. <button type="button" class="linkbtn" data-act="clearex">Effacer les exemples</button></div>':'';
   return '<div class="cal-head"><h2>'+esc(cap(FMT.month.format(m)))+'</h2><div class="cal-nav"><button type="button" data-act="prev" aria-label="Mois précédent">‹</button><button type="button" class="today-btn" data-act="today">Aujourd\'hui</button><button type="button" data-act="next" aria-label="Mois suivant">›</button></div></div>'
    +'<div class="wd" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>'
-   +'<div class="grid">'+cells+'</div>'
+   +'<div class="gridwrap"><div class="grid">'+cells+'</div></div>'
    +(sp.length?'<p class="week-line">Séances cette semaine : <b>'+spDone+'/'+sp.length+'</b></p>':'')
    +'<div class="day-title" style="display:block"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2>'+holHTML(V.sel)+'</div>'
    +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu.</div>')
