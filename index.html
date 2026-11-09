@@ -389,7 +389,10 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .plans{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .plan{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .plan b{font-size:16px}.plan span{font-size:13px;color:var(--muted);font-weight:400}
-.plan.best{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.plan{position:relative;transition:border-color .15s ease,background .15s ease,transform .1s ease}
+.plan:active{border-color:var(--accent);background:var(--soft);transform:scale(.99)}
+.plan .ptag{position:absolute;top:10px;right:12px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--accent)}
+.plan.best b{padding-right:110px}
 .coachpay{text-align:left;padding-top:22px}
 .coachpay h2{font-size:28px;margin:2px 0 6px}
 .cp-bub{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--grad);box-shadow:0 8px 20px var(--glow);margin-bottom:12px}
@@ -543,6 +546,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .onb-opts button{text-align:left;padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;gap:4px}
 .onb-opts button b{font-size:17px}
 .onb-opts button span{font-size:13px;color:var(--muted)}
+.onb-opts button:active{background:var(--soft)}
 .onb-opts button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--soft)}
 .lvlup{border-color:var(--accent);background:linear-gradient(135deg,rgba(115,102,255,.12),rgba(245,138,106,.10)),var(--surface)}
 button.big{min-height:52px;font-size:17px;padding:0 22px}
@@ -835,7 +839,7 @@ label.ghost{color:var(--ink);font-weight:600}
     <p class="clab" style="margin:14px 0 0">Ou choisis ta formule</p>
     <div class="plans">
       <button type="button" class="plan" data-act="licsub" data-plan="base"><b>Cadence</b><span>Agenda, séances, assiette, nutrition, suivi</span></button>
-      <button type="button" class="plan best" data-act="licsub" data-plan="coach"><b>Cadence + Coach</b><span>Tout Cadence, plus le coach personnel : programme sur 12 semaines, séances guidées, minuteur</span></button>
+      <button type="button" class="plan best" data-act="licsub" data-plan="coach"><span class="ptag">Le plus complet</span><b>Cadence + Coach</b><span>Tout Cadence, plus le coach personnel : programme sur 12 semaines, séances guidées, minuteur</span></button>
     </div>
     <details style="margin-top:16px"><summary class="note">J'ai un code</summary>
       <label style="margin-top:8px"><span class="lab">Code</span><input type="text" id="lic-code" autocomplete="off" spellcheck="false"></label>
@@ -1039,7 +1043,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 40';
+const APP_VERSION='2026.11.09 · 41';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3103,7 +3107,7 @@ const ONB=[
   {k:'mode',q:'Comment veux-tu progresser ?',o:[['prog','Progression continue','Un peu plus chaque semaine, sans pause.'],['cycles','Cycles avec semaines allégées','Une semaine plus légère toutes les 4 semaines, puis une phase plus intense.']]}
 ];
 function onbSteps(){const a=V.onb||{};return ONB.filter(x=>!x.when||x.when(a))}
-function openOnb(){const c=coachCfg();V.onb={mode:c.mode,goal:S.profile.goal||'maintien',level:c.level,style:c.style,focus:c.focus,sport:c.sport,sportTxt:c.sportTxt,askTxt:false,place:c.place,eq:c.eq.slice(),days:c.days,step:0};$('#onb').hidden=false;renderOnb()}
+function openOnb(){const c=coachCfg();V.onb={mode:c.mode,goal:S.profile.goal||'maintien',level:c.level,style:c.style,focus:c.focus,sport:c.sport,sportTxt:c.sportTxt,askTxt:false,place:c.place,eq:[],picked:[],days:c.days,step:0};$('#onb').hidden=false;renderOnb()}
 function renderOnb(){
   const st=onbSteps(),i=V.onb.step,x=st[i];
   if(!x){finishOnb();return}
@@ -3117,7 +3121,7 @@ function renderOnb(){
   }
   $('#onb-body').innerHTML='<p class="note">Question '+(i+1)+' sur '+st.length+'</p><h2>'+esc(x.q)+'</h2>'
    +(i===0?'<p class="note" style="margin:-4px 0 14px">Quelques questions pour que le coach et l\'app s\'adaptent à toi. Tu pourras tout changer ensuite.</p>':'')
-   +'<div class="onb-opts">'+x.o.map(o=>{const on=x.multi?cur.includes(o[0]):String(cur)===String(o[0]);return '<button type="button" data-act="onbpick" data-v="'+o[0]+'" aria-pressed="'+on+'"><b>'+esc(o[1])+'</b>'+(o[2]?'<span>'+esc(o[2])+'</span>':'')+'</button>'}).join('')+'</div>'
+   +'<div class="onb-opts">'+x.o.map(o=>{const on=x.multi?cur.includes(o[0]):V.onb.picked.includes(x.k)&&String(cur)===String(o[0]);return '<button type="button" data-act="onbpick" data-v="'+o[0]+'" aria-pressed="'+on+'"><b>'+esc(o[1])+'</b>'+(o[2]?'<span>'+esc(o[2])+'</span>':'')+'</button>'}).join('')+'</div>'
    +'<div class="row" style="margin-top:16px">'+(i>0?'<button type="button" class="ghost" data-act="onbback">‹ Retour</button>':'<button type="button" class="linkbtn" data-act="onbskip">Plus tard</button><button type="button" class="linkbtn" data-act="onbnocoach">Je crée mes propres séances</button>')+(x.multi?'<button type="button" class="primary" data-act="onbnext">'+(cur.length?'Continuer':'Je n\'ai rien')+'</button>':'')+'</div>';
 }
 function finishOnb(){
@@ -3458,7 +3462,7 @@ document.addEventListener('click',e=>{
   else if(a==='onbredo'){closeDrawer();V.onbShown=true;openOnb()}
   else if(a==='onbpick'){const x=onbSteps()[V.onb.step],v=b.dataset.v;
     if(x.multi){const l=V.onb[x.k];V.onb[x.k]=l.includes(v)?l.filter(y=>y!==v):l.concat(v);renderOnb();return}
-    V.onb[x.k]=x.k==='days'?+v:v;if(x.k==='sport'&&v==='autre'){V.onb.askTxt=true;renderOnb();return}V.onb.step++;renderOnb()}
+    V.onb[x.k]=x.k==='days'?+v:v;if(!V.onb.picked.includes(x.k))V.onb.picked.push(x.k);if(x.k==='sport'&&v==='autre'){V.onb.askTxt=true;renderOnb();return}V.onb.step++;renderOnb()}
   else if(a==='onbtxt'){V.onb.sportTxt=($('#onb-txt').value||'').trim().slice(0,40);V.onb.askTxt=false;V.onb.step++;renderOnb()}
   else if(a==='onbtxtback'){V.onb.askTxt=false;renderOnb()}
   else if(a==='onbnext'){V.onb.step++;renderOnb()}
