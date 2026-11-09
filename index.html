@@ -548,6 +548,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .wkstrip .today{outline:2px solid var(--accent);outline-offset:1px}
 .cs-top{display:flex;justify-content:space-between;align-items:center}
 .cdone{font-size:12px;font-weight:700;color:var(--d-today)}
+.dur2{display:flex;align-items:center;gap:6px}.dur2 input{min-width:0;width:100%}.dur2 b{font-weight:600;opacity:.7}
 .strv{margin-bottom:12px}.actf input[type=password]{width:100%}.actf{display:grid;gap:8px;margin-top:6px}.strv-l a{color:var(--accent)}.strv-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.strv-l li{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}.strv-l li small{grid-column:2;opacity:.7}.strv-l b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acc-sw{display:flex;gap:10px;flex-wrap:wrap}.acc-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;min-width:56px;border-radius:14px;border:2px solid transparent;background:none;font-size:12px}.acc-sw i{width:36px;height:36px;border-radius:50%;display:block;transition:transform .25s}.acc-sw button[aria-pressed=true]{border-color:var(--accent)}.acc-sw button[aria-pressed=true] i{transform:scale(1.12)}
 .xbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;margin-left:8px}
@@ -1053,12 +1054,12 @@ label.ghost{color:var(--ink);font-weight:600}
     <label><span class="lab">Titre</span><input type="text" id="f-title" maxlength="80" required></label>
     <div class="r2">
       <label><span class="lab">Date</span><input type="date" id="f-date" required></label>
-      <label><span class="lab">Heure (facultatif)</span><input type="time" id="f-time"></label>
+      <label><span class="lab">Heure de début (facultatif)</span><input type="time" id="f-time"></label>
     </div>
     <p class="note" id="f-slot" style="margin:-4px 0 10px"></p>
     <div id="f-sportbox" class="r2">
       <label><span class="lab">Séance</span><select id="f-sport"></select></label>
-      <label><span class="lab">Durée (min)</span><input type="number" id="f-dur" min="5" max="300" step="5" inputmode="numeric"></label>
+      <label><span class="lab">Durée</span><span class="dur2"><input type="number" id="f-dh" min="0" max="8" inputmode="numeric" aria-label="Heures"><b>h</b><input type="number" id="f-dm" min="0" max="59" step="5" inputmode="numeric" aria-label="Minutes"><b>min</b></span></label>
     </div>
     <label><span class="lab">Rappel</span><select id="f-remind"></select></label>
     <p class="note" id="f-remnote" style="margin:-4px 0 10px">Sans heure, le rappel est calculé sur 9 h.</p>
@@ -1367,7 +1368,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 61';
+const APP_VERSION='2026.11.10 · 62';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3428,7 +3429,7 @@ function openSheet(it,defaults){
   const d=it||Object.assign({type:V.lastType,title:'',date:todayISO,time:'',sport:SPORTS[0],dur:60,notes:''},defaults||{});
   $('#f-head').textContent=it?'Modifier':'Nouvel élément';
   $('#f-title').value=d.title||'';$('#f-date').value=d.date;$('#f-time').value=d.time||'';
-  $('#f-sport').value=d.sport||SPORTS[0];$('#f-dur').value=d.dur||60;$('#f-notes').value=d.notes||'';
+  $('#f-sport').value=d.sport||SPORTS[0];{const du=d.dur||60;$('#f-dh').value=Math.floor(du/60);$('#f-dm').value=du%60}$('#f-notes').value=d.notes||'';
   $('#f-remind').value=String(it?it.remind:DEF_REMIND[d.type]);
   $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=!!(it&&it.rid);
   {const ri=$('#f-repinfo');if(it&&it.rid){ri.hidden=false;ri.textContent='Répétition : '+(REP_L[it.rep]||'série')+' · '+S.items.filter(x=>x.rid===it.rid&&x.date>=it.date).length+' à venir'}else ri.hidden=true}
@@ -3446,7 +3447,7 @@ function submitForm(e){
   const base={type,title:$('#f-title').value.trim(),date:$('#f-date').value,time:$('#f-time').value,remind:parseInt($('#f-remind').value,10),notes:$('#f-notes').value.trim(),done:false};
   if(okHex(V.fColor))base.color=V.fColor;
   if(!base.title||!base.date)return;
-  if(type==='sport'){base.sport=$('#f-sport').value;base.dur=parseInt($('#f-dur').value,10)||0}
+  if(type==='sport'){base.sport=$('#f-sport').value;base.dur=(parseInt($('#f-dh').value,10)||0)*60+(parseInt($('#f-dm').value,10)||0)}
   const mode=$('#f-repeat').value;
   if(V.editId){
     const i=S.items.findIndex(x=>x.id===V.editId);
