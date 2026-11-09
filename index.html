@@ -750,6 +750,11 @@ label.ghost{color:var(--ink);font-weight:600}
 .tuto-text .ck{display:flex;gap:10px;align-items:flex-start;text-align:left;margin:14px auto 4px;max-width:340px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:14.5px}
 .tuto-text .tnote{font-size:12.5px;margin-top:2px}
 .tuto-btns{display:flex;gap:10px;padding-top:6px}
+.setup-body{flex:1;min-height:0;overflow-y:auto;padding:6px 2px 14px;-webkit-overflow-scrolling:touch}
+.setup-body h2{font-size:28px;margin:6px 0 6px}
+.setup-body .sub{color:var(--muted);font-size:15px;line-height:1.45;margin:0 0 16px}
+.setup-body .smsg{color:#e11d48;font-size:13.5px;min-height:18px;margin-top:8px}
+.setup-body .eqs{margin-bottom:6px}
 .tuto-btns .primary{flex:1}
 @media (prefers-reduced-motion:reduce){.tuto-hero::after{animation:none}.tuto-hero.pop{animation:none}}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
@@ -816,6 +821,53 @@ label.ghost{color:var(--ink);font-weight:600}
 .splash .logo{width:96px;height:96px;border-radius:29px}
 .splash b{font-family:var(--font-display);font-size:38px;font-weight:700;letter-spacing:-.01em}
 .splash small{color:rgba(255,255,255,.6);font-size:14px;margin-top:-6px}
+
+/* Tutoriel coach : scènes animées */
+.tuto-hero.scene{width:auto;height:auto;border-radius:0;background:none;box-shadow:none;display:block}
+.tuto-hero.scene::after{display:none}
+.csc{position:relative;width:min(340px,86vw);height:250px;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 14px 36px var(--glow);text-align:left;font-size:13px}
+.csc *{box-sizing:border-box}
+.csc .a{position:absolute}
+.csc .lb{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.csc .chip{height:34px;border-radius:99px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;font-size:12.5px;color:var(--ink);animation:cscChip 4.5s infinite}
+@keyframes cscChip{0%,28%{background:var(--grad);color:#fff;border-color:transparent;transform:scale(1.05)}34%,100%{background:var(--surface);color:var(--ink);border-color:var(--line);transform:none}}
+.csc .tg{position:absolute;padding:4px 9px;border-radius:99px;background:var(--accent);color:var(--on-accent,#fff);font-size:11.5px;font-weight:700;white-space:nowrap;animation:cscTag .6s .5s both,cscBob 1.4s 1.1s ease-in-out infinite}
+@keyframes cscTag{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes cscBob{50%{transform:translateY(4px)}}
+.csc .arw{position:absolute;width:44px;height:44px;fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.csc .arw path{stroke-dasharray:1;stroke-dashoffset:1;animation:cscDraw .8s .6s ease forwards}
+@keyframes cscDraw{to{stroke-dashoffset:0}}
+.csc .box{border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.csc .dot{width:15px;height:15px;border-radius:5px;background:var(--line);animation:cscDot 6s infinite both}
+@keyframes cscDot{0%,8%{background:var(--line);transform:none}14%{background:var(--accent);transform:scale(1.25)}20%,86%{background:var(--accent);transform:none}94%,100%{background:var(--line)}}
+.csc .day{width:38px;height:44px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--muted)}
+.csc .day.on{background:var(--grad);color:#fff;border-color:transparent}
+.csc .day.now{box-shadow:0 0 0 3px var(--accent);animation:cscPulse 1.5s infinite}
+@keyframes cscPulse{50%{box-shadow:0 0 0 7px transparent}}
+.csc .btn{height:34px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:12.5px}
+.csc .btn.p{background:var(--grad);color:#fff;animation:cscTap 2.4s 1s infinite}
+.csc .btn.g{border:1px solid var(--line);color:var(--ink);animation:cscTap 2.4s 2.2s infinite}
+@keyframes cscTap{0%,70%,100%{transform:none}80%{transform:scale(.94)}90%{transform:scale(1.03)}}
+.csc .ring{width:104px;height:104px}
+.csc .ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.csc .ring .bg{stroke:var(--line)}
+.csc .ring .fg{stroke:var(--accent);stroke-dasharray:1;stroke-dashoffset:0;transform:rotate(-90deg);transform-origin:50% 50%;animation:cscRing 5s linear infinite}
+@keyframes cscRing{from{stroke-dashoffset:0}to{stroke-dashoffset:1}}
+.csc .ex{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:11px;border:1px solid var(--line);background:var(--bg);font-weight:600;font-size:12.5px}
+.csc .ex i{margin-left:auto;font-style:normal;color:var(--accent);font-weight:800;opacity:0;animation:cscChk 6s infinite both}
+@keyframes cscChk{0%,10%{opacity:0;transform:scale(.4)}16%,88%{opacity:1;transform:none}96%,100%{opacity:0}}
+.csc .bar{width:8px;border-radius:4px;background:var(--grad);transform-origin:bottom;animation:cscBar 1.6s ease-in-out infinite}
+@keyframes cscBar{50%{transform:scaleY(.35)}}
+.csc .ckrow{display:flex;gap:9px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:13px;background:var(--bg);font-size:12px;font-weight:500;line-height:1.3}
+.csc .ckb{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;animation:cscCk 6s infinite both}
+.csc .ckb::after{content:'✓';font-size:13px;font-weight:800;color:#fff;opacity:0;animation:cscCkm 6s infinite both}
+@keyframes cscCk{0%,38%{background:transparent;border-color:var(--muted)}44%,90%{background:var(--accent);border-color:var(--accent)}96%,100%{background:transparent;border-color:var(--muted)}}
+@keyframes cscCkm{0%,38%{opacity:0}44%,90%{opacity:1}96%,100%{opacity:0}}
+.csc .mtabs{display:flex;justify-content:space-around;align-items:flex-end;height:44px;border-top:1px solid var(--line);background:var(--bg);padding:0 8px 6px}
+.csc .mtabs i{width:22px;height:8px;border-radius:4px;background:var(--line)}
+.csc .mtabs b{width:34px;height:34px;border-radius:50%;background:var(--grad);margin-bottom:2px;animation:cscBub 6s infinite both}
+@keyframes cscBub{0%,48%{transform:none;opacity:1}58%,88%{transform:scale(0);opacity:0}96%,100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.csc *{animation:none!important}.csc .arw path{stroke-dashoffset:0!important}.csc .ex i,.csc .ckb::after{opacity:1!important}}
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
 </head>
@@ -892,6 +944,11 @@ label.ghost{color:var(--ink);font-weight:600}
   <div class="tuto-stage"><div class="tuto-hero" id="tuto-hero"></div><nav class="tmini" id="tmini" aria-hidden="true"></nav></div>
   <div class="tuto-text" id="tuto-text" aria-live="polite"></div>
   <div class="tuto-btns" id="tuto-btns"></div>
+</div>
+<div id="setup" class="player tuto" hidden role="dialog" aria-label="Ton profil">
+  <div class="tuto-top"><div class="tuto-dots" id="setup-dots"></div><span></span></div>
+  <div class="setup-body" id="setup-body"></div>
+  <div class="tuto-btns" id="setup-btns"></div>
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
 <div id="updsheet" class="scrim upd" hidden>
@@ -1080,8 +1137,58 @@ const FOODS={
   pomme:{n:'Pomme',p:0.3,c:14,f:0.2,unit:['pomme','pommes',150]},
   fruits:{n:'Fruits rouges',p:0.7,c:10,f:0.3},
   legumes:{n:'Légumes verts cuits',p:2.5,c:5,f:0.3},
-  salade:{n:'Salade et tomates',p:1,c:3,f:0.2}
+  salade:{n:'Salade et tomates',p:1,c:3,f:0.2},
+  pchiches:{n:'Pois chiches cuits',p:8.9,c:27,f:2.6,min:60,max:500},
+  yasoja:{n:'Yaourt au soja nature',p:4.2,c:2.5,f:2.3,min:80,max:600},
+  protveg:{n:'Protéine végétale (poudre)',p:75,c:8,f:6,min:10,max:60,step:5},
+  sarrasin:{n:'Flocons de sarrasin',p:13,c:72,f:3.4,min:20,max:220},
+  galette:{n:'Galettes de riz',p:8,c:80,f:2.5,min:15,max:200,unit:['galette','galettes',9]},
+  graines:{n:'Graines de courge',p:30,c:11,f:49,min:0,max:60}
 };
+// Régimes : chaque aliment porte une étiquette ; un régime exclut des étiquettes
+const FOOD_TAG={poulet:'viande',boeuf:'viande',dinde:'viande',thon:'poisson',saumon:'poisson',oeuf:'oeuf',skyr:'lait',fblanc:'lait',whey:'lait',avoine:'gluten',pates:'gluten',pain:'gluten',amandes:'nuts',noix:'nuts',pbeurre:'nuts'};
+const DIET_BASE=[['none','Aucun'],['vege','Végétarien'],['vegan','Végétalien'],['pesce','Pescétarien']];
+const DIET_EXTRA=[['gluten','Sans gluten'],['lactose','Sans lactose'],['eggs','Sans œufs'],['nuts','Sans fruits à coque ni arachide']];
+function dietEx(d){
+  d=d||(typeof S!=='undefined'&&S.profile&&S.profile.diet)||{};
+  const t=new Set(),b=d.base;
+  if(b==='vege'||b==='vegan'){t.add('viande');t.add('poisson')}
+  if(b==='pesce')t.add('viande');
+  if(b==='vegan'){t.add('oeuf');t.add('lait')}
+  if(d.gluten)t.add('gluten');if(d.lactose)t.add('lait');if(d.eggs)t.add('oeuf');if(d.nuts)t.add('nuts');
+  return t;
+}
+const POOL={
+  bf:{P:['oeuf','skyr','fblanc','yasoja','tofu','protveg'],C:['avoine','pain','sarrasin','galette','banane'],F:['amandes','pbeurre','graines','avocat']},
+  lunch:{P:['poulet','boeuf','thon','dinde','tofu','saumon','pchiches'],C:['riz','pates','quinoa','patate','lentilles'],F:['huile','avocat']},
+  dinner:{P:['saumon','dinde','tofu','poulet','thon','pchiches'],C:['pdt','riz','quinoa','lentilles','patate'],F:['huile','avocat']},
+  snack:{P:['whey','skyr','fblanc','yasoja','protveg'],C:['banane','pain','galette'],F:['amandes','noix','pbeurre','graines','avocat']}
+};
+function adaptTpl(tpl,type,i,ex){
+  let changed=false;const out=[];
+  for(const e of tpl){
+    if(!ex.has(FOOD_TAG[e.id])){out.push(e);continue}
+    changed=true;
+    const pool=((POOL[type]||{})[e.r])||[];
+    for(let k=0;k<pool.length;k++){
+      const id=pool[(k+i)%pool.length];
+      if(ex.has(FOOD_TAG[id])||tpl.some(x=>x.id===id)||out.some(x=>x.id===id))continue;
+      out.push({id,r:e.r});break;
+    }
+  }
+  return {t:out,changed};
+}
+function genRecipe(items,type){
+  const nm=r=>items.filter(x=>x.r===r).map(x=>FOODS[x.id].n.toLowerCase());
+  const P=nm('P'),C=nm('C'),F=nm('F'),first=items.filter(x=>x.r!=='X').map(x=>FOODS[x.id].n);
+  const steps=[];
+  if(C.length)steps.push('Prépare '+C.join(' et ')+' en suivant les indications du paquet (cuisson à l\'eau, à la vapeur ou simple préparation).');
+  if(P.length)steps.push('Cuis ou assemble '+P.join(' et ')+' : à la poêle, au four ou simplement mélangé, selon l\'aliment.');
+  if(items.some(x=>x.r==='X'))steps.push('Ajoute les légumes ou fruits prévus.');
+  if(F.length)steps.push('Ajoute '+F.join(' et ')+' pour les bonnes graisses.');
+  steps.push('Assaisonne avec des herbes, des épices ou du citron, puis déguste.');
+  return {n:first.slice(0,3).join(', '),t:type==='snack'?4:type==='bf'?8:15,s:steps};
+}
 // r : P = source de protéines, C = glucides, F = lipides, X = quantité fixe
 const TPL={
   bf:[
@@ -1157,12 +1264,15 @@ function solveMeal(tpl,tgt){
 function buildDay(T,nMeals,seed){
   const rnd=rng(seed);const used={};const meals=[];
   for(const [name,share,type] of SLOTS[nMeals]){
-    const list=TPL[type];used[type]=used[type]||new Set();
+    const ex=dietEx(),seen=new Set(),list=[];
+    TPL[type].forEach((t0,i0)=>{const a=adaptTpl(t0,type,i0,ex),sig=a.t.map(x=>x.id).join();if(seen.has(sig)||!a.t.length)return;seen.add(sig);list.push({t:a.t,key:type+i0+(a.changed?'d':''),ch:a.changed})});
+    used[type]=used[type]||new Set();
     let idx=Math.floor(rnd()*list.length),guard=0;
     while(used[type].has(idx)&&guard++<10) idx=(idx+1)%list.length;
     used[type].add(idx);
-    const sol=solveMeal(list[idx],{p:T.p*share,c:T.c*share,f:T.f*share});
-    meals.push({name,items:sol.items,tpl:type+idx});
+    const sol=solveMeal(list[idx].t,{p:T.p*share,c:T.c*share,f:T.f*share});
+    if(list[idx].ch&&typeof RECIPES!=='undefined'&&!RECIPES[list[idx].key])RECIPES[list[idx].key]=genRecipe(sol.items,type);
+    meals.push({name,items:sol.items,tpl:list[idx].key});
   }
   const all=()=>meals.flatMap(m=>m.items);
   // Correction sur la journée entière : chaque rôle (protéines, lipides, glucides) est ajusté dans tous les repas.
@@ -1198,7 +1308,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 46';
+const APP_VERSION='2026.11.09 · 47';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1339,12 +1449,48 @@ const TUTO=[
   {k:'nutrition',t:'Ta nutrition',x:'Tes objectifs de calories et de macros, des menus, ta liste de courses et ton suivi.'},
   {k:'menu',t:'Ton menu',x:'Touche la roue en haut à gauche : ton compte, tes profils, ton abonnement, la sauvegarde et le code de verrouillage.'}
 ];
+const ARW=(st,d,hd)=>'<svg class="arw" style="'+st+'" viewBox="0 0 44 44"><path pathLength="1" d="'+d+'"/><path pathLength="1" d="'+hd+'"/></svg>';
+function coachScene(k){
+  if(k==='c_prog')return '<div class="csc">'
+    +'<span class="a lb" style="left:16px;top:14px">1 · TON NIVEAU</span>'
+    +['Débutant','Inter.','Avancé'].map((t,i)=>'<span class="a chip" style="left:'+(14+i*106)+'px;top:36px;width:98px;animation-delay:'+(i*1.5)+'s">'+t+'</span>').join('')
+    +ARW('left:148px;top:78px','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
+    +'<span class="tg" style="left:200px;top:92px">Le coach s\'adapte</span>'
+    +'<div class="a box" style="left:14px;right:14px;top:132px;height:104px;padding:12px 14px"><b style="font-size:15px">Mon programme</b><div class="lb" style="margin:2px 0 12px">12 semaines · selon ton objectif et ton matériel</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+Array.from({length:12},(_,i)=>'<i class="dot" style="animation-delay:'+(i*.18)+'s"></i>').join('')+'</div></div></div>';
+  if(k==='c_week')return '<div class="csc">'
+    +'<span class="a lb" style="left:16px;top:12px">SEMAINE 3 SUR 12</span>'
+    +'<div class="a" style="left:12px;top:32px;display:flex;gap:6px">'+['L','M','M','J','V','S','D'].map((d,i)=>'<span class="day'+([0,2,4,5].includes(i)?' on':'')+(i===2?' now':'')+'">'+d+'</span>').join('')+'</div>'
+    +ARW('left:86px;top:74px;transform:rotate(180deg) scaleX(-1)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29').replace('rotate(180deg) scaleX(-1)','rotate(0deg)')
+    +'<span class="tg" style="left:122px;top:84px">Ta séance du jour</span>'
+    +'<div class="a box" style="left:14px;right:14px;top:122px;height:50px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between"><span><b>Haut du corps</b><br><span class="lb">45 min · 6 exercices</span></span><span class="btn p" style="width:84px">C\'est parti</span></div>'
+    +'<span class="a btn g" style="left:14px;right:14px;top:184px;height:34px">Ajouter la semaine à l\'agenda</span>'
+    +'<span class="tg" style="left:14px;top:224px;animation:cscTag .6s .9s both">↑ en un seul geste</span></div>';
+  if(k==='c_sess')return '<div class="csc">'
+    +'<span class="a lb" style="left:16px;top:14px">SÉANCE GUIDÉE</span>'
+    +'<div class="a" style="left:14px;top:40px;width:104px;height:104px"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" pathLength="1" cx="52" cy="52" r="44"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1"><span><b style="font-size:17px">Repos</b><br><span class="lb">60 s</span></span></div></div>'
+    +ARW('left:44px;top:150px;transform:rotate(180deg)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
+    +'<span class="tg" style="left:12px;top:204px">Minuteur de repos</span>'
+    +'<div class="a" style="left:136px;right:14px;top:40px;display:grid;gap:8px">'
+    +[['Pompes','4×12'],['Rowing','4×10'],['Gainage','3×40 s']].map((e,i)=>'<span class="ex"><span>'+e[0]+'</span><span class="lb">'+e[1]+'</span><i style="animation-delay:'+(i*1.2)+'s">✓</i></span>').join('')+'</div>'
+    +ARW('left:150px;top:150px;transform:rotate(180deg)','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29')
+    +'<span class="tg" style="left:168px;top:204px">Charges notées</span></div>';
+  return '<div class="csc">'
+    +'<span class="a lb" style="left:16px;top:12px">ÉTIREMENTS · 12 MIN</span>'
+    +'<div class="a" style="left:18px;top:34px;display:flex;gap:6px;align-items:flex-end;height:46px">'+[.9,.5,1,.6,.8,.45,.95,.55].map((h,i)=>'<i class="bar" style="height:'+Math.round(h*44)+'px;animation-delay:'+(i*.14)+'s"></i>').join('')+'</div>'
+    +'<span class="a lb" style="right:16px;top:44px;text-align:right;line-height:1.4">Après une séance<br>ou un jour de repos</span>'
+    +'<div class="a ckrow" style="left:14px;right:14px;top:104px"><i class="ckb"></i><span>Je fais mes propres séances : masquer l\'onglet Coach</span></div>'
+    +ARW('right:30px;top:140px','M22 4 C 22 18, 22 26, 22 38','M12 29 L22 39 L32 29').replace('top:140px','top:142px;transform:rotate(180deg)')
+    +'<span class="tg" style="left:14px;top:156px">En bas de la page Coach</span>'
+    +'<div class="a mtabs" style="left:0;right:0;bottom:0"><i></i><i></i><b></b><i></i><i></i></div></div>';
+}
 function tutoIcon(k){
   if(k==='welcome'||k==='coach'||k.indexOf('c_')===0)return CL_BOLT;
   if(k==='menu'){const g=document.querySelector('[data-act=dopen] svg');return g?g.outerHTML:''}
   const g=document.querySelector('.tabs [data-tab="'+k+'"] svg');return g?g.outerHTML:'';
 }
 function maybeTuto(){
+  if(S.tuto&&!S.setup){maybeSetup();return}
   if(S.tuto||V.tutoShown||V.tuto)return;
   if(!$('#gate').hidden||!$('#license').hidden||!$('#lock').hidden||!$('#onb').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;
   if(V.tab==='legal'||licenseExpired())return;
@@ -1363,7 +1509,8 @@ function renderTuto(first){
   const T=V.tuto;if(!T)return;
   const SET=tutoSet(),st=SET[T.i],last=T.i===SET.length-1;
   $('#tuto-dots').innerHTML=SET.map((_,i)=>'<i class="'+(i===T.i?'on':'')+'"></i>').join('');
-  const hero=$('#tuto-hero');hero.innerHTML=tutoIcon(st.k);hero.classList.remove('pop');void hero.offsetWidth;hero.classList.add('pop');
+  const hero=$('#tuto-hero'),sc=st.k.indexOf('c_')===0;
+  hero.classList.toggle('scene',sc);hero.innerHTML=sc?coachScene(st.k):tutoIcon(st.k);hero.classList.remove('pop');void hero.offsetWidth;if(!sc)hero.classList.add('pop');
   document.querySelectorAll('#tmini .ms').forEach(m=>m.classList.toggle('on',m.dataset.t===st.k));
   let x=st.x;
   if(st.k==='coach')x=coachUnlocked()?'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il est inclus dans ta formule.':'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il fait partie de la formule Cadence + Coach : sans elle, tu en as un aperçu.';
@@ -1378,7 +1525,61 @@ function finishTuto(){
   S.tuto=1;
   touch();
   if(V.tab==='coach'&&prefs().coach===false)V.tab='seances';
-  render();window.scrollTo(0,0);setTimeout(maybeOnb,200);
+  render();window.scrollTo(0,0);setTimeout(()=>{maybeTuto();maybeOnb()},200);
+}
+const dietChips=d=>'<span class="clab">Régime</span><div class="eqs">'+DIET_BASE.map(x=>'<button type="button" data-act="dset" data-k="base" data-v="'+x[0]+'" aria-pressed="'+((d.base||'none')===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
+  +'<span class="clab" style="margin-top:12px">Exclusions</span><div class="eqs">'+DIET_EXTRA.map(x=>'<button type="button" data-act="dset" data-k="'+x[0]+'" aria-pressed="'+(!!d[x[0]])+'">'+x[1]+'</button>').join('')+'</div>';
+function maybeSetup(){
+  if(S.setup||V.setupShown||V.setup||!S.tuto)return;
+  if(!$('#gate').hidden||!$('#license').hidden||!$('#lock').hidden||!$('#onb').hidden||!$('#psheet').hidden||!$('#celeb').hidden||!$('#tuto').hidden)return;
+  if(V.tab==='legal'||licenseExpired())return;
+  V.setupShown=true;openSetup();
+}
+function openSetup(){
+  const p=S.profile,nm=IS_PWA?curProfile().name:(p.pseudo||'');
+  V.setup={i:0,msg:'',d:{pseudo:nm==='Moi'?'':nm,sex:p.sex||'H',age:p.age||'',height:p.height||'',weight:p.weight||'',activity:+p.activity||1.55,goal:p.goal||'maintien',diet:Object.assign({},p.diet||{})}};
+  $('#setup').hidden=false;renderSetup();
+}
+function setupRead(){
+  const D=V.setup.d,v=id=>{const el=$(id);return el?el.value:null};
+  if(V.setup.i===0){D.pseudo=(v('#su-name')||'').trim().slice(0,30);const sx=document.querySelector('#setup input[name=su-sex]:checked');if(sx)D.sex=sx.value;D.age=v('#su-age');D.height=v('#su-height');D.weight=(v('#su-weight')||'').replace(',','.')}
+  if(V.setup.i===1){const a=v('#su-act');if(a)D.activity=parseFloat(a);const g=document.querySelector('#setup input[name=su-goal]:checked');if(g)D.goal=g.value}
+}
+function renderSetup(){
+  const U=V.setup;if(!U)return;const D=U.d,n=3;
+  $('#setup-dots').innerHTML=Array.from({length:n},(_,i)=>'<i class="'+(i===U.i?'on':'')+'"></i>').join('');
+  const radio=(nm,val,label,cur)=>'<label><input type="radio" name="'+nm+'" value="'+val+'"'+(cur===val?' checked':'')+'><span>'+label+'</span></label>';
+  let h='';
+  if(U.i===0)h='<h2>Faisons connaissance</h2><p class="sub">Ces informations servent à calculer tes besoins en calories et en protéines. Elles restent sur ton téléphone.</p>'
+    +'<label><span class="lab">Nom d\'utilisateur</span><input type="text" id="su-name" maxlength="30" autocomplete="off" placeholder="Comment t\'appelles-tu ?" value="'+esc(D.pseudo)+'"></label>'
+    +'<div class="seg-title">Sexe</div><div class="seg">'+radio('su-sex','H','Homme',D.sex)+radio('su-sex','F','Femme',D.sex)+'</div>'
+    +'<div class="r2"><label><span class="lab">Âge</span><input type="number" id="su-age" inputmode="numeric" min="14" max="90" value="'+esc(D.age)+'"></label><label><span class="lab">Taille (cm)</span><input type="number" id="su-height" inputmode="numeric" min="120" max="230" value="'+esc(D.height)+'"></label></div>'
+    +'<label><span class="lab">Poids (kg)</span><input type="number" id="su-weight" inputmode="decimal" step="0.1" min="30" max="250" value="'+esc(D.weight)+'"></label>';
+  if(U.i===1)h='<h2>Ton rythme</h2><p class="sub">Pour estimer ta dépense et fixer ton objectif.</p>'
+    +'<label><span class="lab">Niveau d\'activité</span><select id="su-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+D.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
+    +'<div class="seg-title" style="margin-top:6px">Ton objectif</div><div class="seg">'+radio('su-goal','prise','Masse',D.goal)+radio('su-goal','maintien','Maintien',D.goal)+radio('su-goal','seche','Déficit',D.goal)+'</div>';
+  if(U.i===2)h='<h2>Ton alimentation</h2><p class="sub">Un régime ou des aliments à éviter ? Tes menus, tes recettes et ta liste de courses s\'adaptent automatiquement.</p>'+dietChips(D.diet)+'<p class="note" style="margin-top:12px">Tu pourras modifier tout ça à tout moment dans Menu › Mon compte.</p>';
+  $('#setup-body').innerHTML=h+'<p class="smsg" id="su-msg" aria-live="polite">'+esc(U.msg||'')+'</p>';
+  $('#setup-btns').innerHTML=(U.i>0?'<button type="button" class="ghost" data-act="setupback">‹ Retour</button>':'')+'<button type="button" class="primary big" data-act="setupnext">'+(U.i===n-1?'Terminer':'Suivant')+'</button>';
+}
+function setupNext(){
+  const U=V.setup;if(!U)return;setupRead();const D=U.d;
+  if(U.i===0){
+    const a=+D.age,h=+D.height,w=+D.weight;
+    if(!(a>=14&&a<=90)){U.msg='Entre un âge entre 14 et 90 ans.';return renderSetup()}
+    if(!(h>=120&&h<=230)){U.msg='Entre une taille entre 120 et 230 cm.';return renderSetup()}
+    if(!(w>=30&&w<=250)){U.msg='Entre un poids entre 30 et 250 kg.';return renderSetup()}
+  }
+  U.msg='';
+  if(U.i<2){U.i++;renderSetup();$('#setup-body').scrollTop=0;return}
+  const p=S.profile;
+  Object.assign(p,{sex:D.sex,age:+D.age,height:+D.height,weight:Math.round(+D.weight*10)/10,activity:+D.activity,goal:D.goal,custom:true,diet:D.diet});
+  if(D.pseudo){p.pseudo=D.pseudo;if(IS_PWA){const pr=curProfile();pr.name=D.pseudo;saveProfiles();const tl=$('#today-label');if(tl)tl.textContent=headLabel()}}
+  if(!S.weights.some(x=>x.d===todayISO))S.weights.push({d:todayISO,w:p.weight});
+  S.shop={};S.setup=1;V.setup=null;touch();
+  $('#setup').hidden=true;render();window.scrollTo(0,0);
+  toast(Object.keys(D.diet).some(k=>D.diet[k]&&D.diet[k]!=='none')?'Profil enregistré, tes repas sont adaptés':'Profil enregistré');
+  setTimeout(()=>{maybeTuto();maybeOnb()},400);
 }
 function licenseExpired(){const l=licenseGet();return IS_PWA&&!!l&&l.type==='sub'&&!!l.email&&!licLive(l)}
 function renderExpiredCard(){
@@ -1874,7 +2075,9 @@ function renderMeals(){
   return html;
 }
 
+const CATS_X={pchiches:'f',yasoja:'l',protveg:'e',sarrasin:'f',galette:'f',graines:'e'};
 const CATS={poulet:'v',boeuf:'v',dinde:'v',thon:'v',saumon:'v',tofu:'v',oeuf:'l',skyr:'l',fblanc:'l',whey:'e',avoine:'f',riz:'f',pates:'f',pdt:'f',pain:'f',patate:'f',quinoa:'f',lentilles:'f',banane:'g',pomme:'g',fruits:'g',legumes:'g',salade:'g',avocat:'g',huile:'e',amandes:'e',pbeurre:'e',noix:'e'};
+Object.assign(CATS,CATS_X);
 const CAT_L={v:'Viandes, poissons et tofu',l:'Œufs et produits laitiers',f:'Féculents',g:'Fruits et légumes',e:'Épicerie'};
 function qtyText(id,g){
   const fd=FOODS[id];
@@ -1996,7 +2199,8 @@ function accountHTML(){
    +'<div class="r2"><label><span class="lab">Âge</span><input type="number" id="a-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label><label><span class="lab">Taille (cm)</span><input type="number" id="a-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label></div>'
    +'<label><span class="lab">Niveau d\'activité</span><select id="a-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
    +'<div class="row" style="align-items:flex-end;margin-top:4px"><div><div class="seg-title">Poids actuel</div><span class="curw">'+(p.weight?num(+p.weight,1)+' kg':'–')+'</span></div><button type="button" class="ghost" data-act="tab" data-tab="poids">Nouvelle pesée</button></div>'
-   +'<p class="note" id="a-msg" style="margin-top:10px">Les modifications sont enregistrées automatiquement.</p></section>';
+   +'<p class="note" id="a-msg" style="margin-top:10px">Les modifications sont enregistrées automatiquement.</p></section>'
+   +'<section class="card"><h2>Alimentation</h2><p class="note" style="margin-bottom:8px">Tes menus, tes recettes et ta liste de courses tiennent compte de ton régime.</p>'+dietChips(p.diet||{})+'</section>';
 }
 function readAccount(){
   const p=S.profile,v=id=>{const el=$(id);if(!el)return null;const x=parseFloat(el.value);return isNaN(x)?null:x};
@@ -3457,7 +3661,7 @@ function finishOnb(){
   delete S.coach.equip;S.onb=1;V.onb=null;touch();
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
-function maybeOnb(){if(!coachActive())return;if(!S.tuto||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+function maybeOnb(){if(!coachActive())return;if(!S.tuto||!S.setup||!$('#setup').hidden||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
 function coachSaleCTA(){return licensePlan()==='base'
@@ -4046,6 +4250,15 @@ document.addEventListener('click',e=>{
   else if(a==='tutoback'){if(V.tuto){V.tuto.i=Math.max(0,V.tuto.i-1);renderTuto()}}
   else if(a==='tutoskip'){finishTuto()}
   else if(a==='tutoopen'){closeDrawer();openTuto(true)}
+  else if(a==='setupnext'){setupNext()}
+  else if(a==='setupback'){if(V.setup){setupRead();V.setup.i=Math.max(0,V.setup.i-1);V.setup.msg='';renderSetup()}}
+  else if(a==='dset'){
+    const k=b.dataset.k,v=b.dataset.v,inSetup=!!V.setup;
+    if(inSetup)setupRead();
+    const d=inSetup?V.setup.d.diet:(S.profile.diet=S.profile.diet||{});
+    if(k==='base'){d.base=v}else{d[k]=!d[k]}
+    if(inSetup)renderSetup();else{S.shop={};touch();render()}
+  }
   else if(a==='tutocoach'){openTuto(true,'coach')}
   else if(a==='drprofile'){const pid=b.dataset.pid;if(pid===profiles().active){closeDrawer();V.tab='settings';V.sec='account';render();window.scrollTo(0,0);return}closeDrawer();switchProfile(pid);toast('Profil « '+curProfile().name+' »')}
   else if(a==='locknow'){closeDrawer();showLock()}
