@@ -78,7 +78,11 @@ p{margin:0}
 .drawer-head{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .drawer-head b{display:block;font-size:17px;overflow-wrap:anywhere}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex:none}
-.dr-group{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 8px 4px}
+.dr-group{display:flex;width:100%;justify-content:space-between;align-items:center;background:none;border:0;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 0;padding:10px 8px 10px}
+.dr-group .chev{font-size:13px;transition:transform .15s ease}
+.dr-group[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.dr-wrap{overflow:hidden;max-height:600px}
+.dr-wrap[hidden]{display:none}
 .dr-item{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:12px 8px;font-size:16px;font-weight:500;text-align:left;color:var(--ink);min-height:46px}
 .dr-item:hover,.dr-item[aria-current="page"]{background:var(--soft)}
 .dr-item span:last-child{color:var(--muted);font-size:20px}
@@ -155,6 +159,8 @@ p{margin:0}
 .pill.t{border:2px solid var(--pc);color:var(--ink);line-height:1.35;background:transparent}
 .pill.d{background:var(--pc);color:var(--bg)}
 .tag{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
+.type{font-size:12px;color:var(--muted)}
+.item .m.sub{opacity:.85}
 .group-h{font-family:var(--font-display);font-size:18px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 .group-h.late{color:var(--d-late)}
 .group-h.today{color:var(--d-today)}
@@ -776,23 +782,24 @@ function dateLabel(it){
 }
 function itemHTML(it){
   const sl=slotOf(it.time);
-  const top=['<span class="pill d" style="--pc:var('+DATE_C[dateState(it)]+')">'+esc(dateLabel(it))+'</span>',
-    '<span class="pill t" style="--pc:var('+SLOT_C[sl]+')">'+esc(it.time||'Journée')+'</span>',
-    '<span class="tag">'+esc(TYPES[it.type].label)+'</span>'];
+  const dc=DATE_C[dateState(it)];
+  const label=esc(dateLabel(it))+(it.time?' · '+esc(it.time):'');
+  const top=['<span class="pill d" style="--pc:var('+dc+')">'+label+'</span>','<span class="type">'+esc(TYPES[it.type].label)+'</span>'];
   const extra=[];
   if(it.type==='sport'){extra.push(esc(it.sport));if(it.dur)extra.push(esc(it.dur)+' min')}
   const rl=remindLabel(it);if(rl)extra.push(esc(rl));
-  if(it.ex)extra.push('<span class="tag">Exemple</span>');
-  return '<li class="item'+(it.done?' done':'')+'" style="--c:var('+SLOT_C[sl]+')">'
+  if(it.ex)extra.push('Exemple');
+  return '<li class="item'+(it.done?' done':'')+'" style="--c:var('+dc+')">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
    +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+'</div>'
-   +'<div class="m">'+top.join('')+'</div>'+(extra.length?'<div class="m">'+extra.map(x=>'<span>'+x+'</span>').join('')+'</div>':'')+'</button></li>';
+   +'<div class="m">'+top.join('')+'</div>'+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
 }
 function updateSlot(){
   const t=$('#f-time').value,d=$('#f-date').value,el=$('#f-slot');
   if(!d){el.textContent='';return}
   const fake={date:d,time:t,done:false};
-  el.innerHTML='<span class="pill d" style="--pc:var('+DATE_C[dateState(fake)]+')">'+esc(dateLabel(fake))+'</span> <span class="pill t" style="--pc:var('+SLOT_C[slotOf(t)]+')">'+esc(SLOT_L[slotOf(t)])+'</span>';
+  const label=esc(dateLabel(fake))+' · '+esc(t||SLOT_L[slotOf(t)]);
+  el.innerHTML='<span class="pill d" style="--pc:var('+DATE_C[dateState(fake)]+')">'+label+'</span>';
 }
 
 function renderAgenda(){
@@ -1088,7 +1095,12 @@ function openDrawer(){
   const G=[['Compte',[['account','Mon compte'],['poids','Pesée']].concat(IS_PWA?[['profiles','Profils']]:[])]];
   if(IS_PWA)G.push(['Sécurité',[['security','Code et clé Gemini'],['abo','Mon abonnement']]],['Préférences',[['notif','Notifications'],['backup','Sauvegarde']]],['Informations',[['cgu','Conditions d\'utilisation'],['conf','Confidentialité'],['mentions','Mentions légales']]],['Données',[['data','Effacer mes données']]]);
   const cur=V.tab==='poids'?'poids':V.tab==='legal'?V.doc:V.tab==='settings'?V.sec:'';
-  $('#dr-items').innerHTML=G.map(g=>'<div class="dr-group">'+g[0]+'</div>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')).join('');
+  if(!V.drOpen){V.drOpen=new Set();const curGroup=G.findIndex(g=>g[1].some(x=>x[0]===cur));V.drOpen.add(curGroup<0?0:curGroup)}
+  $('#dr-items').innerHTML=G.map((g,i)=>{
+    const open=V.drOpen.has(i);
+    return '<button type="button" class="dr-group" data-act="drgroup" data-grp="'+i+'" aria-expanded="'+open+'"><span>'+g[0]+'</span><span class="chev" aria-hidden="true">▾</span></button>'
+     +'<div class="dr-wrap"'+(open?'':' hidden')+'>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')+'</div>';
+  }).join('');
   $('#dr-items').insertAdjacentHTML('beforeend','<p class="note" style="margin:20px 8px 0">Version '+APP_VERSION+'</p>');
   $('#drawer').hidden=false;
 }
@@ -1859,6 +1871,7 @@ document.addEventListener('click',e=>{
   }
   else if(a==='dopen'){openDrawer()}
   else if(a==='dclose'){closeDrawer()}
+  else if(a==='drgroup'){const i=+b.dataset.grp;if(!V.drOpen)V.drOpen=new Set();if(V.drOpen.has(i))V.drOpen.delete(i);else V.drOpen.add(i);openDrawer();return}
   else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else if(x==='cgu'||x==='conf'||x==='mentions'){if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=x}else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0)}
   else if(a==='nseg'){V.tab='nutrition';V.nseg=b.dataset.seg;render();window.scrollTo(0,0)}
   else if(a==='copyshop'){
