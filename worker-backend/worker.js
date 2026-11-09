@@ -3,9 +3,13 @@
 // Variables à définir dans Settings > Variables (3 "Secrets") :
 //   STRIPE_SECRET_KEY     clé secrète Stripe (sk_live_... ou sk_test_...)
 //   STRIPE_WEBHOOK_SECRET  clé du endpoint webhook (whsec_...)
-//   STRIPE_PRICE_ID        id du prix récurrent créé dans Stripe (price_...)
+//   STRIPE_PRICE_ID        id du prix récurrent de la formule Cadence (price_...)
+//   STRIPE_PRICE_COACH     id du prix récurrent de la formule Cadence + Coach (price_...)
 //   GEMINI_KEY             (facultatif) clé Google AI Studio pour l'analyse photo sans clé perso
 // Et une liaison KV (Settings > Bindings > KV Namespace) nommée : LICENSES
+// Notifications push : ajoute un déclencheur Cron (Settings > Triggers > Cron) : */5 * * * *
+//   (les clés VAPID sont créées automatiquement et gardées dans LICENSES ; VAPID_SUBJECT facultatif)
+// Changement de formule : dans Stripe, portail client > autoriser le changement d'abonnement entre les deux prix.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -51,11 +55,128 @@ async function verifyStripeSignature(rawBody, sigHeader, secret) {
   return toHex(sig) === v1;
 }
 
+// Formule d'un abonnement : d'après le prix (fiable après un changement de formule), sinon les métadonnées.
+function planOf(env, sub) {
+  const price = sub && sub.items && sub.items.data && sub.items.data[0] && sub.items.data[0].price && sub.items.data[0].price.id;
+  if (price && env.STRIPE_PRICE_COACH) return price === env.STRIPE_PRICE_COACH ? 'coach' : 'base';
+  return (sub && sub.metadata && sub.metadata.plan) === 'coach' ? 'coach' : 'base';
+}
+
+/* ---------- Notifications push (Web Push, VAPID, sans contenu chiffré) ---------- */
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function vapid(env) {
+  let v = await env.LICENSES.get('vapid', { type: 'json' });
+  if (!v) {
+    const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    v = { priv: await crypto.subtle.exportKey('jwk', kp.privateKey), pub: b64u(await crypto.subtle.exportKey('raw', kp.publicKey)) };
+    await env.LICENSES.put('vapid', JSON.stringify(v));
+  }
+  return v;
+}
+async function vapidHeader(env, endpoint) {
+  const v = await vapid(env);
+  const enc = o => b64u(new TextEncoder().encode(JSON.stringify(o)));
+  const unsigned = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({
+    aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+    sub: env.VAPID_SUBJECT || 'https://zypnozz.github.io/Cadence/'
+  });
+  const key = await crypto.subtle.importKey('jwk', v.priv, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(unsigned));
+  return 'vapid t=' + unsigned + '.' + b64u(sig) + ', k=' + v.pub;
+}
+// Envoie un « réveil » : l'app récupère ensuite le message avec /push/pending.
+async function sendPush(env, sub) {
+  return fetch(sub.endpoint, { method: 'POST', headers: { Authorization: await vapidHeader(env, sub.endpoint), TTL: '3600', Urgency: 'high', 'Content-Length': '0' } });
+}
+async function subId(endpoint) {
+  return toHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint))).slice(0, 32);
+}
+const clip = (x, n) => String(x == null ? '' : x).slice(0, n);
+async function deliver(env, id, items) {
+  const sub = await env.LICENSES.get('psub:' + id, { type: 'json' });
+  if (!sub) return 'nosub';
+  const box = (await env.LICENSES.get('inbox:' + id, { type: 'json' })) || [];
+  await env.LICENSES.put('inbox:' + id, JSON.stringify(box.concat(items).slice(-10)), { expirationTtl: 86400 });
+  const r = await sendPush(env, sub);
+  if (r.status === 404 || r.status === 410) {
+    await env.LICENSES.delete('psub:' + id); await env.LICENSES.delete('sched:' + id);
+    return 'gone';
+  }
+  return r.ok ? 'ok' : 'err ' + r.status;
+}
+// Toutes les 5 minutes (déclencheur Cron) : envoie les rappels arrivés à échéance.
+async function runSchedules(env) {
+  const now = Date.now();
+  let cursor;
+  do {
+    const page = await env.LICENSES.list({ prefix: 'sched:', cursor });
+    for (const k of page.keys) {
+      const id = k.name.slice(6), sc = await env.LICENSES.get(k.name, { type: 'json' });
+      if (!sc || !Array.isArray(sc.events)) continue;
+      const due = sc.events.filter(e => !e.sent && e.t <= now + 60000 && e.t > now - 30 * 60000);
+      if (!due.length) continue;
+      due.forEach(e => { e.sent = 1; });
+      const st = await deliver(env, id, due.map(e => ({ title: e.title, body: e.body, tag: e.tag })));
+      if (st === 'gone') continue;
+      sc.events = sc.events.filter(e => e.t > now - 3600000);
+      await env.LICENSES.put(k.name, JSON.stringify(sc));
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+}
+async function pushRoutes(request, env, url) {
+  const body = request.method === 'POST' ? await request.json().catch(() => ({})) : {};
+  if (url.pathname === '/push/key') return json({ key: (await vapid(env)).pub });
+  if (url.pathname === '/push/subscribe') {
+    const sub = body.sub;
+    if (!sub || !/^https:\/\//.test(sub.endpoint || '')) return json({ error: 'abonnement invalide' }, 400);
+    const id = await subId(sub.endpoint);
+    await env.LICENSES.put('psub:' + id, JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys || {} }));
+    return json({ id });
+  }
+  if (url.pathname === '/push/unsubscribe') {
+    const id = clip(body.id, 32);
+    await env.LICENSES.delete('psub:' + id); await env.LICENSES.delete('sched:' + id);
+    return json({ ok: true });
+  }
+  if (url.pathname === '/push/schedule') {
+    const id = clip(body.id, 32);
+    if (!(await env.LICENSES.get('psub:' + id))) return json({ error: 'inconnu' }, 404);
+    const now = Date.now();
+    const events = (Array.isArray(body.events) ? body.events : []).slice(0, 60)
+      .filter(e => +e.t > now - 60000 && +e.t < now + 15 * 86400000)
+      .map(e => ({ t: +e.t, title: clip(e.title, 80), body: clip(e.body, 160), tag: clip(e.tag, 40) }));
+    await env.LICENSES.put('sched:' + id, JSON.stringify({ events }));
+    return json({ ok: true, n: events.length });
+  }
+  if (url.pathname === '/push/pending') {
+    if (!body.endpoint) return json({ items: [] });
+    const id = await subId(body.endpoint);
+    const box = (await env.LICENSES.get('inbox:' + id, { type: 'json' })) || [];
+    if (box.length) await env.LICENSES.delete('inbox:' + id);
+    return json({ items: box });
+  }
+  if (url.pathname === '/push/test') {
+    const id = clip(body.id, 32);
+    const st = await deliver(env, id, [{ title: '✅ Cadence', body: 'Les notifications push marchent. Tu recevras tes rappels de séances ici.', tag: 'test' }]);
+    return json({ ok: st === 'ok', st }, st === 'ok' ? 200 : 502);
+  }
+  return null;
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runSchedules(env));
+  },
   async fetch(request, env) {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    if (url.pathname.startsWith('/push/')) {
+      const r = await pushRoutes(request, env, url);
+      if (r) return r;
+    }
 
     // GET /status?email=... -> { active: bool }
     if (url.pathname === '/status') {
@@ -63,7 +184,7 @@ export default {
       if (!email) return json({ error: 'email manquant' }, 400);
       const v = await env.LICENSES.get('lic:' + email);
       const data = v ? JSON.parse(v) : null;
-      return json({ active: !!(data && data.active) });
+      return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base' });
     }
 
     // GET /checkout?email=... -> redirige vers Stripe Checkout
@@ -71,11 +192,14 @@ export default {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       if (!email) return json({ error: 'email manquant' }, 400);
       const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      const plan = url.searchParams.get('plan') === 'coach' ? 'coach' : 'base';
       try {
         const session = await stripe(env, 'checkout/sessions', {
           mode: 'subscription',
           customer_email: email,
-          'line_items[0][price]': env.STRIPE_PRICE_ID,
+          'metadata[plan]': plan,
+          'subscription_data[metadata][plan]': plan,
+          'line_items[0][price]': plan === 'coach' ? env.STRIPE_PRICE_COACH : env.STRIPE_PRICE_ID,
           'line_items[0][quantity]': '1',
           success_url: appUrl + '?lic=ok',
           cancel_url: appUrl + '?lic=cancel'
@@ -134,7 +258,7 @@ export default {
 
       if (event.type === 'checkout.session.completed' && obj.customer_email) {
         await env.LICENSES.put('lic:' + obj.customer_email.toLowerCase(), JSON.stringify({
-          active: true, customerId: obj.customer
+          active: true, customerId: obj.customer, plan: (obj.metadata && obj.metadata.plan) || 'base'
         }));
       }
       if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
@@ -147,7 +271,7 @@ export default {
           })).json();
           if (cust.email) {
             await env.LICENSES.put('lic:' + cust.email.toLowerCase(), JSON.stringify({
-              active, customerId: obj.customer
+              active, customerId: obj.customer, plan: planOf(env, obj)
             }));
           }
         } catch (e) {}
@@ -159,7 +283,7 @@ export default {
           })).json();
           if (cust.email) {
             await env.LICENSES.put('lic:' + cust.email.toLowerCase(), JSON.stringify({
-              active: false, customerId: obj.customer
+              active: false, customerId: obj.customer, plan: 'base'
             }));
           }
         } catch (e) {}

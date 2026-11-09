@@ -351,6 +351,31 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .pl-nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
 .pl-end{text-align:center;padding:40px 0}
 .onb{z-index:91}
+.tabs.nocoach{grid-template-columns:repeat(4,1fr)}
+.tabs.nocoach .ctab{display:none}
+.plans{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.plan{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.plan b{font-size:16px}.plan span{font-size:13px;color:var(--muted);font-weight:400}
+.plan.best{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.coachpay{text-align:left;padding-top:22px}
+.coachpay h2{font-size:28px;margin:2px 0 6px}
+.cp-bub{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--grad);box-shadow:0 8px 20px var(--glow);margin-bottom:12px}
+.cp-bub svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cp-list{list-style:none;padding:0;margin:14px 0 16px;display:flex;flex-direction:column;gap:8px}
+.cp-list li{padding-left:26px;position:relative;font-size:15px}
+.cp-list li::before{content:'✓';position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:800;display:grid;place-items:center}
+.upd{z-index:94}
+.upd .panel{padding-top:22px}
+.upd-top{display:flex;align-items:center;gap:14px}
+.upd-top h2{font-size:24px;margin:0}
+.upd-ic{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--grad);box-shadow:0 8px 20px var(--glow)}
+.upd-ic svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){.upd:not([hidden]) .upd-ic svg{animation:updbob 1.6s ease-in-out infinite}}
+@keyframes updbob{0%,100%{transform:none}50%{transform:translateY(3px)}}
+.upd-notes{margin:4px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:15px}
+.dr-ver{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:calc(100% - 16px);margin:20px 8px 0;padding:10px 12px;border-radius:12px;border:1px dashed var(--line);background:none;color:var(--muted);font-size:12.5px;text-align:left}
+.dr-ver span:last-child{color:var(--accent);font-weight:600;font-size:14px}
+.pushok{font-weight:700;color:var(--accent);margin-bottom:4px}
 .fbcats{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 -2px 8px;scrollbar-width:none}
 .fbcats::-webkit-scrollbar{display:none}
 .fbcats button{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;white-space:nowrap}
@@ -662,6 +687,16 @@ label.ghost{color:var(--ink);font-weight:600}
   </div>
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
+<div id="updsheet" class="scrim upd" hidden>
+  <div class="panel" role="dialog" aria-labelledby="upd-h">
+    <div class="upd-top"><span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><div><h2 id="upd-h">Nouvelle version</h2><p class="note" id="upd-v"></p></div></div>
+    <p class="clab" style="margin-top:12px">Nouveautés</p>
+    <ul class="upd-notes" id="upd-notes"></ul>
+    <p class="note" style="margin:10px 0 14px">Tes données restent sur ton téléphone, rien n'est effacé.</p>
+    <button type="button" class="primary big" id="upd-go" data-act="updgo" style="width:100%">Mettre à jour</button>
+    <button type="button" class="linkbtn" data-act="updlater" style="display:block;margin:10px auto 0">Plus tard</button>
+  </div>
+</div>
 <div id="rsheet" class="scrim" hidden>
   <div class="panel" role="dialog" aria-labelledby="r-head">
     <div class="panel-head"><div style="min-width:0"><h2 id="r-head"></h2><p class="note" id="r-sub"></p></div><button type="button" class="x" data-act="rclose" aria-label="Fermer">×</button></div>
@@ -748,9 +783,11 @@ label.ghost{color:var(--ink);font-weight:600}
     <h2 id="lic-h" style="font-size:28px;margin-bottom:8px">Cadence</h2>
     <p style="margin-bottom:14px">Application sur abonnement. Entre ton email pour vérifier ton abonnement, ou ton code si tu en as un.</p>
     <label><span class="lab">Email</span><input type="email" id="lic-email" autocomplete="email" placeholder="toi@exemple.com"></label>
-    <div class="row2" style="margin-top:10px">
-      <button type="button" class="primary" data-act="liccheck">J'ai déjà un abonnement</button>
-      <button type="button" data-act="licsub">S'abonner</button>
+    <button type="button" class="primary" data-act="liccheck" style="width:100%;margin-top:10px">J'ai déjà un abonnement</button>
+    <p class="clab" style="margin:14px 0 0">Ou choisis ta formule</p>
+    <div class="plans">
+      <button type="button" class="plan" data-act="licsub" data-plan="base"><b>Cadence</b><span>Agenda, séances, assiette, nutrition, suivi</span></button>
+      <button type="button" class="plan best" data-act="licsub" data-plan="coach"><b>Cadence + Coach</b><span>Tout Cadence, plus le coach personnel : programme sur 12 semaines, séances guidées, minuteur</span></button>
     </div>
     <details style="margin-top:16px"><summary class="note">J'ai un code</summary>
       <label style="margin-top:8px"><span class="lab">Code</span><input type="text" id="lic-code" autocomplete="off" spellcheck="false"></label>
@@ -954,13 +991,16 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 35';
+const APP_VERSION='2026.11.09 · 36';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
 const LIC_RECHECK_MS=12*3600*1000;
 function licenseGet(){try{return JSON.parse(localStorage.getItem(LS_LICENSE)||'null')}catch(e){return null}}
 function licenseSet(v){try{localStorage.setItem(LS_LICENSE,JSON.stringify(v))}catch(e){}}
+function licensePlan(){const l=licenseGet();if(!l)return null;if(l.type==='admin')return 'coach';if(l.type==='sub'&&l.active)return l.plan==='coach'?'coach':'base';return null}
+function coachUnlocked(){return !IS_PWA||licensePlan()==='coach'}
+function coachActive(){return prefs().coach&&coachUnlocked()}
 function licenseOK(){const l=licenseGet();if(!l)return false;if(l.type==='admin')return true;if(l.type==='sub')return !!l.active;return false}
 async function sha256Hex(str){const d=new TextEncoder().encode(str);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function licenseRecheckIfStale(){
@@ -970,7 +1010,7 @@ async function licenseRecheckIfStale(){
   try{
     const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email));
     const d=await r.json();
-    licenseSet({type:'sub',email:l.email,active:!!d.active,checked:Date.now()});
+    licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
     updateGate();
   }catch(e){}
   return true;
@@ -1054,7 +1094,7 @@ function setSync(s){
 }
 function localSave(json){try{localStorage.setItem(LS_KEY,json)}catch(e){}}
 function localLoad(){try{const j=localStorage.getItem(LS_KEY);return j?JSON.parse(j):null}catch(e){return null}}
-function touch(){S.touched=true;localSave(JSON.stringify(S));scheduleSave()}
+function touch(){S.touched=true;localSave(JSON.stringify(S));scheduleSave();if(IS_PWA)schedulePushSync()}
 function scheduleSave(){dirty=true;setSync('pending');clearTimeout(saveTimer);saveTimer=setTimeout(flush,600)}
 async function flush(){
   if(saving){saveTimer=setTimeout(flush,300);return}
@@ -1128,6 +1168,55 @@ function pushAlert(it){
     }
   }catch(e){}
   try{if(navigator.vibrate)navigator.vibrate(200)}catch(e){}
+}
+/* ---------- Notifications push (via le Worker Cadence) ---------- */
+const PUSH_LS='cadence-push';
+function pushInfo(){try{return JSON.parse(localStorage.getItem(PUSH_LS)||'null')}catch(e){return null}}
+function pushSupported(){return IS_PWA&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
+function b64u8(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const r=atob(s),u=new Uint8Array(r.length);for(let i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u}
+const postJ=(path,body)=>fetch(WORKER_URL+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>{if(!r.ok)throw {m:'Erreur serveur ('+r.status+').'};return r.json()});
+async function pushEnable(){
+  if(!PROXY_OK())throw {m:'Le serveur Cadence n\'est pas encore en ligne : les notifications push arrivent dès qu\'il l\'est.'};
+  const perm=await Notification.requestPermission();if(perm!=='granted')throw {m:'Notifications refusées. Autorise-les dans Réglages de l\'iPhone, Notifications, Cadence.'};
+  const reg=await navigator.serviceWorker.ready;
+  const k=await (await fetch(WORKER_URL+'/push/key')).json();
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(k.key)});
+  const r=await postJ('/push/subscribe',{sub:sub.toJSON()});
+  localStorage.setItem(PUSH_LS,JSON.stringify({id:r.id,h:''}));
+  await pushSync(true);
+}
+async function pushDisable(){
+  const p=pushInfo();
+  try{const reg=await navigator.serviceWorker.ready;const sb=await reg.pushManager.getSubscription();if(sb)await sb.unsubscribe()}catch(e){}
+  if(p)try{await postJ('/push/unsubscribe',{id:p.id})}catch(e){}
+  localStorage.removeItem(PUSH_LS);
+}
+async function pushTest(){const p=pushInfo();if(!p)throw 0;await postJ('/push/test',{id:p.id})}
+function pushEvents(){
+  const now=Date.now(),lim=now+14*864e5,ev=[];
+  for(const it of S.items){
+    if(it.type!=='sport')continue;const ft=fireTime(it);if(ft==null||ft<now||ft>lim)continue;
+    const d=parseISO(it.date),when=(it.date===iso(new Date(ft))?'Aujourd\'hui':cap(FMT.short.format(d)))+(it.time?' à '+it.time.replace(':',' h '):'');
+    ev.push({t:ft,title:'🏋️ '+it.title,body:when+(it.dur?' · '+it.dur+' min':'')+'. Prépare tes affaires !',tag:it.id});
+  }
+  const pr=prefs();
+  if(coachActive()&&pr.coachH!=='off'){
+    const [h,m]=pr.coachH.split(':').map(Number);
+    for(let w=0;w<3;w++){const wn=curWeekNo()+w;if(wn>12&&cycMode&&cycMode()==='cycles')break;
+      for(const x of coachWeek(wn)){const d=addDays(monday(today),x.wd+7*w);d.setHours(h,m,0,0);const t=d.getTime(),di=iso(d);
+        if(t<now||t>lim||S.items.some(i=>i.type==='sport'&&i.coach===x.key&&i.date===di))continue;
+        ev.push({t,title:'⚡ Séance du jour : '+x.title,body:'≈ '+x.dur+' min · '+x.ex.length+' exercices. Ton coach t\'attend !',tag:'c'+di})}}
+  }
+  return ev.sort((a,b)=>a.t-b.t).slice(0,60);
+}
+let pushT=null;
+function schedulePushSync(){if(!pushInfo())return;clearTimeout(pushT);pushT=setTimeout(()=>pushSync(false),3000)}
+async function pushSync(force){
+  const p=pushInfo();if(!p||!PROXY_OK())return;
+  const ev=pushEvents(),h=String(ev.length)+':'+ev.map(e=>e.t+e.title).join('|').length+':'+(ev[0]?ev[0].t:0)+':'+(ev.length?ev[ev.length-1].t:0);
+  if(!force&&h===p.h&&Date.now()-(p.at||0)<6*3600e3)return;
+  try{await postJ('/push/schedule',{id:p.id,events:ev});p.h=h;p.at=Date.now();localStorage.setItem(PUSH_LS,JSON.stringify(p))}catch(e){}
 }
 function markSilent(it){const ft=fireTime(it);if(ft!=null&&ft<=Date.now()){fired.add(it.id+'@'+ft);persistFired()}}
 
@@ -1558,32 +1647,37 @@ function renderSettings(){
   if(sec==='abo'){
     const l=licenseGet();
     const body=!l?'<p class="note">Aucune licence active.</p>'
-      :l.type==='admin'?'<p class="note">Accès administrateur (gratuit).</p>'
-      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'abonnement actif.':'abonnement inactif.')+'</p>'
+      :l.type==='admin'?'<p class="note">Accès administrateur (gratuit), coach inclus.</p>'
+      :'<p class="note" style="margin-bottom:8px">Compte : '+esc(l.email||'')+' — '+(l.active?'formule '+(l.plan==='coach'?'Cadence + Coach':'Cadence')+' active.':'abonnement inactif.')+'</p>'+(l.active&&l.plan!=='coach'?'<button type="button" class="primary" data-act="licportal" style="width:100%;margin-bottom:8px">Passer à Cadence + Coach</button>':'')
        +'<div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="licportal">Gérer / annuler l\'abonnement</button><button type="button" class="ghost" data-act="liclogout">Se déconnecter</button></div>';
     return head+'<section class="card"><h2>Mon abonnement</h2>'+body+'</section>';
   }
   if(sec==='train'){
     const p=prefs(),row=(k,cur,list,lab,note)=>'<span class="clab">'+lab+'</span><div class="modes" style="margin-bottom:4px">'+list.map(x=>'<button type="button" data-act="pset" data-k="'+k+'" data-v="'+x[0]+'" aria-pressed="'+(String(cur)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>'+(note?'<p class="note" style="margin-bottom:8px">'+note+'</p>':'');
     return head+'<section class="card"><h2>Séances et coach</h2>'
+     +row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Coach personnel','Désactivé : l\'onglet Coach disparaît et tu crées tes propres séances dans Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
      +row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
      +row('video',p.video,[[true,'Afficher'],[false,'Masquer']],'Vidéos explicatives','')
      +row('timer',p.timer,[[true,'Activé'],[false,'Désactivé']],'Minuteur','Repos, exercices tenus, intervalles. Sans minuteur, tu avances à ton rythme.')
      +row('ui',p.ui,[['auto','Selon mon niveau'],['simple','Simple'],['full','Complet']],'Affichage de l\'onglet Séances','Simple : la séance du jour et ta progression. Complet : historique, progrès et import.')
-     +'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:10px">Refaire le questionnaire</button></section>';
+     +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:10px">Refaire le questionnaire</button>':'')+'</section>';
   }
   if(sec==='theme'){
     const p=themePref(),opt=[['auto','Auto',ICON_AUTO],['light','Clair',ICON_SUN],['dark','Sombre',ICON_MOON]];
     return head+'<section class="card"><h2>Apparence</h2><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>';
   }
   if(sec==='notif'){
-    const hasN='Notification' in window,perm=hasN?Notification.permission:'none';
+    const hasN='Notification' in window,perm=hasN?Notification.permission:'none',pi=pushInfo(),pr=prefs();
     let n;
-    if(!hasN)n='<p class="note">Les notifications ne sont disponibles qu\'une fois Cadence ajoutée à l\'écran d\'accueil, puis ouverte depuis son icône.</p>';
-    else if(perm==='granted')n='<p class="note">Notifications autorisées.</p>';
+    if(!pushSupported())n='<p class="note">Les notifications push marchent une fois Cadence ajoutée à l\'écran d\'accueil (iOS 16.4 ou plus récent), puis ouverte depuis son icône.</p>';
     else if(perm==='denied')n='<p class="note">Notifications refusées. Réactive-les dans les Réglages de l\'iPhone, Notifications, Cadence.</p>';
-    else n='<button type="button" class="ghost" data-act="notif">Activer les notifications</button>';
-    return head+'<section class="card"><h2>Notifications</h2>'+n+'<p class="note" style="margin-top:8px">iOS ne réveille pas une app web fermée : un rappel apparaît quand Cadence est ouverte ou vient d\'être utilisée. Pour une alarme à heure fixe, double-la avec l\'app Rappels.</p></section>';
+    else if(pi)n='<p class="pushok">✓ Notifications push activées</p><p class="note" style="margin-bottom:10px">Tu reçois les rappels de tes séances même quand Cadence est fermée.</p><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="pushtest">Envoyer un test</button><button type="button" class="ghost" data-act="pushoff">Désactiver</button></div>';
+    else n='<p class="note" style="margin-bottom:10px">Reçois un rappel pour chaque séance de sport, même quand Cadence est fermée.</p><button type="button" class="primary" data-act="pushon" style="width:100%">Activer les notifications push</button>'+(PROXY_OK()?'':'<p class="note" style="margin-top:8px">Disponible dès que le serveur Cadence est en ligne.</p>');
+    const opts=[['off','Aucun'],['07:00','7 h'],['08:00','8 h'],['12:00','12 h'],['17:00','17 h']];
+    return head+'<section class="card"><h2>Notifications</h2>'+n+'<p class="note" id="push-msg" style="margin-top:8px" aria-live="polite"></p>'
+     +'<h3 class="group-h">Séances de l\'agenda</h3><p class="note">Le rappel suit le réglage choisi sur chaque séance (à l\'heure, 30 min avant, la veille…).</p>'
+     +(coachActive()?'<h3 class="group-h">Séance du jour du coach</h3><div class="modes" style="margin-bottom:4px">'+opts.map(x=>'<button type="button" data-act="pset" data-k="coachH" data-v="'+x[0]+'" aria-pressed="'+(pr.coachH===x[0])+'">'+x[1]+'</button>').join('')+'</div><p class="note">Un rappel le matin des jours où le coach a prévu une séance.</p>':'')
+     +'</section>';
   }
   if(sec==='backup')return head+'<section class="card"><h2>Sauvegarde</h2><p class="note" style="margin-bottom:8px">Les données de ce profil restent sur ce téléphone. Copie-les pour les garder ailleurs ou les restaurer. Le code et la clé Gemini ne sont pas inclus.</p>'
     +'<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="backup">Copier ma sauvegarde</button><button type="button" class="ghost" data-act="restore">Restaurer</button></div><p class="note" id="bk-msg" style="margin-top:8px"></p></section>';
@@ -1604,7 +1698,7 @@ function openDrawer(){
     return '<button type="button" class="dr-group" data-act="drgroup" data-grp="'+i+'" aria-expanded="'+open+'"><span>'+g[0]+'</span><span class="chev" aria-hidden="true">▾</span></button>'
      +'<div class="dr-wrap"'+(open?'':' hidden')+'>'+g[1].map(x=>'<button type="button" class="dr-item" data-act="sec" data-sec="'+x[0]+'"'+(x[0]===cur?' aria-current="page"':'')+'><span>'+x[1]+'</span><span aria-hidden="true">›</span></button>').join('')+'</div>';
   }).join('');
-  $('#dr-items').insertAdjacentHTML('beforeend','<p class="note" style="margin:20px 8px 0">Version '+APP_VERSION+'</p>');
+  $('#dr-items').insertAdjacentHTML('beforeend','<button type="button" class="dr-ver" data-act="updcheck"><span>Version '+APP_VERSION+'</span><span>Rechercher une mise à jour</span></button>');
   $('#drawer').hidden=false;
 }
 function closeDrawer(){$('#drawer').hidden=true}
@@ -1774,8 +1868,7 @@ function renderSeances(){
   if(V.wimport)return renderImport();
   if(uiSimple()&&!V.wfull)return renderSeancesSimple();
   const sg=V.wseg||'hist';
-  return '<div class="cal-head"><h2>Séances</h2><button type="button" class="primary" data-act="wnew">Nouvelle séance</button></div>'+levelBanner()
-   +todayCoachCard(false)
+  return '<div class="cal-head"><h2>Séances</h2><button type="button" class="primary" data-act="wnew">Nouvelle séance</button></div>'+(coachActive()?levelBanner()+todayCoachCard(false):'')
    +'<button type="button" class="ghost" data-act="wimp" style="width:100%;margin-bottom:12px">Importer une séance depuis Notes</button>'
    +'<div class="modes">'+[['hist','Historique'],['suivi','Suivi'],['prog','Par exercice']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
    +(sg==='hist'?seancesHist():sg==='suivi'?perChips()+suiviSport():seancesProg())
@@ -2483,7 +2576,7 @@ function wipeAll(){
 }
 function updateGate(){
   const lic=$('#license'),g=$('#gate');
-  const needLic=IS_PWA&&!licenseOK()&&V.tab!=='legal';
+  const needLic=IS_PWA&&(!licenseOK()||V.lic)&&V.tab!=='legal';
   if(lic)lic.hidden=!needLic;
   if(g)g.hidden=!IS_PWA||cguOK()||V.tab==='legal'||needLic;
 }
@@ -2501,6 +2594,8 @@ function moveTabInd(){
 window.addEventListener('resize',()=>{const ind=$('.tabind');if(ind){ind.classList.add('still');V.barTab=undefined;moveTabInd()}});
 function render(){
   $('#today-label').textContent=headLabel();
+  if(V.tab==='coach'&&!prefs().coach)V.tab='seances';
+  $('.tabs').classList.toggle('nocoach',!prefs().coach);
   document.querySelectorAll('.tabs button').forEach(b=>{if(b.dataset.tab===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   moveTabInd();
   {const g=$('.gear');if(g){if(V.tab==='settings'||V.tab==='poids')g.setAttribute('aria-current','page');else g.removeAttribute('aria-current')}}
@@ -2811,9 +2906,9 @@ const VIDEOS=[
 ];
 function vidURL(n){const v=VIDEOS.find(x=>x[0].test(n));return v&&v[1]?'https://www.youtube.com/watch?v='+v[1]:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
 const VID_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
-function prefs(){const p=S.prefs||{};return {anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto'}}
+function prefs(){const p=S.prefs||{};return {anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto',coach:p.coach!==false,coachH:/^(off|\d\d:\d\d)$/.test(p.coachH)?p.coachH:'08:00'}}
 function vidA(n,cls){return prefs().video?'<a class="'+(cls||'vid')+'" href="'+vidURL(n)+'" target="_blank" rel="noopener" aria-label="Vidéo : '+esc(n)+'">'+VID_ICON+(cls?' Voir la vidéo explicative':'')+'</a>':''}
-function uiSimple(){const u=prefs().ui;return u==='simple'||(u==='auto'&&coachCfg().level==='deb')}
+function uiSimple(){const u=prefs().ui;return u==='simple'||(u==='auto'&&coachActive()&&coachCfg().level==='deb')}
 function doneCount(){return S.workouts.filter(w=>w.ex.length&&w.date<=todayISO).length}
 // Passage de niveau proposé après un nombre de séances au niveau actuel.
 function levelUp(){const c=coachCfg();if(c.level==='conf')return null;const need=c.level==='deb'?12:36,n=doneCount()-c.lvlAt;return {need,n:Math.max(0,n),ready:n>=need,next:c.level==='deb'?'inter':'conf'}}
@@ -2905,7 +3000,7 @@ function renderOnb(){
   $('#onb-body').innerHTML='<p class="note">Question '+(i+1)+' sur '+st.length+'</p><h2>'+esc(x.q)+'</h2>'
    +(i===0?'<p class="note" style="margin:-4px 0 14px">Quelques questions pour que le coach et l\'app s\'adaptent à toi. Tu pourras tout changer ensuite.</p>':'')
    +'<div class="onb-opts">'+x.o.map(o=>{const on=x.multi?cur.includes(o[0]):String(cur)===String(o[0]);return '<button type="button" data-act="onbpick" data-v="'+o[0]+'" aria-pressed="'+on+'"><b>'+esc(o[1])+'</b>'+(o[2]?'<span>'+esc(o[2])+'</span>':'')+'</button>'}).join('')+'</div>'
-   +'<div class="row" style="margin-top:16px">'+(i>0?'<button type="button" class="ghost" data-act="onbback">‹ Retour</button>':'<button type="button" class="linkbtn" data-act="onbskip">Plus tard</button>')+(x.multi?'<button type="button" class="primary" data-act="onbnext">'+(cur.length?'Continuer':'Je n\'ai rien')+'</button>':'')+'</div>';
+   +'<div class="row" style="margin-top:16px">'+(i>0?'<button type="button" class="ghost" data-act="onbback">‹ Retour</button>':'<button type="button" class="linkbtn" data-act="onbskip">Plus tard</button><button type="button" class="linkbtn" data-act="onbnocoach">Je crée mes propres séances</button>')+(x.multi?'<button type="button" class="primary" data-act="onbnext">'+(cur.length?'Continuer':'Je n\'ai rien')+'</button>':'')+'</div>';
 }
 function finishOnb(){
   const a=V.onb;
@@ -2914,8 +3009,17 @@ function finishOnb(){
   delete S.coach.equip;S.onb=1;V.onb=null;touch();
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
-function maybeOnb(){if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+function maybeOnb(){if(!coachActive())return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+function renderCoachLocked(){
+  const l=licenseGet(),base=licensePlan()==='base';
+  return '<section class="card coachpay"><span class="cp-bub" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span><span class="cday">Formule supérieure</span><h2>Cadence + Coach</h2><p class="note">Ton coach personnel, qui s\'adapte à ton objectif, ton niveau, ton matériel et ton sport.</p>'
+   +'<ul class="cp-list"><li>Programme sur 12 semaines qui progresse tout seul</li><li>Séance du jour guidée, avec minuteur et animations</li><li>Musculation, calisthenics, CrossFit, course, vélo, triathlon, mobilité</li><li>Exercices pour ton sport à côté</li><li>Séances que tu peux décaler et rappels push</li></ul>'
+   +(base?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note" style="margin-top:8px">Tu changes de formule dans ton espace d\'abonnement : la différence est calculée au prorata.</p>'
+     :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach</button>')
+   +'</section><button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:6px auto">Je fais mes propres séances : masquer le coach</button>';
+}
 function renderCoach(){
+  if(!coachUnlocked())return renderCoachLocked();
   const cfg=coachCfg(),p=S.profile,T=calc(p),goal=p.goal||'maintien';
   if(!S.coach||!S.coach.start){S.coach=Object.assign(coachCfg(),{start:progStart()});delete S.coach.equip;touch()}
   const cw=curWeekNo(),vw=Math.max(1,Math.min(12,V.cweek||Math.min(cw,12)));
@@ -3224,7 +3328,7 @@ document.addEventListener('click',e=>{
   else if(a==='cstart'){$('#ssheet').hidden=true;const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const w=coachToWorkout(s);S.workouts.push(w);touch();askGuided(w)}
   else if(a==='pyes'||a==='pno'){if($('#pp-rem').checked){S.prefs=Object.assign(prefs(),{anim:a==='pyes'?'always':'never'});touch()}$('#pprompt').hidden=true;openPlayer(V.pendingW,a==='pyes')}
   else if(a==='pmanual'){$('#pprompt').hidden=true;V.tab='seances';V.wEdit=V.pendingW;render();window.scrollTo(0,0)}
-  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v});touch();render()}
+  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v});touch();if(b.dataset.k==='coachH'||b.dataset.k==='coach')pushSync(true);if(b.dataset.k==='coach'){V.barTab=undefined;if(v==='false'&&V.tab==='coach')V.tab='seances'}render();if(b.dataset.k==='coach'&&v==='false'&&!V.sec)toast('Coach masqué. Tu peux le réactiver dans Réglages, Séances et coach.')}
   else if(a==='onbredo'){closeDrawer();V.onbShown=true;openOnb()}
   else if(a==='onbpick'){const x=onbSteps()[V.onb.step],v=b.dataset.v;
     if(x.multi){const l=V.onb[x.k];V.onb[x.k]=l.includes(v)?l.filter(y=>y!==v):l.concat(v);renderOnb();return}
@@ -3234,8 +3338,15 @@ document.addEventListener('click',e=>{
   else if(a==='onbnext'){V.onb.step++;renderOnb()}
   else if(a==='onbback'){V.onb.step=Math.max(0,V.onb.step-1);renderOnb()}
   else if(a==='onbskip'){S.onb=1;touch();$('#onb').hidden=true;V.onb=null}
+  else if(a==='onbnocoach'){S.onb=1;S.prefs=Object.assign(prefs(),{coach:false});touch();$('#onb').hidden=true;V.onb=null;V.tab='seances';render();toast('Coach masqué. Tu peux le réactiver dans Réglages, Séances et coach.')}
   else if(a==='sopen'){if(e.target.closest('a'))return;openSess(+b.dataset.i)}
   else if(a==='ssclose'){$('#ssheet').hidden=true}
+  else if(a==='updgo'){applyUpdate()}
+  else if(a==='updlater'){V.updLater=V.updInfo&&V.updInfo.v;$('#updsheet').hidden=true}
+  else if(a==='updcheck'){closeDrawer();checkUpdate(true)}
+  else if(a==='pushon'){const m=$('#push-msg');m.textContent='Activation…';pushEnable().then(()=>{render();toast('Notifications push activées.')}).catch(e=>{m.textContent=(e&&e.m)||'Activation impossible. Vérifie que Cadence est ouverte depuis l\'écran d\'accueil.'})}
+  else if(a==='pushoff'){pushDisable().then(()=>render())}
+  else if(a==='pushtest'){const m=$('#push-msg');m.textContent='Envoi…';pushTest().then(()=>m.textContent='Envoyée : elle arrive dans quelques secondes, même app fermée.').catch(()=>m.textContent='Échec de l\'envoi. Réessaie plus tard.')}
   else if(a==='cshift'){const wk=b.dataset.cur?coachWeek():(V.coachWeek||[]);const s=wk[+b.dataset.i];if(s)openShift({kind:'coach',s})}
   else if(a==='cpull'){const tw=(today.getDay()+6)%7,s=coachWeek().find(x=>x.wd>tw);if(s){V.shift={kind:'coach',s};doShift(tw)}}
   else if(a==='ishift'){openShift({kind:'item',id:b.dataset.id})}
@@ -3379,8 +3490,8 @@ document.addEventListener('click',e=>{
     if(!email){msg.textContent='Entre ton email.';return}
     msg.textContent='Vérification…';
     fetch(WORKER_URL+'/status?email='+encodeURIComponent(email)).then(r=>r.json()).then(d=>{
-      licenseSet({type:'sub',email,active:!!d.active,checked:Date.now()});
-      if(d.active){msg.textContent='';updateGate();render()}
+      licenseSet({type:'sub',email,active:!!d.active,plan:d.plan||'base',checked:Date.now()});
+      if(d.active){msg.textContent='';V.lic=false;updateGate();render()}
       else msg.textContent="Aucun abonnement actif pour cet email. Clique sur \"S'abonner\".";
     }).catch(()=>{msg.textContent='Impossible de vérifier pour le moment. Réessaie plus tard.'});
   }
@@ -3388,8 +3499,9 @@ document.addEventListener('click',e=>{
     const email=($('#lic-email').value||'').trim().toLowerCase();
     const msg=$('#lic-msg');
     if(!email){msg.textContent="Entre ton email avant de t'abonner.";return}
-    location.href=WORKER_URL+'/checkout?email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
+    location.href=WORKER_URL+'/checkout?plan='+(b.dataset.plan==='coach'?'coach':'base')+'&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
+  else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='licportal'){
     const l=licenseGet();if(!l||!l.email)return;
     location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname);
@@ -3548,7 +3660,8 @@ document.addEventListener('change',e=>{
   if(e.target.closest&&e.target.closest('#macro-form'))readMacroForm();
   if(e.target.id==='meal-count'){S.profile.meals=parseInt(e.target.value,10);S.shop={};touch();render()}
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkReminders();if(IS_PWA)pushSync(false)}});
+if(IS_PWA)setTimeout(()=>pushSync(false),4000);
 document.addEventListener('input',e=>{
   const t=e.target,w=V.tab==='seances'&&V.wEdit?curW():null;if(!w)return;
   if(t.id==='w-date'){if(t.value)w.date=t.value}
@@ -3577,13 +3690,33 @@ if(IS_PWA&&'serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})});
   }).catch(()=>{});
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(!hadCtl||$('#upd'))return;
-    const el=document.createElement('div');el.id='upd';el.className='alert';el.style.setProperty('--c','var(--d-today)');
-    el.innerHTML='<div><small>Mise à jour</small><b>Une nouvelle version de Cadence est prête.</b></div><button type="button">Recharger</button>';
-    el.querySelector('button').addEventListener('click',()=>location.reload());
-    $('#alerts').appendChild(el);
-  });
+  setTimeout(()=>checkUpdate(false),2500);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate(false)});
+  setInterval(()=>{if(!document.hidden)checkUpdate(false)},30*60000);
+}
+// Mises à jour : version.json est lu sans cache ; si la version diffère, une fiche propose la mise à jour.
+async function checkUpdate(manual){
+  if(!IS_PWA)return;
+  try{if(new URLSearchParams(location.search).has('u')){V.justUpd=true;history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
+  let j;try{j=await (await fetch('version.json?t='+Date.now(),{cache:'no-store'})).json()}catch(e){if(manual)toast('Impossible de vérifier : pas de connexion.');return}
+  if(!j||!j.v||j.v===APP_VERSION){if(manual)toast('Cadence est à jour (version '+APP_VERSION+').');return}
+  if(!manual&&V.justUpd){V.updLater=j.v;return}
+  if(!manual&&(V.updLater===j.v||!$('#player').hidden))return;
+  showUpdate(j);
+}
+function showUpdate(j){
+  V.updInfo=j;
+  $('#upd-v').textContent='Version '+j.v;
+  $('#upd-notes').innerHTML=(j.notes||[]).map(n=>'<li>'+esc(n)+'</li>').join('');
+  $('#upd-go').disabled=false;$('#upd-go').textContent='Mettre à jour';
+  $('#updsheet').hidden=false;
+}
+async function applyUpdate(){
+  const bt=$('#upd-go');bt.disabled=true;bt.innerHTML='<span class="spinner" aria-hidden="true"></span>Mise à jour…';
+  try{flush&&await flush()}catch(e){}
+  try{const r=await navigator.serviceWorker.getRegistration();if(r){await r.update().catch(()=>{});if(r.waiting)r.waiting.postMessage('skip')}}catch(e){}
+  try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(e){}
+  location.replace(location.pathname+'?u='+Date.now()+location.hash);
 }
 function routeHash(){const map={cgu:'cgu',confidentialite:'conf',mentions:'mentions'},h=(location.hash||'').slice(1);if(!map[h])return false;if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=map[h];return true}
 if(IS_PWA){routeHash();window.addEventListener('hashchange',()=>{if(routeHash()){render();window.scrollTo(0,0)}})}
