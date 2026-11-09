@@ -413,6 +413,36 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .cpm-s{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
 .cpm-s ul{margin:6px 0 0;padding-left:18px;font-size:14px}
 .cpm-s li.more{list-style:none;margin-left:-18px;color:var(--muted)}
+.chero{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;width:100%;text-align:left;padding:18px;border-radius:22px;border:0;color:#fff;font:inherit;background:var(--grad,var(--accent));box-shadow:0 10px 26px var(--glow,rgba(0,0,0,.15))}
+.chero .cp-bub{width:48px;height:48px;margin:0;background:rgba(255,255,255,.22);box-shadow:none;grid-row:span 1}
+.chero-t{display:flex;flex-direction:column;gap:3px}
+.chero-t b{font-size:19px}
+.chero-t span{font-size:13.5px;opacity:.92}
+.chero-p{grid-column:1/-1;margin-top:10px;font-size:13px;font-weight:700;background:rgba(255,255,255,.2);border-radius:999px;padding:4px 10px;justify-self:start}
+.chero-go{grid-column:1/-1;margin-top:6px;font-weight:700;font-size:15px}
+.cweek-prev{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.cweek-prev .wkstrip{margin:0 0 12px}
+.cweek-prev .wkstrip>span{border-radius:10px;background:var(--soft);padding:6px 2px;text-align:center;min-width:0;display:block}
+.cweek-prev .wkstrip>span>span{display:block;font-size:11px;font-weight:700;color:var(--muted)}
+.cweek-prev .wkstrip>span.on{background:var(--surface);box-shadow:inset 0 0 0 1px var(--accent)}.cweek-prev .wkstrip>span.on b{color:var(--accent)}
+.cwp-s{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.cwp-t{flex:1;display:flex;flex-direction:column;gap:2px}
+.cwp-t small{color:var(--muted);font-size:13px}
+.cwp-lock{font-size:16px}
+.cfeat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.cfeat button{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:12px 4px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit}
+.cfeat span{font-size:20px;margin-bottom:2px}
+.cfeat b{font-size:13.5px}
+.cfeat small{font-size:11.5px;color:var(--muted)}
+.chero:active,.cweek-prev:active,.cfeat button:active{transform:scale(.985)}
+.sale-feats{display:flex;flex-direction:column;gap:12px;margin:4px 0 16px}
+.sale-f{display:flex;gap:12px;align-items:flex-start}
+.sale-f>span{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--soft);font-size:18px;flex:none}
+.sale-f b{display:block;font-size:15.5px}
+.sale-f small{display:block;color:var(--muted);font-size:13.5px;margin-top:1px}
+.sale-steps{padding:12px 14px;border-radius:14px;background:var(--soft);font-size:14px;margin-bottom:16px}
+.sale-steps ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.cs-fine{text-align:center;margin-top:8px}
 .cprev-h{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .cprev-h::after{content:'';flex:1;height:1px;background:var(--line,rgba(127,127,127,.25))}
 .cprev .coach-s .primary,.cprev .progcard .pc-go{opacity:.55}
@@ -1059,7 +1089,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 42';
+const APP_VERSION='2026.11.09 · 43';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3162,37 +3192,34 @@ function finishOnb(){
 }
 function maybeOnb(){if(!coachActive())return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
-function renderCoachLocked(){
-  const base=licensePlan()==='base';
-  return '<section class="card coachpay"><span class="cday">Formule supérieure</span><h2>Cadence + Coach</h2>'
-   +'<p class="cp-price"><b>'+PRICE_COACH+'</b> / mois · sans engagement</p>'
-   +'<ul class="cp-list"><li>Un programme de 12 semaines fait pour toi</li><li>Ta séance du jour guidée, minuteur compris</li><li>Il s\'adapte à ton niveau, ton matériel et ton sport</li><li>Rappels push et séances que tu peux décaler</li></ul>'
-   +'<div class="cp-how"><b>Comment ça marche</b><ol><li>Tu réponds à quelques questions (1 min)</li><li>Le coach crée ton programme</li><li>Chaque jour, tu lances ta séance</li></ol></div>'
-   +(base?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note" style="margin-top:8px">Tu paies seulement la différence, au prorata du mois en cours.</p>'
-     :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach</button>')
-   +'<p class="note" style="margin-top:8px">Résiliable à tout moment depuis Menu › Mon abonnement.</p></section>';
+// Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
+function coachSaleCTA(){return licensePlan()==='base'
+  ?'<button type="button" class="primary big" data-act="licportal" style="width:100%">Passer à Cadence + Coach</button><p class="note cs-fine">Tu paies seulement la différence, au prorata du mois en cours.</p>'
+  :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach · '+PRICE_COACH+' / mois</button><p class="note cs-fine">Sans engagement, résiliable à tout moment.</p>'}
+function openCoachSale(){
+  $('#ss-head').textContent='Cadence + Coach';
+  $('#ss-sub').textContent=PRICE_COACH+' / mois · sans engagement';
+  $('#ss-body').innerHTML='<div class="sale">'
+   +'<div class="sale-feats">'+[['🗓','Un programme de 12 semaines','Construit pour ton objectif, il progresse chaque semaine.'],['⏱','Ta séance du jour, guidée','Exercices animés, minuteur de repos, séries à cocher.'],['🎯','Adapté à toi','Ton niveau, ton matériel, ton lieu et ton autre sport.'],['🔔','Toujours dans ton planning','Rappels push, et des séances que tu peux décaler.']].map(f=>'<div class="sale-f"><span aria-hidden="true">'+f[0]+'</span><div><b>'+f[1]+'</b><small>'+f[2]+'</small></div></div>').join('')+'</div>'
+   +'<div class="sale-steps"><b>En 3 étapes</b><ol><li>Tu réponds à quelques questions</li><li>Le coach crée ton programme</li><li>Chaque jour, tu lances ta séance</li></ol></div>'
+   +coachSaleCTA()+'<button type="button" class="linkbtn" data-act="ssclose" style="display:block;margin:8px auto 0">Pas maintenant</button></div>';
+  $('#ssheet').hidden=false;
 }
+function renderCoachLocked(){return ''}
 function renderCoachPreview(){
   const wk=coachWeek(1),s0=wk[0];
   let h='<div class="cal-head"><h2>Coach</h2></div>'
-   +'<p class="note" style="margin:-4px 2px 12px">Ton coach personnel crée et fait évoluer tes séances. Voici à quoi ressemble une semaine.</p>'
-   +'<section class="card cprev-mini" aria-label="Exemple de programme"><span class="cday">Exemple de semaine</span>'
-   +'<div class="wkstrip">'+WD.map((d,i)=>{const x=wk.find(y=>y.wd===i);return '<div class="'+(x?'on':'')+'"><span>'+d.slice(0,1)+'</span><b>'+(x?esc(x.title.replace('Calisthenics · ','').split(' ')[0]):'Repos')+'</b></div>'}).join('')+'</div>';
-  if(s0){
-    const n=s0.ex.length;
-    h+='<div class="cpm-s"><b>'+esc(s0.title)+'</b><span class="note">⏱ '+s0.dur+' min · '+n+' exercice'+(n>1?'s':'')+'</span>'
-     +'<ul>'+s0.ex.slice(0,2).map(e=>'<li>'+esc(e.name)+'</li>').join('')+(n>2?'<li class="more">+ '+(n-2)+' autre'+(n>3?'s':'')+' 🔒</li>':'')+'</ul></div>';
-  }
-  h+='</section>'+renderCoachLocked()
-   +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
+   +'<button type="button" class="chero" data-act="cpsale"><span class="cp-bub" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span><span class="chero-t"><b>Ton coach personnel</b><span>Un programme fait pour toi, et ta séance du jour guidée.</span></span><span class="chero-p">'+PRICE_COACH+' / mois · sans engagement</span><span class="chero-go">Découvrir Cadence + Coach ›</span></button>'
+   +'<h3 class="group-h">Exemple de semaine</h3>'
+   +'<button type="button" class="card cweek-prev" data-act="cpsale" aria-label="Exemple de semaine, voir l\'offre Cadence + Coach"><span class="wkstrip">'+WD.map((d,i)=>{const x=wk.find(y=>y.wd===i);return '<span class="'+(x?'on':'')+'"><span>'+d.slice(0,1)+'</span><b>'+(x?esc(x.title.replace('Calisthenics · ','').split(' ')[0]):'Repos')+'</b></span>'}).join('')+'</span>'
+   +(s0?'<span class="cwp-s"><span class="cwp-t"><b>'+esc(s0.title)+'</b><small>⏱ '+s0.dur+' min · '+s0.ex.length+' exercices</small></span><span class="cwp-lock" aria-hidden="true">🔒</span></span>':'')+'</button>'
+   +'<div class="cfeat">'+[['🗓','12 semaines','qui progressent'],['⏱','Séance guidée','avec minuteur'],['🎯','Sur mesure','niveau, matériel']].map(f=>'<button type="button" data-act="cpsale"><span aria-hidden="true">'+f[0]+'</span><b>'+f[1]+'</b><small>'+f[2]+'</small></button>').join('')+'</div>'
+   +'<button type="button" class="primary big" data-act="cpsale" style="width:100%;margin-top:14px">Débloquer le coach</button>'
+   +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:12px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
 }
 const COACH_LOCKED_ACTS=['cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
-function coachPaywallNudge(){
-  $('#ssheet').hidden=true;
-  if(V.tab!=='coach'){V.tab='coach';render()}
-  const c=$('.coachpay');if(c){c.scrollIntoView({behavior:'smooth',block:'center'});c.classList.remove('pulse');void c.offsetWidth;c.classList.add('pulse')}
-}
+function coachPaywallNudge(){openCoachSale()}
 function renderCoach(){
   if(!coachUnlocked())return renderCoachPreview();
   const locked=false;
@@ -3485,7 +3512,7 @@ document.addEventListener('click',e=>{
   if(e.target===$('#fsheet')){closeFood();return}
   const b=e.target.closest('[data-act]');if(!b)return;
   const a=b.dataset.act;
-  if(a==='cpunlock'||(COACH_LOCKED_ACTS.includes(a)&&!coachUnlocked())){coachPaywallNudge();return}
+  if(a==='cpsale'||a==='cpunlock'||(COACH_LOCKED_ACTS.includes(a)&&!coachUnlocked())){coachPaywallNudge();return}
   if(a==='tab'){
     let t=b.dataset.tab;
     if(t==='macros'||t==='meals'){V.nseg=t==='meals'?'repas':'macros';t='nutrition'}
