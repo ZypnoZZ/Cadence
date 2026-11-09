@@ -1004,7 +1004,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 38';
+const APP_VERSION='2026.11.09 · 39';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3363,7 +3363,7 @@ document.addEventListener('click',e=>{
   else if(a==='sopen'){if(e.target.closest('a'))return;openSess(+b.dataset.i)}
   else if(a==='ssclose'){$('#ssheet').hidden=true}
   else if(a==='updgo'){applyUpdate()}
-  else if(a==='updlater'){V.updLater=V.updInfo&&V.updInfo.v;$('#updsheet').hidden=true}
+  else if(a==='updlater'){V.updLater=V.updInfo&&V.updInfo.v;V.updLaterAt=Date.now();$('#updsheet').hidden=true}
   else if(a==='updcheck'){closeDrawer();checkUpdate(true)}
   else if(a==='pushon'){const m=$('#push-msg');m.textContent='Activation…';pushEnable().then(()=>{render();toast('Notifications push activées.')}).catch(e=>{m.textContent=(e&&e.m)||'Activation impossible. Vérifie que Cadence est ouverte depuis l\'écran d\'accueil.'})}
   else if(a==='pushoff'){pushDisable().then(()=>render())}
@@ -3711,18 +3711,37 @@ if(IS_PWA&&'serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})});
   }).catch(()=>{});
-  setTimeout(()=>checkUpdate(false),2500);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate(false)});
-  setInterval(()=>{if(!document.hidden)checkUpdate(false)},30*60000);
+  // Vérification rapide : à l'ouverture, à chaque retour dans l'app et toutes les 2 minutes.
+  V.updOpenAt=Date.now();
+  setTimeout(()=>checkUpdate(false,true),300);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){V.updOpenAt=Date.now();checkUpdate(false,true)}});
+  window.addEventListener('pageshow',e=>{if(e.persisted){V.updOpenAt=Date.now();checkUpdate(false,true)}});
+  window.addEventListener('online',()=>checkUpdate(false));
+  setInterval(()=>{if(!document.hidden)checkUpdate(false)},2*60000);
 }
 // Mises à jour : version.json est lu sans cache ; si la version diffère, une fiche propose la mise à jour.
-async function checkUpdate(manual){
+const UPD_SS='cadence-autoupd';
+function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function busyForUpdate(){return !$('#player').hidden||!$('#onb').hidden||!$('#ssheet').hidden||!$('#fsheet').hidden||!$('#license').hidden||!$('#gate').hidden||(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))}
+async function checkUpdate(manual,opening){
   if(!IS_PWA)return;
-  try{if(new URLSearchParams(location.search).has('u')){V.justUpd=true;history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
-  let j;try{j=await (await fetch('version.json?t='+Date.now(),{cache:'no-store'})).json()}catch(e){if(manual)toast('Impossible de vérifier : pas de connexion.');return}
+  if(V.justUpdAt==null){V.justUpdAt=0;try{if(new URLSearchParams(location.search).has('u')){V.justUpdAt=Date.now();history.replaceState(null,'',location.pathname+location.hash)}}catch(e){}
+    const from=ssGet('cadence-updfrom');if(from){try{sessionStorage.removeItem('cadence-updfrom')}catch(e){}if(from!==APP_VERSION)setTimeout(()=>toast('Cadence est à jour : version '+APP_VERSION),400)}}
+  if(!manual&&V.updBusy)return;
+  if(!manual&&!opening&&V.updLastAt&&Date.now()-V.updLastAt<15000)return;
+  V.updBusy=true;V.updLastAt=Date.now();
+  let j;try{j=await (await fetch('version.json?t='+Date.now(),{cache:'no-store'})).json()}catch(e){V.updBusy=false;if(manual)toast('Impossible de vérifier : pas de connexion.');return}
+  V.updBusy=false;
   if(!j||!j.v||j.v===APP_VERSION){if(manual)toast('Cadence est à jour (version '+APP_VERSION+').');return}
-  if(!manual&&V.justUpd){V.updLater=j.v;return}
-  if(!manual&&(V.updLater===j.v||!$('#player').hidden))return;
+  if(manual){showUpdate(j);return}
+  // Juste après une mise à jour, le serveur peut encore servir l'ancienne page quelques secondes : on n'insiste pas.
+  if(V.justUpdAt&&Date.now()-V.justUpdAt<45000)return;
+  if(!$('#updsheet').hidden)return;
+  if(V.updLater===j.v&&Date.now()-(V.updLaterAt||0)<10*60000)return;
+  // À l'ouverture, si rien n'est en cours : mise à jour automatique, sans fiche (une seule tentative par version).
+  if(opening&&Date.now()-(V.updOpenAt||0)<8000&&!busyForUpdate()&&ssGet(UPD_SS)!==j.v){ssSet(UPD_SS,j.v);V.updInfo=j;applyUpdate(true);return}
+  if(!$('#player').hidden)return;
   showUpdate(j);
 }
 function showUpdate(j){
@@ -3732,10 +3751,13 @@ function showUpdate(j){
   $('#upd-go').disabled=false;$('#upd-go').textContent='Mettre à jour';
   $('#updsheet').hidden=false;
 }
-async function applyUpdate(){
+async function applyUpdate(auto){
   const bt=$('#upd-go');bt.disabled=true;bt.innerHTML='<span class="spinner" aria-hidden="true"></span>Mise à jour…';
+  if(auto)toast('Mise à jour de Cadence…');
+  ssSet('cadence-updfrom',APP_VERSION);
   try{flush&&await flush()}catch(e){}
-  try{const r=await navigator.serviceWorker.getRegistration();if(r){await r.update().catch(()=>{});if(r.waiting)r.waiting.postMessage('skip')}}catch(e){}
+  const lim=(p,ms)=>Promise.race([p,new Promise(r=>setTimeout(r,ms))]);
+  try{const r=await lim(navigator.serviceWorker.getRegistration(),800);if(r){await lim(r.update().catch(()=>{}),1500);if(r.waiting)r.waiting.postMessage('skip')}}catch(e){}
   try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(e){}
   location.replace(location.pathname+'?u='+Date.now()+location.hash);
 }
