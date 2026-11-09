@@ -1371,7 +1371,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 65';
+const APP_VERSION='2026.11.10 · 66';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2628,6 +2628,8 @@ function perfText(e){
   if(e.kind==='cardio')return [+e.min?nfx(+e.min,0)+' min':'',+e.km?nfx(+e.km,2)+' km':''].filter(Boolean).join(' · ');
   return e.sets.filter(s=>+s.r>0).map(s=>s.r+' × '+(+s.kg?nfx(+s.kg,1)+' kg':'poids du corps')).join(', ');
 }
+function platesNote(e){const a=e.sets.filter(s=>+s.p>0).map(s=>nf.format(+s.p)+' pl. = '+nf.format(Math.round((+s.kg||0)*10)/10)+' kg');return a.length?esc(a.join(' · ')):'Poids total = plaques × kg par plaque.'}
+function platesCalc(e){if(e.pl)for(const s of e.sets)s.kg=(+s.p>0&&+e.pl>0)?Math.round(+s.p*+e.pl*100)/100:''}
 function exoSummary(e){
   let vol=0,best=0;for(const s of e.sets){const kg=+s.kg||0,r=+s.r||0;vol+=kg*r;best=Math.max(best,e1rm(kg,r))}
   return [vol?'Volume '+nf.format(Math.round(vol))+' kg':'',best?'1RM estimé '+num(best,0)+' kg':''].filter(Boolean).join(' · ')||'Note les répétitions et la charge de chaque série.';
@@ -2879,9 +2881,10 @@ function exoCardHTML(w,e,i){
   if(e.kind==='cardio'){
     h+='<div class="r2"><label><span class="lab">Durée (min)</span><input type="number" inputmode="decimal" min="0" data-wi="'+i+'" data-k="min" value="'+esc(e.min)+'"></label><label><span class="lab">Distance (km)</span><input type="number" inputmode="decimal" step="0.01" min="0" data-wi="'+i+'" data-k="km" value="'+esc(e.km)+'"></label></div><p class="note" id="wx-'+i+'">'+cardioPace(e)+'</p>';
   }else{
-    h+='<div class="sets"><div class="sh"><span>Série</span><span>Reps</span><span>Charge (kg)</span><span></span></div>'
-     +e.sets.map((st,j)=>'<div class="sr"><span class="sn">'+(j+1)+'</span><input type="number" inputmode="numeric" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="r" value="'+esc(st.r)+'" aria-label="Répétitions, série '+(j+1)+'"><input type="number" inputmode="decimal" step="0.5" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="kg" value="'+esc(st.kg)+'" aria-label="Charge, série '+(j+1)+'"><button type="button" class="jdel" data-act="wdelset" data-i="'+i+'" data-j="'+j+'" aria-label="Supprimer la série '+(j+1)+'">×</button></div>').join('')+'</div>'
-     +'<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-act="waddset" data-i="'+i+'">+ Série</button><span class="note" id="wx-'+i+'" style="min-width:0">'+exoSummary(e)+'</span></div>';
+    h+='<div class="sets"><div class="sh"><span>Série</span><span>Reps</span><span>'+(e.pl?'Plaques':'Charge (kg)')+'</span><span></span></div>'
+     +e.sets.map((st,j)=>'<div class="sr"><span class="sn">'+(j+1)+'</span><input type="number" inputmode="numeric" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="r" value="'+esc(st.r)+'" aria-label="Répétitions, série '+(j+1)+'"><input type="number" inputmode="decimal" step="0.5" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="'+(e.pl?'p':'kg')+'" value="'+esc(e.pl?st.p:st.kg)+'" aria-label="'+(e.pl?'Plaques':'Charge')+', série '+(j+1)+'"><button type="button" class="jdel" data-act="wdelset" data-i="'+i+'" data-j="'+j+'" aria-label="Supprimer la série '+(j+1)+'">×</button></div>').join('')+'</div>'
+     +(e.pl?'<div class="r2" style="margin-top:8px"><label><span class="lab">kg par plaque</span><input type="number" inputmode="decimal" step="0.5" min="0" data-wi="'+i+'" data-k="pl" value="'+esc(e.pl)+'"></label><p class="note" id="wp-'+i+'" style="align-self:end">'+platesNote(e)+'</p></div>':'')
+     +'<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-act="waddset" data-i="'+i+'">+ Série</button><button type="button" class="ghost" data-act="wplates" data-i="'+i+'" aria-pressed="'+(e.pl?'true':'false')+'">'+(e.pl?'Plaques ✓':'Plaques')+'</button><span class="note" id="wx-'+i+'" style="min-width:0">'+exoSummary(e)+'</span></div>';
   }
   return h+'</section>';
 }
@@ -4786,8 +4789,9 @@ document.addEventListener('click',e=>{
     const c=document.querySelectorAll('.wex');if(c.length)c[c.length-1].scrollIntoView({block:'center'});
   }
   else if(a==='wrenex'){const w=curW(),i=+b.dataset.i,sp=b.parentNode.querySelector('.wxn');if(w&&w.ex[i]&&sp&&!sp.querySelector('input')){const inp=document.createElement('input');inp.type='text';inp.className='wxin';inp.value=w.ex[i].name;inp.maxLength=60;inp.setAttribute('aria-label','Nom de l\'exercice');sp.textContent='';sp.appendChild(inp);inp.focus();inp.select();let done=false;const fin=ok=>{if(done)return;done=true;const v=inp.value.trim();if(ok&&v&&v!==w.ex[i].name){w.ex[i].name=v;touch()}render()};inp.addEventListener('blur',()=>fin(true));inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();fin(true)}else if(ev.key==='Escape'){fin(false)}})}}
+  else if(a==='wplates'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){if(e.pl){delete e.pl;for(const s of e.sets)delete s.p}else{e.pl=5;for(const s of e.sets)s.p=s.kg?Math.round(+s.kg/5*2)/2:'';platesCalc(e)}touch();render()}}
   else if(a==='wdelex'){const w=curW();if(w){w.ex.splice(+b.dataset.i,1);touch();render()}}
-  else if(a==='waddset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){const l=e.sets[e.sets.length-1];e.sets.push(l?{r:l.r,kg:l.kg}:{r:'',kg:''});touch();render()}}
+  else if(a==='waddset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){const l=e.sets[e.sets.length-1];e.sets.push(l?{r:l.r,kg:l.kg,p:l.p}:{r:'',kg:''});touch();render()}}
   else if(a==='wdelset'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(e){e.sets.splice(+b.dataset.j,1);touch();render()}}
   else if(a==='wdel'){
     if(!V.wdelArmed){V.wdelArmed=true;b.textContent='Confirmer la suppression';return}
@@ -4864,6 +4868,7 @@ document.addEventListener('input',e=>{
     const ex=w.ex[+t.dataset.wi];if(!ex)return;
     const val=t.value===''?'':parseFloat(t.value),v=(val===''||isNaN(val))?'':val;
     if(t.dataset.j!=null){const st=ex.sets[+t.dataset.j];if(st)st[t.dataset.k]=v}else ex[t.dataset.k]=v;
+    if(ex.pl&&(t.dataset.k==='p'||t.dataset.k==='pl')){if(t.dataset.k==='pl'&&!(+ex.pl>0)){}else platesCalc(ex);const pn=$('#wp-'+t.dataset.wi);if(pn)pn.innerHTML=platesNote(ex)}
     const el=$('#wx-'+t.dataset.wi);if(el)el.textContent=ex.kind==='cardio'?cardioPace(ex):exoSummary(ex);
   }
   else return;
