@@ -1371,7 +1371,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 66';
+const APP_VERSION='2026.11.10 · 67';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2681,7 +2681,7 @@ function folderBar(){
 }
 function wRow(w,simple){
   const v=wVol(w),fd=wFolders().find(x=>x.id===w.folder);
-  const meta=simple?[(w.ex.length?w.ex.length+' exercice'+(w.ex.length>1?'s':''):''),(w.dur?w.dur+' min':'')]:[w.ex.length+' exercice'+(w.ex.length>1?'s':''),v?nf.format(Math.round(v))+' kg soulevés':'',w.dur?w.dur+' min':''];
+  const meta=simple?[(w.ex.length?w.ex.length+' exercice'+(w.ex.length>1?'s':''):''),(w.dur?fmtDur(+w.dur):'')]:[w.ex.length+' exercice'+(w.ex.length>1?'s':''),v?nf.format(Math.round(v))+' kg soulevés':'',w.dur?w.dur+' min':''];
   return '<div class="swr" data-id="'+w.id+'"><div class="swa swl"><button type="button" data-act="warch" data-id="'+w.id+'">'+(w.archived?'Désarchiver':'Archiver')+'</button><button type="button" data-act="wmove" data-id="'+w.id+'">Dossier</button><button type="button" data-act="wdel" data-id="'+w.id+'">Supprimer</button></div><div class="swa swd"><span>Supprimer</span></div>'
    +'<button type="button" class="wcard swf" data-act="wopen" data-id="'+w.id+'"><div class="wt"><b>'+esc(w.title||'Séance')+'</b><span class="note">'+esc(cap(FMT.short.format(parseISO(w.date))))+'</span></div>'
    +(simple?'':'<p class="note">'+esc(w.ex.map(e=>e.name).slice(0,4).join(' · ')+(w.ex.length>4?' …':''))+'</p>')
@@ -2972,7 +2972,7 @@ function renderImport(){
 function renderWorkout(w){
   const titles=[...new Set([...SPORTS.filter(x=>x!=='Autre'),...S.workouts.map(x=>x.title).filter(Boolean)])];
   let h='<div class="row" style="margin-bottom:12px"><button type="button" class="ghost" data-act="wclose">‹ Terminer</button>'+(w.ex.length?'<button type="button" class="primary" data-act="pguide">▶ Séance guidée</button>':'<span class="note">Enregistré automatiquement</span>')+'</div>';
-  h+='<section class="card"><div class="r2"><label><span class="lab">Date</span><input type="date" id="w-date" value="'+w.date+'"></label><label><span class="lab">Durée (min)</span><input type="number" id="w-dur" inputmode="numeric" min="0" value="'+esc(w.dur)+'"></label></div>'
+  h+='<section class="card"><div class="r2"><label><span class="lab">Date</span><input type="date" id="w-date" value="'+w.date+'"></label><label><span class="lab">Durée</span><span class="dur2"><input type="number" id="w-dh" min="0" max="12" inputmode="numeric" aria-label="Heures" value="'+(+w.dur>=60?Math.floor(+w.dur/60):'')+'"><b>h</b><input type="number" id="w-dm" min="0" max="59" inputmode="numeric" aria-label="Minutes" value="'+(+w.dur?(+w.dur%60):'')+'"><b>min</b></span></label></div>'
    +'<label><span class="lab">Nom de la séance</span><input type="text" id="w-title" list="dl-titles" maxlength="60" value="'+esc(w.title)+'" placeholder="Ex. Push, Haut du corps, Course"></label><datalist id="dl-titles">'+titles.map(t=>'<option value="'+esc(t)+'">').join('')+'</datalist>';
   if(!w.ex.length&&hasPrev(w)){const prev=S.workouts.filter(x=>x.id!==w.id&&x.title===w.title&&x.ex.length).sort((a,b)=>a.date<b.date?1:-1)[0];h+='<button type="button" class="ghost" data-act="wcopy" data-id="'+prev.id+'" style="width:100%">Reprendre les exercices du '+esc(FMT.short.format(parseISO(prev.date)))+'</button>'}
   h+='</section>'+w.ex.map((e,i)=>exoCardHTML(w,e,i)).join('');
@@ -3861,6 +3861,50 @@ const PROG={
     equi:l=>({title:'Équilibres et acrobaties',focus:'Appuis renversés, roulades, roue',ex:[C('Échauffement : poignets et épaules',5),XF('Roulades avant et arrière',3,'5',45),XF('Roue',3,['3 par côté','5 par côté','8 par côté'][l],45),H('Chandelle',3,[20,30,40][l]),H(['Équilibre contre le mur','Équilibre contre le mur','Poirier sans mur'][l],4,[20,30,30][l],60)]})
   }}
 };
+/* ---------- D'autres cours ---------- */
+const COURS_CATS=[['cali','Calisthénie'],['yoga','Yoga'],['souple','Souplesse et mobilité'],['cardio','Cardio et combat'],['calme','Détente et équilibre']];
+const COURS=[
+ ['cali-base','cali','Calisthénie : les bases',0,30,'Pousser, tirer, jambes et gainage avec ton poids du corps',[C('Échauffement articulaire',5),XF('Pompes',3,'8',60),XF('Squat au poids du corps',3,'15',60),XF('Rowing inversé sous une table',3,'8',75),XF('Dips sur chaise',3,'8',60),H('Gainage',3,30,45),XF('Pont fessier',3,'15',45)]],
+ ['cali-tractions','cali','Réussir ses premières tractions',0,30,'Suspensions, négatives et tirage horizontal pour passer de 0 à 1 traction',[C('Échauffement : poignets et épaules',5),H('Suspension à la barre',4,20,60),XF('Tractions négatives',4,'4',90),XF('Rowing inversé sous une table',3,'10',75),XF('Relevés de genoux suspendu',3,'8',60),H('Hollow body',3,25,45)]],
+ ['cali-pompes','cali','Pompes : toutes les variantes',1,30,'Diamant, archer, déclinées, pike : du plus simple au plus dur',[C('Échauffement : poignets et épaules',5),XF('Pompes',3,'15',60),XF('Pompes diamant',3,'10',60),XF('Pompes archer',3,'6 par côté',75),XF('Pompes déclinées',3,'10',60),XF('Pike push-ups',3,'8',60),H('Planche latérale',2,30,45)]],
+ ['cali-poirier','cali','Apprendre le poirier',1,30,'Poignets, épaules, gainage et équilibre contre le mur',[C('Échauffement : poignets et épaules',5),H('Équilibre contre le mur',5,30,60),XF('Pike push-ups',3,'8',60),H('Hollow body',3,30,45),H('Chandelle',3,30,45),H('Arch hold (superman tenu)',3,30,45)]],
+ ['cali-jambes','cali','Jambes sans matériel',1,30,'Fentes, squats bulgares, pistol assisté et mollets',[C('Échauffement : mobilité des hanches',5),XF('Squat bulgare',3,'10 par jambe',75),XF('Fentes marchées',3,'12 par jambe',60),XF('Pistol squat assisté',3,'5 par jambe',90),XF('Pont fessier unilatéral',3,'12 par jambe',45),XF('Mollets à une jambe',3,'15 par jambe',45)]],
+ ['cali-skills','cali','Skills : L-sit, planche, front lever',2,40,'Les positions tenues des gymnastes, par progressions',[C('Échauffement : poignets et épaules',6),H('L-sit aux barres',4,15,60),H('Planche (tuck) au sol',4,10,75),H('Front lever (tuck)',4,8,75),XF('Dips',3,'10',75),XF('Tractions',3,'8',90),H('Hollow body',3,45,45)]],
+ ['cali-muscleup','cali','Vers le muscle-up',2,40,'Tractions explosives, dips et transition',[C('Échauffement : poignets et épaules',6),XF('Tractions explosives',5,'4',120),XF('Dips aux barres',4,'10',90),XF('Transition aux anneaux ou à la barre (négatif)',4,'3',120),XF('Tractions australiennes pieds surélevés',3,'10',75),H('Hollow body',3,40,45)]],
+ ['cali-abdos','cali','Abdos et gainage',0,20,'Un tour complet du tronc, sans matériel',[H('Gainage',3,30,30),XF('Relevés de jambes',3,'10',45),H('Hollow body',3,20,30),H('Planche latérale',2,25,30),XF('Mountain climbers',3,'20',30),H('Arch hold (superman tenu)',3,20,30)]],
+ ['yoga-reveil','yoga','Yoga du réveil',0,15,'Réveiller le corps en douceur, dos et hanches',[H('Posture de l\'enfant',1,45,5),H('Chat-vache',2,40,5),H('Chien tête en bas',3,30,10),H('Fente basse (fléchisseurs de hanche)',2,30,10),H('Pliage en avant debout',2,30,10),H('Torsion du dos allongé',2,30,10)]],
+ ['yoga-soleil','yoga','Salutations au soleil',0,20,'Un enchaînement fluide, 5 tours pour tout le corps',[C('Respiration profonde, debout',2),XF('Salutation au soleil A',5,'1 tour',20),H('Chien tête en bas',3,30,10),H('Guerrier 1',2,30,10),H('Guerrier 2',2,30,10),H('Posture de l\'enfant',1,60,5)]],
+ ['yoga-dos','yoga','Yoga pour le dos',0,20,'Soulager le bas du dos et les épaules',[H('Chat-vache',3,40,5),H('Posture de l\'enfant',2,45,5),H('Sphinx',2,40,10),H('Torsion du dos allongé',2,40,10),H('Pont (bridge) au sol',3,20,20),H('Genoux à la poitrine',2,40,10)]],
+ ['yoga-soir','yoga','Yoga du soir : détente',0,20,'Ralentir, relâcher les tensions avant de dormir',[H('Posture de l\'enfant',1,60,5),H('Pliage en avant assis',2,45,10),H('Papillon',2,45,10),H('Torsion du dos allongé',2,45,10),H('Jambes au mur',1,180,10),C('Relaxation finale (savasana)',5)]],
+ ['yoga-hanches','yoga','Yoga pour les hanches',1,25,'Ouvrir les hanches : pigeon, fente, guirlande',[H('Chat-vache',2,40,5),H('Fente basse (fléchisseurs de hanche)',2,45,10),H('Étirement des fessiers (pigeon)',2,60,10),H('Guirlande (squat profond)',3,40,10),H('Papillon',2,60,10),H('Grenouille',2,45,10)]],
+ ['yoga-force','yoga','Yoga force et équilibre',2,35,'Postures tenues : guerriers, chaise, arbre, corbeau',[XF('Salutation au soleil B',4,'1 tour',20),H('Chaise',3,30,15),H('Guerrier 3',2,25,15),H('Arbre',2,40,10),H('Corbeau',3,15,30),H('Chien tête en bas',2,40,10)]],
+ ['souple-grandecart','souple','Apprendre le grand écart',1,30,'Une séance de souplesse progressive, à répéter 3 fois par semaine',[C('Échauffement articulaire',5),H('Fente basse (fléchisseurs de hanche)',3,45,15),H('Étirement des ischio-jambiers',3,45,15),H('Grand écart facial (progressif)',3,60,20),H('Grand écart latéral (progressif)',3,60,20),H('Étirement des adducteurs (papillon)',2,45,15)]],
+ ['souple-bureau','souple','Mobilité du bureau',0,10,'Cou, épaules, dos et hanches après des heures assis',[H('Rotations du cou',1,30,5),H('Ouverture d\'épaules au mur',2,30,5),H('Chat-vache',2,30,5),H('Torsion du dos assis',2,30,5),H('Étirement des fléchisseurs de hanche',2,30,5),H('Étirement des poignets',1,30,5)]],
+ ['souple-hanches','souple','Mobilité des hanches',0,15,'Gagner en amplitude pour squatter et courir',[C('Cercles de hanches',3),H('Guirlande (squat profond)',3,40,10),H('Fente basse (fléchisseurs de hanche)',2,40,10),H('90/90 des hanches',2,40,10),H('Étirement des fessiers (pigeon)',2,40,10)]],
+ ['souple-epaules','souple','Épaules et poignets',0,12,'Pour les tractions, les pompes et le poirier',[C('Échauffement : poignets et épaules',4),H('Ouverture d\'épaules au mur',3,30,10),H('Étirement des pectoraux au mur',2,30,10),H('Étirement des poignets',2,30,10),H('Étirement des triceps',2,30,10)]],
+ ['cardio-hiit','cardio','HIIT 20 minutes sans matériel',1,20,'40 s d\'effort, 20 s de pause, 4 tours',[C('Échauffement',3),XF('Burpees',4,'40 s',20),XF('Squats sautés',4,'40 s',20),XF('Mountain climbers',4,'40 s',20),XF('Pompes',4,'40 s',20),XF('Jumping jacks',4,'40 s',20)]],
+ ['cardio-corde','cardio','Corde à sauter',0,20,'Coordination, mollets et souffle',[C('Échauffement',3),C('Corde à sauter : rythme tranquille',3,'3 min'),C('Corde à sauter : pieds joints',3,'3 min'),C('Corde à sauter : alterné',3,'3 min'),C('Corde à sauter : double rotation (essais)',3,'3 min'),C('Retour au calme',3)]],
+ ['cardio-boxe','cardio','Boxe : shadow-boxing',0,25,'Frappes dans le vide, esquives et déplacements',[C('Échauffement : corde ou jumping jacks',4),C('Round 1 : jab, croisé',3,'3 min'),C('Round 2 : crochets, esquives',3,'3 min'),C('Round 3 : enchaînements libres',3,'3 min'),C('Round 4 : vitesse',3,'3 min'),H('Gainage',3,30,30)]],
+ ['cardio-gammes','cardio','Technique de course : gammes',0,20,'Montées de genoux, talons-fesses, foulées bondissantes',[C('Footing d\'échauffement',8),XF('Montées de genoux',3,'20 m',30),XF('Talons-fesses',3,'20 m',30),XF('Foulées bondissantes',3,'20 m',45),XF('Accélérations progressives',4,'60 m',60)]],
+ ['cardio-natation','cardio','Natation à sec : épaules et gainage',1,20,'Renforcer ce qui fait nager vite, sans piscine',[C('Échauffement : poignets et épaules',4),XF('Y-T-W au sol',3,'10',45),XF('Rotations de tronc avec élastique',3,'12',45),H('Gainage',3,40,30),XF('Battements de jambes au sol',3,'30 s',30)]],
+ ['calme-respiration','calme','Respiration et relaxation',0,10,'Cohérence cardiaque et relâchement, pour calmer le stress',[C('Respiration 5-5 (cohérence cardiaque)',5),C('Respiration carrée',3,'3 min'),C('Scan corporel',3)]],
+ ['calme-meditation','calme','Méditation guidée',0,15,'S\'asseoir, observer son souffle, laisser passer les pensées',[C('Installation et respiration',3),C('Attention au souffle',8),C('Scan corporel',4)]],
+ ['calme-taichi','calme','Tai-chi : mouvements lents',0,20,'Fluidité, équilibre et concentration',[C('Ancrage et respiration',3),XF('Ouverture et fermeture des bras',3,'8',20),XF('Transfert de poids lent',3,'10',20),XF('Cercles de bras en marchant',3,'8',20),C('Marche lente',5)]],
+ ['calme-equilibre','calme','Équilibre et proprioception',0,15,'Chevilles et genoux solides, utile pour tous les sports',[H('Équilibre sur une jambe',3,30,15),H('Arbre',2,30,10),XF('Fentes arrière lentes',3,'8 par jambe',30),XF('Planche vers l\'avant sur une jambe',3,'6 par jambe',30),H('Équilibre sur une jambe, yeux fermés',2,20,15)]]
+].map(c=>({key:c[0],cat:c[1],title:c[2],lvl:c[3],dur:c[4],focus:c[5],ex:c[6],sport:c[1]==='cali'?'Musculation · Full body':c[1]==='cardio'?'Cardio':'Mobilité et étirements',wd:(new Date().getDay()+6)%7}));
+function renderCours(){
+  const cat=V.coursCat||'all',lv=V.coursLvl==null?'all':V.coursLvl;
+  const list=COURS.filter(c=>(cat==='all'||c.cat===cat)&&(lv==='all'||c.lvl===lv));
+  let h='<div class="cal-head"><button type="button" class="linkbtn" data-act="coursback">‹ Coach</button><h2>D\'autres cours</h2><span></span></div><p class="note" style="margin:0 2px 12px">Calisthénie, yoga, souplesse, cardio, détente : choisis un cours, lance-le ou ajoute-le à ton agenda.</p>';
+  h+='<div class="eqs" style="margin-bottom:8px">'+[['all','Tous']].concat(COURS_CATS).map(x=>'<button type="button" data-act="courscat" data-v="'+x[0]+'" aria-pressed="'+(cat===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
+  h+='<div class="eqs" style="margin-bottom:12px">'+[['all','Tous niveaux'],[0,'Débutant'],[1,'Intermédiaire'],[2,'Avancé']].map(x=>'<button type="button" data-act="coursl" data-v="'+x[0]+'" aria-pressed="'+(String(lv)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>';
+  if(!list.length)h+='<p class="note">Aucun cours avec ces filtres.</p>';
+  for(const c of list){const open=V.coursOpen===c.key,ci=COURS.indexOf(c);
+    h+='<section class="card coach-s"><span class="cday">'+esc(COURS_CATS.find(x=>x[0]===c.cat)[1])+' · '+['Débutant','Intermédiaire','Avancé'][c.lvl]+' · ≈ '+c.dur+' min</span><h3>'+esc(c.title)+'</h3><p class="note">'+esc(c.focus)+'</p>'
+     +(open?'<div class="ssl" style="margin-top:8px">'+c.ex.map((e,k)=>'<div class="ssx"><span class="ssn">'+(k+1)+'</span><div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'</div>').join('')+'</div>':'')
+     +'<div class="row" style="justify-content:flex-start;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="primary" data-act="coursgo" data-i="'+ci+'">Démarrer</button><button type="button" class="ghost" data-act="coursplan" data-i="'+ci+'">Ajouter à l\'agenda</button><button type="button" class="linkbtn" data-act="coursx" data-k="'+c.key+'">'+(open?'Masquer':'Voir le détail')+'</button></div></section>'}
+  return h;
+}
 const CYCLES=[['Fondations','Apprendre les mouvements, installer l\'habitude'],['Progression','Plus de volume : une série de plus sur les gros exercices'],['Intensification','Plus d\'intensité : vise le haut des fourchettes ou plus de charge']];
 const monday=d=>addDays(d,-((d.getDay()+6)%7));
 function progStart(){const c=S.coach||{};return c.start&&/^\d{4}-\d\d-\d\d$/.test(c.start)?c.start:iso(monday(today))}
@@ -4111,6 +4155,7 @@ const COACH_LOCKED_ACTS=['icuform','icusave','actform','actfile','actsave','stra
 function coachPaywallNudge(){openCoachSale()}
 function renderCoach(){
   if(!coachUnlocked())return renderCoachPreview();
+  if(V.cours)return renderCours();
   const locked=false;
   const cfg=coachCfg(),p=S.profile,T=calc(p),goal=p.goal||'maintien';
   if(!locked&&(!S.coach||!S.coach.start)){S.coach=Object.assign(coachCfg(),{start:progStart()});delete S.coach.equip;touch()}
@@ -4163,6 +4208,7 @@ function renderCoach(){
   if(sa&&(strength||cfg.style==='crossfit'))h+='<p class="note" style="margin:4px 2px 12px">'+esc(sportTip(cfg,sa))+'</p>';
   if(cfg.style!=='mobi')h+='<section class="card coach-s"><span class="cday">À tout moment</span><h3>Étirements de récupération</h3><p class="note">12 min, après une séance ou un jour de repos.</p><div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="ghost" data-act="cstretch">Commencer</button></div></section>';
   if(isCur)h+='<button type="button" class="ghost" data-act="cplanall" style="width:100%">Ajouter toute la semaine à l\'agenda</button>';
+  h+='<button type="button" class="card coach-s" data-act="coursopen" style="width:100%;text-align:left;display:block"><span class="cday">Découvrir</span><h3>D\'autres cours</h3><p class="note">Calisthénie, yoga, souplesse, boxe, méditation… des dizaines de cours pour apprendre autre chose.</p></button>';
   h+='<label class="ck" style="margin-top:14px"><input type="checkbox" id="coach-hide"><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button>';
   if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
@@ -4470,6 +4516,13 @@ document.addEventListener('click',e=>{
   else if(a==='crestart'){S.coach=Object.assign(coachCfg(),{start:iso(monday(today))});delete S.coach.equip;V.cweek=1;touch();render();window.scrollTo(0,0)}
   else if(a==='lvlup'){const lu=levelUp();if(lu){S.coach=Object.assign(coachCfg(),{start:progStart(),level:lu.next,lvlAt:doneCount()});touch();render()}}
   else if(a==='lvllater'){V.luLater=true;render()}
+  else if(a==='coursopen'){V.cours=true;render();window.scrollTo(0,0)}
+  else if(a==='coursback'){V.cours=false;render();window.scrollTo(0,0)}
+  else if(a==='courscat'){V.coursCat=b.dataset.v;render()}
+  else if(a==='coursl'){V.coursLvl=b.dataset.v==='all'?'all':+b.dataset.v;render()}
+  else if(a==='coursx'){V.coursOpen=V.coursOpen===b.dataset.k?null:b.dataset.k;render()}
+  else if(a==='coursgo'){const c=COURS[+b.dataset.i];if(c){const w=coachToWorkout(c);w.note='Cours : '+c.title;S.workouts.push(w);touch();askGuided(w)}}
+  else if(a==='coursplan'){const c=COURS[+b.dataset.i];if(c){const ok=coachPlan(c);touch();b.textContent=ok?'Ajouté à l\'agenda':'Déjà dans l\'agenda';b.disabled=true}}
   else if(a==='cstretch'){const w=coachToWorkout(stretchSession());S.workouts.push(w);touch();askGuided(w)}
   else if(a==='wfull'){V.wfull=true;render();window.scrollTo(0,0)}
   else if(a==='wsimple'){V.wfull=false;render();window.scrollTo(0,0)}
@@ -4862,7 +4915,7 @@ document.addEventListener('input',e=>{
   const t=e.target,w=V.tab==='seances'&&V.wEdit?curW():null;if(!w)return;
   if(t.id==='w-date'){if(t.value)w.date=t.value}
   else if(t.id==='w-title')w.title=t.value.slice(0,60);
-  else if(t.id==='w-dur')w.dur=t.value;
+  else if(t.id==='w-dh'||t.id==='w-dm'){const hh=Math.max(0,parseInt($('#w-dh').value,10)||0),mm=Math.max(0,parseInt($('#w-dm').value,10)||0);w.dur=hh*60+mm||''}
   else if(t.id==='w-note')w.note=t.value.slice(0,400);
   else if(t.dataset&&t.dataset.wi!=null){
     const ex=w.ex[+t.dataset.wi];if(!ex)return;
