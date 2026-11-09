@@ -1367,7 +1367,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.09 · 57';
+const APP_VERSION='2026.11.10 · 58';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2335,7 +2335,7 @@ function readAccount(){
 function headLabel(){return cap(FMT.long.format(today))+(IS_PWA&&profiles().list.length>1?' · '+curProfile().name:'')}
 function profilesHTML(){
   const P=profiles(),cur=curProfile();
-  return '<section class="card"><h2>Profils</h2><p class="note" style="margin-bottom:8px">Chaque profil a ses propres données, son code et sa clé Gemini.</p><ul class="plist">'
+  return '<section class="card"><h2>Profils</h2><p class="note" style="margin-bottom:8px">Chaque profil a ses propres données, son code.</p><ul class="plist">'
    +P.list.map(x=>'<li><span class="pn">'+esc(x.name)+(x.id===P.active?'<span class="tag">Actif</span>':'')+(lockedProfile(x.id)?'<span class="tag">Code</span>':'')+'</span>'+(x.id===P.active?'':'<button type="button" class="ghost" data-act="pickprofile" data-pid="'+x.id+'">Ouvrir</button>')+'</li>').join('')+'</ul>'
    +(P.list.length<6?'<div style="display:flex;gap:8px;margin-top:10px"><input type="text" id="np-name" maxlength="30" placeholder="Nom du nouveau profil" aria-label="Nom du nouveau profil" style="flex:1;min-width:0"><button type="button" class="ghost" data-act="addprofile">Ajouter</button></div>':'<p class="note">6 profils maximum.</p>')
    +'<p class="note" id="np-msg" style="margin-top:6px"></p>'
@@ -2419,7 +2419,7 @@ function renderSettings(){
     const nS=(S.workouts||[]).length,nJ=Object.keys(S.log||{}).length,nW=(S.weights||[]).length,nA=(S.items||[]).length;
     return head+'<h2 class="pg-t">Sauvegarde</h2>'
      +'<section class="needs"><div><b>'+nA+'</b><span>agenda</span></div><div><b>'+nS+'</b><span>séances</span></div><div><b>'+nJ+'</b><span>jours repas</span></div><div><b>'+nW+'</b><span>pesées</span></div></section>'
-     +'<p class="note" style="margin:0 2px 10px">Tes données restent sur ce téléphone. Le code et la clé Gemini ne sont pas inclus.</p>'
+     +'<p class="note" style="margin:0 2px 10px">Tes données restent sur ce téléphone. Le code n\'est pas inclus.</p>'
      +'<button type="button" class="primary big" data-act="backup" style="width:100%;margin-bottom:10px">Copier ma sauvegarde</button>'
      +acc('b-rest','save','Restaurer une sauvegarde','Coller une sauvegarde copiée plus tôt','<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="restore">Restaurer</button></div>')
      +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
@@ -3259,9 +3259,9 @@ const LEGAL={
   cgu:()=>{const m=esc(EDITEUR.email);return `<h2>Conditions générales d'utilisation</h2><p class="note">Version du ${MAJ}</p>
 <h3>1. Objet</h3><p>Ces conditions encadrent l'utilisation de Cadence, une application web sur abonnement qui propose un agenda, une liste de tâches avec rappels, un suivi des séances de sport et de la progression, un calcul de besoins caloriques et de macronutriments, des plans de repas, une liste de courses, un journal alimentaire et un suivi du poids. Utiliser Cadence vaut acceptation de ces conditions.</p>
 <h3>2. Accès</h3><p>Cadence s'utilise avec un abonnement mensuel, identifié par ton adresse e-mail, aux conditions décrites dans les conditions de vente. Elle ne contient aucune publicité. Elle fonctionne dans un navigateur récent ; certaines fonctions demandent une connexion internet. L'éditeur peut modifier, suspendre ou arrêter Cadence à tout moment, sans préavis ni indemnité. L'éditeur s'efforce de maintenir le service disponible mais n'en garantit pas une disponibilité continue.</p>
-<h3>3. Âge</h3><p>Cadence s'adresse aux personnes de 15 ans et plus. Avant 15 ans, son utilisation demande l'accord d'un parent. La reconnaissance des repas par photo est réservée aux personnes de 18 ans et plus, comme l'exigent les conditions de l'API Gemini de Google.</p>
+<h3>3. Âge</h3><p>Cadence s'adresse aux personnes de 15 ans et plus. Avant 15 ans, son utilisation demande l'accord d'un parent.</p>
 <h3>4. Tes données</h3><p>Tes données de suivi (agenda, tâches, séances, repas, poids, sorties importées) sont enregistrées uniquement dans le stockage de ton navigateur, sur ton appareil. L'éditeur n'y a pas accès et ne peut pas les récupérer pour toi. Si tu supprimes l'application, effaces les données de ton navigateur ou changes d'appareil, elles sont perdues, sauf si tu as copié une sauvegarde. Tu es responsable de tes sauvegardes.</p>
-<h3>5. Services tiers</h3><p>Le scan de code-barres interroge Open Food Facts, une base de données collaborative : les informations peuvent être incomplètes ou fausses, l'étiquette du produit fait foi.</p><p>La reconnaissance par photo utilise l'API Gemini de Google avec une clé personnelle que tu crées toi-même, gratuitement, sur Google AI Studio. Tu acceptes alors les conditions de Google, tu es seul responsable de ta clé et de son usage, et tu ne dois pas la partager. N'envoie pas de photos montrant des personnes ou des informations personnelles.</p><p>Si tu connectes Strava ou Intervals.icu (réservé à Cadence + Coach), Cadence lit tes activités en lecture seule pour adapter les séances. Tu acceptes les conditions de ces services, tu peux révoquer l'accès à tout moment, et ces données ne servent à aucun autre usage. Une clé Intervals.icu reste sur ton appareil et ne doit pas être partagée.</p><p>L'éditeur ne contrôle pas ces services et ne garantit ni leur disponibilité ni leurs résultats.</p>
+<h3>5. Services tiers</h3><p>Le scan de code-barres interroge Open Food Facts, une base de données collaborative : les informations peuvent être incomplètes ou fausses, l'étiquette du produit fait foi.</p><p>Si tu connectes Strava ou Intervals.icu (réservé à Cadence + Coach), Cadence lit tes activités en lecture seule pour adapter les séances. Tu acceptes les conditions de ces services, tu peux révoquer l'accès à tout moment, et ces données ne servent à aucun autre usage. Une clé Intervals.icu reste sur ton appareil et ne doit pas être partagée.</p><p>L'éditeur ne contrôle pas ces services et ne garantit ni leur disponibilité ni leurs résultats.</p>
 <h3>6. Avertissement santé</h3><p>Cadence donne des estimations générales : formule de Mifflin-St Jeor pour la dépense énergétique, valeurs nutritionnelles moyennes, estimations par intelligence artificielle qui peuvent être fausses. Cadence n'est pas un dispositif médical et ne remplace pas l'avis d'un médecin ou d'un diététicien.</p><p>Avant de modifier fortement ton alimentation ou ton activité physique, parles-en à un professionnel de santé, en particulier si tu as une maladie, si tu es enceinte ou allaites, si tu as moins de 18 ans, ou si tu as ou as eu des troubles du comportement alimentaire. Si compter les calories devient une source d'angoisse ou d'obsession, arrête d'utiliser ces fonctions et parles-en à ton médecin.</p>
 <h3>7. Rappels</h3><p>Les rappels dépendent de ton appareil et de ton navigateur. Ils peuvent ne pas se déclencher, par exemple quand l'application est fermée ou que les notifications sont désactivées. Ne t'y fie pas pour des échéances importantes comme un traitement médical, un examen ou un rendez-vous.</p>
 <h3>8. Responsabilité</h3><p>Cadence est fournie telle quelle. Dans les limites prévues par la loi, l'éditeur n'est pas responsable des pertes de données, des erreurs de calcul ou d'estimation, ni des conséquences de leur utilisation.</p>
@@ -3271,22 +3271,22 @@ const LEGAL={
 <h3>12. Droit applicable et contact</h3><p>Ces conditions sont soumises au droit français. En cas de désaccord, écris d'abord à ${m} pour chercher une solution amiable. À défaut, les tribunaux français seront compétents.</p>`},
   conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
 <h3>En résumé</h3><p>Tes données de santé et de suivi (poids, repas, séances, sorties) restent sur ton appareil. Le serveur de l'éditeur ne garde que ce qui est nécessaire à l'abonnement et aux rappels, décrit ci-dessous. Il n'y a ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
-<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, tes séances de sport, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Réglages (icône en haut à gauche), puis « Effacer les données de ce profil », ou en supprimant l'application. Si plusieurs profils existent sur l'appareil, chacun a ses données, son code et sa clé séparés.</p>
+<h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, tes séances de sport, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Réglages (icône en haut à gauche), puis « Effacer les données de ce profil », ou en supprimant l'application. Si plusieurs profils existent sur l'appareil, chacun a ses données, son code et sa clé séparés.</p>
 <h3>Ce que garde le serveur de Cadence</h3><ul>
 <li><b>Abonnement</b> : ton adresse e-mail, ton identifiant client Stripe, ta formule et l'état de ton abonnement (base légale : exécution du contrat), conservés tant que l'abonnement existe, puis le temps de nos obligations comptables.</li>
 <li><b>Rappels push</b> (si tu les actives) : l'adresse d'envoi de ton navigateur, et l'heure et l'intitulé de tes rappels, supprimés quand tu désactives les notifications.</li>
 <li><b>Strava</b> (si tu le connectes, Cadence + Coach) : un jeton d'accès en lecture seule. Tes activités sont lues puis gardées sur ton appareil, pas sur le serveur. Tu peux déconnecter Strava dans Mon compte.</li>
 <li><b>Intervals.icu</b> (si tu le connectes) : ta clé reste sur ton appareil. Elle transite par le serveur le temps de la requête, sans être enregistrée.</li>
-<li><b>Photos de repas</b> sans clé personnelle : la photo transite par le serveur vers Google, sans être conservée.</li></ul>
+</ul>
 <h3>Ce qui est envoyé à d'autres services</h3><ul>
 <li><b>Stripe</b> (paiement) : ton e-mail et ton moyen de paiement, traités par Stripe selon sa politique. L'éditeur ne voit pas ta carte.</li>
 <li><b>Cloudflare</b> : héberge le serveur d'abonnements et voit ton adresse IP.</li>
 <li><b>Hébergeur du site</b> : quand tu ouvres ou mets à jour Cadence, ton adresse IP et des informations techniques peuvent être enregistrées dans les journaux de l'hébergeur, selon sa propre politique.</li>
 <li><b>Open Food Facts</b> (association française) : seulement quand tu cherches un produit, le code-barres et ton adresse IP. Rien d'autre.</li>
-<li><b>Google, API Gemini</b> : seulement quand tu analyses une photo, la photo réduite, ta clé et ton adresse IP. Google traite ces données selon les conditions de l'API Gemini et sa politique de confidentialité, que tu acceptes en créant ta clé, et peut les traiter en dehors de l'Union européenne. Selon ces conditions, les contenus envoyés avec une clé gratuite peuvent servir à améliorer les services de Google : vérifie les conditions en vigueur et n'envoie pas de photos montrant des personnes ou des informations personnelles. Cadence ne garde pas la photo.</li>
+
 <li><b>jsDelivr</b> : la première fois que tu scannes un code-barres, la bibliothèque de lecture est téléchargée depuis cdn.jsdelivr.net, qui voit ton adresse IP.</li></ul>
-<h3>Responsable</h3><p>${n} est responsable du traitement de ton adresse e-mail et des données d'abonnement. Ton suivi sportif et alimentaire reste sur ton appareil, hors de portée de l'éditeur. Pour les envois décrits ci-dessus, chaque service est responsable du traitement qu'il effectue. Des transferts hors de l'Union européenne (États-Unis) peuvent avoir lieu vers Cloudflare, Google et Stripe, encadrés par leurs engagements contractuels.</p>
-<h3>Tes droits</h3><p>Le RGPD te donne des droits d'accès, de rectification, d'effacement et d'opposition. Tes données de suivi restent sur ton appareil : tu les exerces directement dans Cadence. Pour ton e-mail et ton abonnement, écris à l'adresse de contact ci-dessous, la suppression est faite sur demande. Pour les données envoyées à Open Food Facts ou à Google, adresse-toi à eux. Pour toute question : ${m}. Tu peux aussi saisir la CNIL (cnil.fr).</p>`}
+<h3>Responsable</h3><p>${n} est responsable du traitement de ton adresse e-mail et des données d'abonnement. Ton suivi sportif et alimentaire reste sur ton appareil, hors de portée de l'éditeur. Pour les envois décrits ci-dessus, chaque service est responsable du traitement qu'il effectue. Des transferts hors de l'Union européenne (États-Unis) peuvent avoir lieu vers Cloudflare et Stripe, encadrés par leurs engagements contractuels.</p>
+<h3>Tes droits</h3><p>Le RGPD te donne des droits d'accès, de rectification, d'effacement et d'opposition. Tes données de suivi restent sur ton appareil : tu les exerces directement dans Cadence. Pour ton e-mail et ton abonnement, écris à l'adresse de contact ci-dessous, la suppression est faite sur demande. Pour les données envoyées à Open Food Facts, adresse-toi à eux. Pour toute question : ${m}. Tu peux aussi saisir la CNIL (cnil.fr).</p>`}
 };
 function renderLegal(){
   const d=LEGAL[V.doc]?V.doc:'cgu';
@@ -3474,7 +3474,7 @@ const EQUIP=[['traction','Barre de traction'],['dips','Barres parallèles / dips
 const GYM_EQ=['traction','dips','halteres','kb','barre','banc','machines','cardio','elastiques','corde','box','anneaux'];
 const STYLES=[['muscu','Musculation'],['cali','Calisthenics'],['crossfit','CrossFit'],['course','Course à pied'],['tri','Triathlon'],['natation','Natation'],['velo','Vélo'],['spe','Autre sport précis'],['gym','Gymnastique'],['mobi','Étirements et mobilité']];
 const FOCUS=[['renfo','Renforcement','Tonus et endurance musculaire : charges légères, beaucoup de répétitions.'],['hyper','Hypertrophie','Prendre du muscle : charges moyennes, 8 à 12 répétitions.'],['force','Force','Devenir plus fort : charges lourdes, peu de répétitions, longs repos.']];
-const SPORTS_X=[['aucun','Aucun'],['foot','Football'],['rugby','Rugby'],['collectif','Basket, hand, volley'],['raquette','Tennis, padel, badminton'],['combat','Sports de combat'],['natation','Natation'],['course','Course à pied'],['velo','Vélo'],['escalade','Escalade'],['ski','Ski, snowboard'],['autre','Autre']];
+const SPORTS_X=[['aucun','Aucun'],['foot','Football'],['rugby','Rugby'],['collectif','Basket, hand, volley'],['raquette','Tennis, padel, badminton'],['combat','Sports de combat'],['natation','Natation'],['course','Course à pied'],['velo','Vélo'],['tri','Triathlon'],['escalade','Escalade'],['ski','Ski, snowboard'],['autre','Autre']];
 const STYLE_EQ={muscu:1,cali:1,crossfit:1};
 const MUSCU={
   squat:[['Squat barre',['barre']],['Presse à cuisses',['machines']],['Goblet squat',['halteres']],['Goblet squat kettlebell',['kb']],['Squat bulgare',[]]],
@@ -3538,6 +3538,8 @@ function coachCfg(){
     mode:c.mode==='cycles'?'cycles':'prog',focus:FOCUS.some(x=>x[0]===c.focus)?c.focus:'hyper',sport:SPORTS_X.some(x=>x[0]===c.sport)?c.sport:'aucun',sportTxt:String(c.sportTxt||'').slice(0,40),styleTxt:String(c.styleTxt||'').slice(0,40),moves:c.moves&&typeof c.moves==='object'?c.moves:{},lvlAt:+c.lvlAt||0};
 }
 const ENDU=['course','natation','tri','velo','spe'];
+const SIDE_E=['course','velo','natation','tri','autre'];
+const endu=c=>ENDU.includes(c.style)||SIDE_E.includes(c.sport);
 const GSPORTS=[['aucun','Aucun en particulier'],['course','Course à pied'],['natation','Natation'],['tri','Triathlon'],['velo','Vélo'],['spe','Autre sport précis']];
 const EXPMAP={course:{inter:{E:'S'},conf:{E:'S',R:'T'}},tri:{inter:{run:'trun'},conf:{swim:'tswim',bike:'tbike',run:'trun'}},velo:{conf:{ss:'ftp'}},spe:{inter:{endu:'tempo'},conf:{endu:'tempo',tech:'vma'}}};
 function sportPref(){const q=S.sportPref||{};return {k:GSPORTS.some(x=>x[0]===q.k)?q.k:'aucun',txt:String(q.txt||'').slice(0,40)}}
@@ -3956,7 +3958,7 @@ const ONB=[
   {k:'place',q:'Où t\'entraînes-tu ?',o:[['home','À la maison ou dehors'],['gym','En salle']],when:a=>!!STYLE_EQ[a.style]},
   {k:'eq',q:'Quel matériel as-tu ?',multi:true,o:EQUIP,when:a=>!!STYLE_EQ[a.style]&&a.place==='home'},
   {k:'days',q:'Combien de séances par semaine ?',o:[[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']]},
-  {k:'ev',q:'Une échéance sportive ?',ev:true,when:a=>ENDU.includes(a.style)},
+  {k:'ev',q:'Une échéance sportive ?',ev:true,when:a=>ENDU.includes(a.style)||SIDE_E.includes(a.sport)},
   {k:'mode',q:'Comment veux-tu progresser ?',o:[['prog','Progression continue','Un peu plus chaque semaine, sans pause.'],['cycles','Cycles avec semaines allégées','Une semaine plus légère toutes les 4 semaines, puis une phase plus intense.']]}
 ];
 function onbSteps(){const a=V.onb||{};return ONB.filter(x=>!x.when||x.when(a))}
@@ -3986,7 +3988,7 @@ function finishOnb(){
   S.profile.goal=a.goal;
   S.coach=Object.assign(coachCfg(),{start:iso(monday(today)),mode:a.mode,level:a.level,style:a.style,focus:a.focus,sport:a.sport,sportTxt:a.sport==='autre'?a.sportTxt||'':'',styleTxt:a.style==='spe'?a.styleTxt||'':'',moves:{},place:a.place,eq:a.eq,days:+a.days,lvlAt:doneCount()});
   delete S.coach.equip;S.onb=1;
-  if(ENDU.includes(a.style)){S.sportPref={k:a.style,txt:a.style==='spe'?(a.styleTxt||''):''};if(a.evAsked){if(a.evd)S.event={name:a.evn||'',date:a.evd};else delete S.event}}
+  if(ENDU.includes(a.style)||SIDE_E.includes(a.sport)){if(ENDU.includes(a.style))S.sportPref={k:a.style,txt:a.style==='spe'?(a.styleTxt||''):''};if(a.evAsked){if(a.evd)S.event={name:a.evn||'',date:a.evd};else delete S.event}}
   V.onb=null;touch();
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
@@ -4040,11 +4042,11 @@ function renderCoach(){
   const W=weekInfo(Math.min(12,vw)),start=parseISO(progStart());
   let h='<div class="cal-head"><h2>Coach</h2><span class="cgoal">'+gl+(T.ok?' · '+nf.format(T.kcal)+' kcal':'')+'</span></div>'+(locked?'<button type="button" class="cpbar" data-act="cpunlock"><span class="cp-bub sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span><span class="cpbar-t"><b>Aperçu du coach</b><span>Voici le programme qu\'il te prépare. Débloque-le avec Cadence + Coach.</span></span><span class="cpbar-go">Débloquer</span></button><div class="cprev">':levelBanner());
   const ev=evInfo(),evPh=evPhase(vw),curPh=evPhase(cw);
-  if(ENDU.includes(cfg.style)){
+  if(endu(cfg)){
     if(ev)h+='<button type="button" class="card evcard" data-act="evopen"><span class="ev-j"><b>'+(ev.days>0?'J-'+ev.days:ev.days===0?'Jour J':'Passé')+'</b><span>'+(ev.days>1?'jours':ev.days===1?'jour':'')+'</span></span><span class="ev-t"><b>'+esc(ev.name)+'</b><span>'+esc(cap(FMT.long.format(ev.d)))+(curPh?' · '+esc(curPh.name):'')+'</span></span></button>';
     else h+='<button type="button" class="card evcard" data-act="evopen"><span class="ev-j"><b>🏁</b></span><span class="ev-t"><b>Une échéance sportive ?</b><span>Course, compétition, voyage : le coach adapte ton programme.</span></span></button>';
   }
-  if(ENDU.includes(cfg.style)){h+=stravaCard();const x0=stravaStats();if(x0&&isCur){const w0=wk.find(q=>q.sadj);if(w0)h+='<p class="note" style="margin:-4px 2px 12px">'+esc(w0.sadj.why)+'</p>'}}
+  if(endu(cfg)){h+=stravaCard();const x0=stravaStats();if(x0&&isCur){const w0=wk.find(q=>q.sadj);if(w0)h+='<p class="note" style="margin:-4px 2px 12px">'+esc(w0.sadj.why)+'</p>'}}
   // Mon programme : carte bien visible
   h+='<button type="button" class="progcard" data-act="copen" aria-expanded="'+!!V.coachOpen+'"><span class="pc-ic">⚙</span><span class="pc-t"><b>Mon programme</b><span>'+esc([sl,strength?fl[1]:'',withEq?(cfg.place==='gym'?'Salle':'Maison'):'',cfg.days+' séances / sem.',LVL[cfg.level].l].filter(Boolean).join(' · '))+'</span></span><span class="pc-go">'+(V.coachOpen?'Fermer':'Modifier')+'</span></button>';
   if(V.coachOpen)h+='<section class="card cset">'
@@ -4053,7 +4055,7 @@ function renderCoach(){
    +'<span class="clab">Sport pratiqué à côté</span>'+chips('sport',cfg.sport,SPORTS_X)+(cfg.sport==='autre'?'<div style="display:flex;gap:8px;margin:0 0 10px"><input type="text" id="c-sporttxt" maxlength="40" placeholder="Ton activité : danse, judo, surf…" value="'+esc(cfg.sportTxt)+'" style="flex:1;min-width:0"><button type="button" class="ghost" data-act="csporttxt">OK</button></div>':'')
    +(withEq?'<span class="clab">Lieu</span>'+opt('place',cfg.place,[['home','Maison'],['gym','Salle']]):'')
    +(cfg.style==='spe'?'<div style="display:flex;gap:8px;margin:0 0 10px"><input type="text" id="c-styletxt" maxlength="40" placeholder="Ton sport : aviron, ski de fond…" value="'+esc(cfg.styleTxt)+'" style="flex:1;min-width:0"><button type="button" class="ghost" data-act="cstyletxt">OK</button></div>':'')
-   +(ENDU.includes(cfg.style)?'<span class="clab">Échéance sportive</span>'+evInputs('c')+'<div style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="ghost" data-act="cevent">Enregistrer</button>'+(S.event?'<button type="button" class="linkbtn" data-act="cevdel">Retirer</button>':'')+'</div>':'')
+   +(endu(cfg)?'<span class="clab">Échéance sportive</span>'+evInputs('c')+'<div style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="ghost" data-act="cevent">Enregistrer</button>'+(S.event?'<button type="button" class="linkbtn" data-act="cevdel">Retirer</button>':'')+'</div>':'')
    +'<span class="clab">Niveau</span>'+opt('level',cfg.level,[['deb','Débutant'],['inter','Intermédiaire'],['conf','Avancé']])
    +'<span class="clab">Séances par semaine</span>'+opt('days',cfg.days,[[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']])
    +'<span class="clab">Organisation sur 12 semaines</span>'+opt('mode',cycMode(),[['prog','Progression continue'],['cycles','Cycles + semaines allégées']])+'<p class="note" style="margin:-2px 0 8px">'+(cycMode()==='prog'?'Tu progresses chaque semaine, sans semaine allégée ni phase d\'intensification.':'3 cycles (fondations, progression, intensification) et une semaine plus légère toutes les 4 semaines pour récupérer.')+'</p>'
