@@ -868,6 +868,26 @@ label.ghost{color:var(--ink);font-weight:600}
 .csc .mtabs b{width:34px;height:34px;border-radius:50%;background:var(--grad);margin-bottom:2px;animation:cscBub 6s infinite both}
 @keyframes cscBub{0%,48%{transform:none;opacity:1}58%,88%{transform:scale(0);opacity:0}96%,100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.csc *{animation:none!important}.csc .arw path{stroke-dashoffset:0!important}.csc .ex i,.csc .ckb::after{opacity:1!important}}
+
+/* Pages de réglages : menus déroulants */
+.pg-t{font-size:30px;margin:2px 0 12px}
+.acc{border:1px solid var(--line);border-radius:18px;background:var(--surface);margin-bottom:10px;overflow:hidden;animation:accIn .45s both}
+.acc:nth-of-type(2){animation-delay:.06s}.acc:nth-of-type(3){animation-delay:.12s}.acc:nth-of-type(4){animation-delay:.18s}
+@keyframes accIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.acc-h{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:none;border:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer}
+.acc-i{flex:none;width:38px;height:38px;border-radius:12px;background:var(--grad);display:grid;place-items:center}
+.acc-i svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.acc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.acc-t b{font-size:16px}.acc-t small{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-c{flex:none;width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s ease}
+.acc.open .acc-c{transform:rotate(180deg)}
+.acc-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}
+.acc.open .acc-b{grid-template-rows:1fr}
+.acc-b>div{min-height:0;overflow:hidden;padding:0 16px;opacity:0;transition:opacity .25s ease,padding .32s ease}
+.acc.open .acc-b>div{padding:2px 16px 16px;opacity:1}
+.needs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border:1px solid var(--line);border-radius:18px;background:var(--surface);padding:14px 8px;margin-bottom:12px;text-align:center;animation:accIn .45s both}
+.needs div{display:flex;flex-direction:column;gap:2px}.needs b{font-size:17px}.needs span{font-size:11px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.acc,.needs{animation:none}.acc-b,.acc-b>div,.acc-c{transition:none}}
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
 </head>
@@ -1308,7 +1328,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 47';
+const APP_VERSION='2026.11.09 · 48';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1337,7 +1357,7 @@ async function licenseSync(){
   const key=x=>[!!x.active,x.plan||'base',x.cancelAt||0].join('|'),before=key(l);
   pSheet({loading:true,title:'Mise à jour de ton abonnement…',sub:'Stripe confirme ta modification, ça ne prend que quelques secondes.'});
   let d=null,changed=false;
-  for(let i=0;i<9;i++){
+  for(let i=0;i<10;i++){
     try{d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json()}catch(e){}
     if(d&&key(d)!==before){changed=true;break}
     await sleep(1500);
@@ -1345,7 +1365,7 @@ async function licenseSync(){
   if(!d){$('#psheet').hidden=true;toast('Impossible de vérifier pour le moment');return}
   licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
   V.lic=false;updateGate();render();
-  if(!changed){$('#psheet').hidden=true;toast('Aucun changement');return}
+  if(!changed){pSheet({tone:'info',icon:'info',title:'Rien n\'a changé',sub:'Ton abonnement est identique. Si tu viens de modifier quelque chose, réessaie dans une minute.',btn:'OK'});return}
   planFeedback(l,licenseGet());
 }
 // Après le paiement Stripe : on vérifie l'abonnement tout seul (le webhook peut mettre quelques secondes).
@@ -1395,7 +1415,9 @@ function pClose(){$('#psheet').hidden=true;setTimeout(()=>{maybeTuto();maybeOnb(
 function planFeedback(before,now){
   const bl=!!(before&&licLive(before)),nl=licLive(now),wasCoach=bl&&before.plan==='coach';
   if(!nl){if(bl)pSheet({tone:'end',icon:'lock',title:'Abonnement terminé',sub:'Tes données restent sur ce téléphone. Réabonne-toi quand tu veux pour tout retrouver.',btn:'Compris'});else $('#psheet').hidden=true;return}
-  if(now.plan==='coach'&&!wasCoach){$('#psheet').hidden=true;celebrate(prefs().coach===false?'integrate':'unlock');return}
+  if(now.plan==='coach'&&!wasCoach){
+    if(!S.tuto){pSheet({tone:'ok',icon:'check',title:'Bienvenue dans Cadence + Coach',sub:'Ton abonnement est actif. Un petit tour, quelques questions, et ton coach se met en place.',btn:'C\'est parti'});return}
+    $('#psheet').hidden=true;celebrate(prefs().coach===false?'integrate':'unlock');return}
   if(now.cancelAt&&(!bl||(before.cancelAt||null)!==now.cancelAt)){
     pSheet({tone:'warn',icon:'clock',title:'Résiliation enregistrée',sub:'Tu gardes tout Cadence jusqu\'à la fin de la période payée. Ensuite, l\'app se verrouille et il faudra te réabonner pour la retrouver.',days:dLeft(now.cancelAt),until:fmtEnd(now.cancelAt),btn:'Compris',link:{label:'Finalement, je garde mon abonnement',act:'licportal',attrs:' data-flow=""'}});return}
   if(bl&&before.cancelAt&&!now.cancelAt){pSheet({tone:'ok',icon:'undo',title:'Résiliation annulée',sub:'Ton abonnement continue normalement. Rien ne change.',btn:'Super'});return}
@@ -1430,7 +1452,8 @@ function celebDone(){
   if(c.kind==='integrate'){S.prefs=Object.assign(prefs(),{coach:true});touch()}
   V.tab='coach';render();window.scrollTo(0,0);
   const b=document.querySelector('.tabs .ctab');if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');setTimeout(()=>b.classList.remove('pop'),700)}
-  if(coachActive()&&!S.tutoC){setTimeout(()=>openTuto(false,'coach'),350);return}
+  if(!S.tuto||!S.setup){setTimeout(()=>{maybeTuto();maybeOnb()},350);return}
+  if(coachActive()&&!S.tutoC){setTimeout(()=>{V.coachTutoShown=true;openTuto(false,'coach')},350);return}
   if(coachActive()&&(c.needOnb||!S.onb)&&$('#onb').hidden){V.onbShown=true;openOnb()}
 }
 /* ---------- Tutoriel de découverte ---------- */
@@ -2190,17 +2213,35 @@ function switchProfile(pid){
 }
 
 /* ---------- Réglages ---------- */
+const ACC_ICON={perso:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/>',rythme:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',diet:'<path d="M5 3v8a3 3 0 0 0 3 3v7M11 3v8a3 3 0 0 1-3 3M17 21V3c-2 1-3.5 4-3.5 8 0 2 1.2 3 3.5 3"/>',coach:'<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>',seance:'<path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
+const isAcc=(k,def)=>V.acc&&k in V.acc?!!V.acc[k]:!!def;
+function acc(key,ic,title,sum,body,def){
+  const o=isAcc(key,def);
+  return '<section class="acc'+(o?' open':'')+'" data-k="'+key+'"><button type="button" class="acc-h" data-act="acc" aria-expanded="'+o+'"><span class="acc-i"><svg viewBox="0 0 24 24">'+(ACC_ICON[ic]||'')+'</svg></span><span class="acc-t"><b>'+title+'</b><small>'+sum+'</small></span><svg class="acc-c" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-b"><div>'+body+'</div></div></section>';
+}
+const GOAL_L={prise:'Prise de masse',maintien:'Maintien',seche:'Déficit'};
 function accountHTML(){
-  const p=S.profile;
+  const p=S.profile,T=calc(p),name=IS_PWA?curProfile().name:(p.pseudo||'');
   const radio=(val,label)=>'<label><input type="radio" name="a-sex" value="'+val+'"'+(p.sex===val?' checked':'')+'><span>'+label+'</span></label>';
-  return '<section class="card" id="account-form"><h2>Mon compte</h2>'
-   +(IS_PWA?'<label><span class="lab">Nom du profil</span><input type="text" id="a-name" maxlength="30" value="'+esc(curProfile().name)+'"></label>':'')
+  const chip=(k,v,l,cur)=>'<button type="button" data-act="pgoal" data-k="'+k+'" data-v="'+v+'" aria-pressed="'+(cur===v)+'">'+l+'</button>';
+  const actL=(ACT.find(a=>a[0]===+p.activity)||ACT[2])[1];
+  const d=p.diet||{},dl=[(DIET_BASE.find(x=>x[0]===(d.base||'none'))||DIET_BASE[0])[1]].concat(DIET_EXTRA.filter(x=>d[x[0]]).map(x=>x[1].replace('Sans fruits à coque ni arachide','Sans fruits à coque')));
+  const perso=(IS_PWA?'<label><span class="lab">Nom d\'utilisateur</span><input type="text" id="a-name" maxlength="30" value="'+esc(name)+'"></label>':'')
    +'<div class="seg-title">Sexe</div><div class="seg">'+radio('H','Homme')+radio('F','Femme')+'</div>'
    +'<div class="r2"><label><span class="lab">Âge</span><input type="number" id="a-age" inputmode="numeric" min="14" max="90" value="'+esc(p.age)+'"></label><label><span class="lab">Taille (cm)</span><input type="number" id="a-height" inputmode="numeric" min="120" max="230" value="'+esc(p.height)+'"></label></div>'
-   +'<label><span class="lab">Niveau d\'activité</span><select id="a-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
    +'<div class="row" style="align-items:flex-end;margin-top:4px"><div><div class="seg-title">Poids actuel</div><span class="curw">'+(p.weight?num(+p.weight,1)+' kg':'–')+'</span></div><button type="button" class="ghost" data-act="tab" data-tab="poids">Nouvelle pesée</button></div>'
-   +'<p class="note" id="a-msg" style="margin-top:10px">Les modifications sont enregistrées automatiquement.</p></section>'
-   +'<section class="card"><h2>Alimentation</h2><p class="note" style="margin-bottom:8px">Tes menus, tes recettes et ta liste de courses tiennent compte de ton régime.</p>'+dietChips(p.diet||{})+'</section>';
+   +'<p class="note" id="a-msg" style="margin-top:10px">Enregistré automatiquement.</p>';
+  const rythme='<label><span class="lab">Niveau d\'activité</span><select id="a-act">'+ACT.map(a=>'<option value="'+a[0]+'"'+(+p.activity===a[0]?' selected':'')+'>'+a[1]+' · '+a[2]+'</option>').join('')+'</select></label>'
+   +'<span class="clab">Objectif</span><div class="modes" style="margin-bottom:8px">'+chip('goal','prise','Masse',p.goal)+chip('goal','maintien','Maintien',p.goal)+chip('goal','seche','Déficit',p.goal)+'</div>'
+   +(p.goal!=='maintien'?'<span class="clab">Rythme</span><div class="modes">'+chip('rate','leger','Léger',p.rate)+chip('rate','modere','Modéré',p.rate)+chip('rate','soutenu','Soutenu',p.rate)+'</div>':'');
+  return '<h2 class="pg-t">Mon compte</h2>'
+   +(T.ok?'<section class="needs"><div><b>'+nf.format(T.kcal)+'</b><span>kcal / jour</span></div><div><b>'+T.p+' g</b><span>protéines</span></div><div><b>'+T.c+' g</b><span>glucides</span></div><div><b>'+T.f+' g</b><span>lipides</span></div></section>':'')
+   +'<div id="account-form">'
+   +acc('perso','perso','Mes infos',esc((name?name+' · ':'')+(p.sex==='F'?'Femme':'Homme')+' · '+(p.age||'?')+' ans · '+(p.height||'?')+' cm · '+(p.weight?num(+p.weight,1):'?')+' kg'),perso,true)
+   +acc('rythme','rythme','Activité et objectif',esc(actL+' · '+(GOAL_L[p.goal]||'Maintien')),rythme)
+   +'</div>'
+   +acc('diet','diet','Alimentation',esc(dl.join(' · ')),'<p class="note" style="margin-bottom:6px">Tes menus, tes recettes et ta liste de courses tiennent compte de ton régime.</p>'+dietChips(d))
+   +'<button type="button" class="linkbtn" data-act="setupredo" style="display:block;margin:10px auto 0">Refaire les questions de départ</button>';
 }
 function readAccount(){
   const p=S.profile,v=id=>{const el=$(id);if(!el)return null;const x=parseFloat(el.value);return isNaN(x)?null:x};
@@ -2208,6 +2249,7 @@ function readAccount(){
   const ac=$('#a-act');if(ac)p.activity=parseFloat(ac.value);
   const sx=document.querySelector('#account-form input[name=a-sex]:checked');if(sx)p.sex=sx.value;
   p.custom=true;
+  { const sm=document.querySelector('.acc[data-k=perso] .acc-t small');if(sm)sm.textContent=((IS_PWA?($('#a-name')||{}).value:p.pseudo)||'')+(((IS_PWA?($('#a-name')||{}).value:p.pseudo)||'')?' · ':'')+(p.sex==='F'?'Femme':'Homme')+' · '+(p.age||'?')+' ans · '+(p.height||'?')+' cm · '+(p.weight?num(+p.weight,1):'?')+' kg' }
   if(IS_PWA){const n=$('#a-name');if(n){const nv=n.value.trim().slice(0,30),pr=curProfile();if(nv&&nv!==pr.name){pr.name=nv;saveProfiles();$('#today-label').textContent=headLabel()}}}
   touch();
   const m=$('#a-msg');if(m)m.textContent=(p.age>=14&&p.age<=90&&p.height>=120&&p.height<=230)?'Enregistré.':'Vérifie l\'âge (14 à 90 ans) et la taille (120 à 230 cm).';
@@ -2263,17 +2305,21 @@ function renderSettings(){
   }
   if(sec==='train'){
     const p=prefs(),row=(k,cur,list,lab,note)=>'<span class="clab">'+lab+'</span><div class="modes" style="margin-bottom:4px">'+list.map(x=>'<button type="button" data-act="pset" data-k="'+k+'" data-v="'+x[0]+'" aria-pressed="'+(String(cur)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>'+(note?'<p class="note" style="margin-bottom:8px">'+note+'</p>':'');
-    return head+'<section class="card"><h2>Séances et coach</h2>'
-     +row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Coach personnel','Désactivé : l\'onglet Coach disparaît et tu crées tes propres séances dans Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
-     +row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
-     +row('video',p.video,[[true,'Afficher'],[false,'Masquer']],'Vidéos explicatives','')
-     +row('timer',p.timer,[[true,'Activé'],[false,'Désactivé']],'Minuteur','Repos, exercices tenus, intervalles. Sans minuteur, tu avances à ton rythme.')
-     +row('ui',p.ui,[['auto','Selon mon niveau'],['simple','Simple'],['full','Complet']],'Affichage de l\'onglet Séances','Simple : la séance du jour et ta progression. Complet : historique, progrès et import.')
-     +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:10px">Refaire le questionnaire</button>':'')+'</section>';
+    const onoff=v=>v?'Activé':'Désactivé';
+    return head+'<h2 class="pg-t">Séances et coach</h2>'
+     +acc('t-coach','coach','Coach personnel',esc(onoff(p.coach)+(coachActive()?' · programme actif':'')),
+        row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Onglet Coach','Désactivé : l\'onglet Coach disparaît et tu crées tes propres séances dans Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
+        +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:6px">Refaire le questionnaire</button><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:8px auto 0">Revoir le tutoriel du coach</button>':''),true)
+     +acc('t-pend','seance','Pendant la séance',esc('Animations : '+({ask:'demander',always:'toujours',never:'jamais'}[p.anim]||'demander')+' · Minuteur : '+(p.timer?'oui':'non')),
+        row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
+        +row('video',p.video,[[true,'Afficher'],[false,'Masquer']],'Vidéos explicatives','')
+        +row('timer',p.timer,[[true,'Activé'],[false,'Désactivé']],'Minuteur','Repos, exercices tenus, intervalles. Sans minuteur, tu avances à ton rythme.'))
+     +acc('t-aff','seance','Affichage de l\'onglet Séances',esc({auto:'Selon mon niveau',simple:'Simple',full:'Complet'}[p.ui]||'Selon mon niveau'),
+        row('ui',p.ui,[['auto','Selon mon niveau'],['simple','Simple'],['full','Complet']],'','Simple : la séance du jour et ta progression. Complet : historique, progrès et import.'));
   }
   if(sec==='theme'){
     const p=themePref(),opt=[['auto','Auto',ICON_AUTO],['light','Clair',ICON_SUN],['dark','Sombre',ICON_MOON]];
-    return head+'<section class="card"><h2>Apparence</h2><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>';
+    return head+'<h2 class="pg-t">Apparence</h2><section class="card"><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>';
   }
   if(sec==='notif'){
     const hasN='Notification' in window,perm=hasN?Notification.permission:'none',pi=pushInfo(),pr=prefs();
@@ -2283,13 +2329,21 @@ function renderSettings(){
     else if(pi)n='<p class="pushok">✓ Notifications push activées</p><p class="note" style="margin-bottom:10px">Tu reçois les rappels de tes séances même quand Cadence est fermée.</p><div class="row" style="justify-content:flex-start"><button type="button" class="ghost" data-act="pushtest">Envoyer un test</button><button type="button" class="ghost" data-act="pushoff">Désactiver</button></div>';
     else n='<p class="note" style="margin-bottom:10px">Reçois un rappel pour chaque séance de sport, même quand Cadence est fermée.</p><button type="button" class="primary" data-act="pushon" style="width:100%">Activer les notifications push</button>'+(PROXY_OK()?'':'<p class="note" style="margin-top:8px">Disponible dès que le serveur Cadence est en ligne.</p>');
     const opts=[['off','Aucun'],['07:00','7 h'],['08:00','8 h'],['12:00','12 h'],['17:00','17 h']];
-    return head+'<section class="card"><h2>Notifications</h2>'+n+'<p class="note" id="push-msg" style="margin-top:8px" aria-live="polite"></p>'
-     +'<h3 class="group-h">Séances de l\'agenda</h3><p class="note">Le rappel suit le réglage choisi sur chaque séance (à l\'heure, 30 min avant, la veille…).</p>'
-     +(coachActive()?'<h3 class="group-h">Séance du jour du coach</h3><div class="modes" style="margin-bottom:4px">'+opts.map(x=>'<button type="button" data-act="pset" data-k="coachH" data-v="'+x[0]+'" aria-pressed="'+(pr.coachH===x[0])+'">'+x[1]+'</button>').join('')+'</div><p class="note">Un rappel le matin des jours où le coach a prévu une séance.</p>':'')
-     +'</section>';
+    const st=!pushSupported()?'Non disponible ici':perm==='denied'?'Refusées':pi?'Activées':'Désactivées';
+    return head+'<h2 class="pg-t">Notifications</h2>'
+     +acc('n-push','bell','Rappels push',esc(st),n+'<p class="note" id="push-msg" style="margin-top:8px" aria-live="polite"></p>',true)
+     +acc('n-ag','bell','Séances de l\'agenda','Selon le réglage de chaque séance','<p class="note">Le rappel suit le réglage choisi sur chaque séance (à l\'heure, 30 min avant, la veille…).</p>')
+     +(coachActive()?acc('n-coach','coach','Séance du jour du coach',esc(pr.coachH==='off'||!pr.coachH?'Aucun rappel':'Rappel à '+String(pr.coachH).slice(0,2)+' h'),'<div class="modes" style="margin-bottom:4px">'+opts.map(x=>'<button type="button" data-act="pset" data-k="coachH" data-v="'+x[0]+'" aria-pressed="'+(pr.coachH===x[0])+'">'+x[1]+'</button>').join('')+'</div><p class="note">Un rappel le matin des jours où le coach a prévu une séance.</p>'):'');
   }
-  if(sec==='backup')return head+'<section class="card"><h2>Sauvegarde</h2><p class="note" style="margin-bottom:8px">Les données de ce profil restent sur ce téléphone. Copie-les pour les garder ailleurs ou les restaurer. Le code et la clé Gemini ne sont pas inclus.</p>'
-    +'<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="backup">Copier ma sauvegarde</button><button type="button" class="ghost" data-act="restore">Restaurer</button></div><p class="note" id="bk-msg" style="margin-top:8px"></p></section>';
+  if(sec==='backup'){
+    const nS=(S.workouts||[]).length,nJ=Object.keys(S.log||{}).length,nW=(S.weights||[]).length,nA=(S.items||[]).length;
+    return head+'<h2 class="pg-t">Sauvegarde</h2>'
+     +'<section class="needs"><div><b>'+nA+'</b><span>agenda</span></div><div><b>'+nS+'</b><span>séances</span></div><div><b>'+nJ+'</b><span>jours repas</span></div><div><b>'+nW+'</b><span>pesées</span></div></section>'
+     +'<p class="note" style="margin:0 2px 10px">Tes données restent sur ce téléphone. Le code et la clé Gemini ne sont pas inclus.</p>'
+     +'<button type="button" class="primary big" data-act="backup" style="width:100%;margin-bottom:10px">Copier ma sauvegarde</button>'
+     +acc('b-rest','save','Restaurer une sauvegarde','Coller une sauvegarde copiée plus tôt','<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="restore">Restaurer</button></div>')
+     +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
+  }
   if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
   return head+'<section class="card"><h2>Données</h2><p class="note" style="margin-bottom:8px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe">Effacer les données de ce profil</button></section>';
 }
@@ -3661,7 +3715,9 @@ function finishOnb(){
   delete S.coach.equip;S.onb=1;V.onb=null;touch();
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
-function maybeOnb(){if(!coachActive())return;if(!S.tuto||!S.setup||!$('#setup').hidden||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+function maybeOnb(){if(!coachActive())return;if(!S.tuto||!S.setup||!$('#setup').hidden||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;
+  if(!S.tutoC){if(!V.coachTutoShown&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden&&$('#onb').hidden){V.coachTutoShown=true;openTuto(false,'coach')}return}
+  if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
 function coachSaleCTA(){return licensePlan()==='base'
@@ -4189,8 +4245,8 @@ document.addEventListener('click',e=>{
     if(l.cancelAt){pSheet({tone:'warn',icon:'clock',title:'Résiliation en cours',sub:'Annule d\'abord ta résiliation pour changer de formule.',btn:'OK'});return}
     const to=b.dataset.plan==='coach'?'coach':'base';if((l.plan||'base')===to)return;
     $('#ssheet').hidden=true;
-    pSheet(to==='coach'?{tone:'info',icon:'info',title:'Passer à Cadence + Coach',sub:'Ta formule passe à '+PRICE_COACH+' / mois. Tu ne paies que la différence, au prorata du mois en cours, sans quitter l\'app.',btn:'Confirmer · '+PRICE_COACH+' / mois',act:'planconfirm',attrs:' data-plan="coach"',link:{label:'Annuler',act:'pclose'}}
-      :{tone:'info',icon:'info',title:'Revenir à Cadence seul',sub:'Ta formule passe à '+PRICE_BASE+' / mois. Le coach est mis de côté, la différence déjà payée est déduite de ta prochaine facture.',btn:'Confirmer · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Annuler',act:'pclose'}})}
+    pSheet(to==='coach'?{tone:'info',icon:'info',title:'Passer à Cadence + Coach',sub:'Ta carte enregistrée est débitée tout de suite de la différence, au prorata du mois en cours. Ensuite, '+PRICE_COACH+' / mois.',btn:'Confirmer · '+PRICE_COACH+' / mois',act:'planconfirm',attrs:' data-plan="coach"',link:{label:'Annuler',act:'pclose'}}
+      :{tone:'info',icon:'info',title:'Revenir à Cadence seul',sub:'Aucun paiement : le coach est mis de côté et la différence déjà payée est déduite de ta prochaine facture. Ensuite, '+PRICE_BASE+' / mois.',btn:'Confirmer · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Annuler',act:'pclose'}})}
   else if(a==='planconfirm'){
     const before=licenseGet(),to=b.dataset.plan==='coach'?'coach':'base';if(!before||!before.email)return;
     pSheet({loading:true,title:'Changement de formule…',sub:'Ça ne prend que quelques secondes.'});
@@ -4250,6 +4306,9 @@ document.addEventListener('click',e=>{
   else if(a==='tutoback'){if(V.tuto){V.tuto.i=Math.max(0,V.tuto.i-1);renderTuto()}}
   else if(a==='tutoskip'){finishTuto()}
   else if(a==='tutoopen'){closeDrawer();openTuto(true)}
+  else if(a==='acc'){const sc=b.closest('.acc');if(sc){const o=sc.classList.toggle('open');b.setAttribute('aria-expanded',o);V.acc=V.acc||{};V.acc[sc.dataset.k]=o}}
+  else if(a==='pgoal'){const k=b.dataset.k;S.profile[k]=b.dataset.v;if(k==='goal'&&b.dataset.v==='maintien')S.profile.rate='modere';touch();render()}
+  else if(a==='setupredo'){S.setup=0;V.setupShown=false;V.tab='agenda';render();maybeSetup()}
   else if(a==='setupnext'){setupNext()}
   else if(a==='setupback'){if(V.setup){setupRead();V.setup.i=Math.max(0,V.setup.i-1);V.setup.msg='';renderSetup()}}
   else if(a==='dset'){

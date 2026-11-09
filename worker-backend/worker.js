@@ -206,7 +206,23 @@ export default {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       if (!email) return json({ error: 'email manquant' }, 400);
       const v = await env.LICENSES.get('lic:' + email);
-      const data = v ? JSON.parse(v) : null;
+      let data = v ? JSON.parse(v) : null;
+      // Relit l'abonnement chez Stripe : l'état reste juste même si un webhook est en retard ou manquant
+      if (data && data.customerId) {
+        try {
+          let subId = data.subscriptionId;
+          if (!subId) {
+            const list = await stripeGet(env, 'subscriptions?customer=' + encodeURIComponent(data.customerId) + '&status=all&limit=1');
+            subId = list && list.data && list.data[0] && list.data[0].id;
+          }
+          const sub = subId && await stripeGet(env, 'subscriptions/' + subId);
+          if (sub && sub.id && sub.customer) {
+            await saveSub(env, sub);
+            const v2 = await env.LICENSES.get('lic:' + email);
+            if (v2) data = JSON.parse(v2);
+          }
+        } catch (e) {}
+      }
       return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base', cancelAt: (data && data.cancelAt) || null });
     }
 
