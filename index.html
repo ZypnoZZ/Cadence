@@ -548,7 +548,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .wkstrip .today{outline:2px solid var(--accent);outline-offset:1px}
 .cs-top{display:flex;justify-content:space-between;align-items:center}
 .cdone{font-size:12px;font-weight:700;color:var(--d-today)}
-.strv{margin-bottom:12px}.actf{display:grid;gap:8px;margin-top:6px}.strv-l a{color:var(--accent)}.strv-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.strv-l li{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}.strv-l li small{grid-column:2;opacity:.7}.strv-l b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strv{margin-bottom:12px}.actf input[type=password]{width:100%}.actf{display:grid;gap:8px;margin-top:6px}.strv-l a{color:var(--accent)}.strv-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.strv-l li{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}.strv-l li small{grid-column:2;opacity:.7}.strv-l b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acc-sw{display:flex;gap:10px;flex-wrap:wrap}.acc-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;min-width:56px;border-radius:14px;border:2px solid transparent;background:none;font-size:12px}.acc-sw i{width:36px;height:36px;border-radius:50%;display:block;transition:transform .25s}.acc-sw button[aria-pressed=true]{border-color:var(--accent)}.acc-sw button[aria-pressed=true] i{transform:scale(1.12)}
 .xbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;margin-left:8px}
 .cs-top .xbadge{margin-right:auto}
@@ -1101,6 +1101,7 @@ label.ghost{color:var(--ink);font-weight:600}
     <label><span class="lab">Email</span><input type="email" id="lic-email" autocomplete="email" placeholder="toi@exemple.com"></label>
     <button type="button" class="primary" data-act="liccheck" style="width:100%;margin-top:10px">J'ai déjà un abonnement</button>
     <p class="clab" style="margin:14px 0 0">Ou choisis ta formule</p>
+    <label class="ck" style="margin:6px 0 8px"><input type="checkbox" id="lic-waiver"><span>Je demande l'accès immédiat à Cadence et je reconnais perdre mon droit de rétractation de 14 jours une fois le service commencé. <button type="button" class="linkbtn" data-act="legal" data-doc="cgv">Conditions de vente</button></span></label>
     <div class="plans">
       <button type="button" class="plan" data-act="licsub" data-plan="base"><b>Cadence</b><span>Agenda, séances, assiette, nutrition, suivi</span></button>
       <button type="button" class="plan best" data-act="licsub" data-plan="coach"><span class="ptag">Le plus complet</span><b>Cadence + Coach</b><span>Tout Cadence, plus le coach personnel : programme sur 12 semaines, séances guidées, minuteur</span></button>
@@ -1122,8 +1123,8 @@ label.ghost{color:var(--ink);font-weight:600}
       <li>Les calculs et les analyses de photos sont des estimations, pas un avis médical.</li>
       <li>La reconnaissance par photo est facultative et envoie tes photos à Google.</li>
     </ul>
-    <p style="margin-bottom:6px">À lire : <button type="button" class="linkbtn" data-act="legal" data-doc="cgu">conditions d'utilisation</button> et <button type="button" class="linkbtn" data-act="legal" data-doc="conf">confidentialité</button>.</p>
-    <label class="ck"><input type="checkbox" id="gate-ok"><span>J'ai lu et j'accepte les conditions d'utilisation et la politique de confidentialité.</span></label>
+    <p style="margin-bottom:6px">À lire : <button type="button" class="linkbtn" data-act="legal" data-doc="cgu">conditions d'utilisation</button>, <button type="button" class="linkbtn" data-act="legal" data-doc="cgv">conditions de vente</button> et <button type="button" class="linkbtn" data-act="legal" data-doc="conf">confidentialité</button>.</p>
+    <label class="ck"><input type="checkbox" id="gate-ok"><span>J'ai lu et j'accepte les conditions d'utilisation, les conditions de vente et la politique de confidentialité.</span></label>
     <button type="button" class="primary" data-act="accept" style="width:100%">Commencer</button>
     <p class="note" id="gate-msg" style="margin-top:8px"></p>
   </div>
@@ -1356,11 +1357,17 @@ const IS_PWA=true;
 const EDITEUR={
   nom:'ZypnoZZ',
   email:'thibautgradinaru0709@gmail.com',
-  hebergeur:'GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis. Site : github.com'
+  hebergeur:'Site : GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis. Serveur d\'abonnements : Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis.',
+  // À COMPLÉTER AVANT D'OUVRIR LES PAIEMENTS RÉELS (laisser vide tant que Stripe est en mode test)
+  statut:'',      // ex. 'Entrepreneur individuel (micro-entreprise)'
+  siret:'',       // numéro SIRET à 14 chiffres
+  adresse:'',     // adresse postale professionnelle
+  mediateur:''    // médiateur de la consommation choisi (nom, site web)
 };
+const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
-const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 56';
+const CGU_VERSION='2026-11-09b';
+const APP_VERSION='2026.11.09 · 57';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2417,7 +2424,7 @@ function renderSettings(){
      +acc('b-rest','save','Restaurer une sauvegarde','Coller une sauvegarde copiée plus tôt','<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="restore">Restaurer</button></div>')
      +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
   }
-  if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
+  if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="cgv">Conditions de vente</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
   return head+'<h2 class="pg-t">Données</h2>'+acc('d-wipe','save','Effacer ce profil','Action définitive','<p class="note" style="margin-bottom:10px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe" style="width:100%">Effacer les données de ce profil</button>');
 }
 const DR_IC={
@@ -3232,36 +3239,54 @@ async function lookupCode(raw){
 const MAJ='9 novembre 2026';
 const LEGAL={
   mentions:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Mentions légales</h2><p class="note">Mise à jour : ${MAJ}</p>
-<h3>Éditeur</h3><p>Cadence est éditée par ${n}, particulier, à titre personnel et non commercial.<br>Contact : ${m}</p>
+<h3>Éditeur</h3><p>${LIVE?'Cadence est éditée par '+n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':'Cadence est éditée par '+n+', particulier, à titre personnel et non commercial.'}<br>Contact : ${m}</p>
 <h3>Directeur de la publication</h3><p>${n}</p>
-<h3>Hébergeur</h3><p>${esc(EDITEUR.hebergeur)}</p>
+<h3>Hébergement et paiement</h3><p>${esc(EDITEUR.hebergeur)}</p><p>Les paiements sont traités par Stripe Payments Europe, Ltd. (Dublin, Irlande). L'éditeur ne voit ni ne conserve ton numéro de carte.</p>
 <h3>Illustrations et vidéos</h3><p>Photos des exercices : Free Exercise DB (github.com/yuhonas/free-exercise-db), placées dans le domaine public (Unlicense). Les vidéos explicatives sont de simples liens vers YouTube : elles restent hébergées par leurs auteurs, qui en conservent les droits.</p>
 <h3>Propriété intellectuelle</h3><p>Le code, le design, le nom et l'icône de Cadence appartiennent à ${n}. Leur reproduction sans autorisation écrite est interdite.</p>
 <p>Les informations sur les produits emballés proviennent d'<a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>. Ces données sont publiées sous licence Open Database License (ODbL) et appartiennent aux contributeurs d'Open Food Facts.</p>
 <p>La lecture des codes-barres utilise la bibliothèque libre ZXing, sous licence Apache 2.0.</p>`},
+  cgv:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Conditions générales de vente</h2><p class="note">Version du ${MAJ}</p>
+<h3>1. Vendeur</h3><p>${LIVE?n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':n+'.'} Contact : ${m}.</p>
+<h3>2. Offres et prix</h3><p>Deux formules d'abonnement mensuel : <b>Cadence</b> (${PRICE_BASE} par mois) et <b>Cadence + Coach</b> (${PRICE_COACH} par mois), avec le coach personnel : programme de 12 semaines, séances guidées, adaptation à tes sorties et à tes échéances. Les prix sont indiqués en euros, toutes taxes comprises.${LIVE?' TVA non applicable, article 293 B du CGI.':''}</p>
+<h3>3. Commande et paiement</h3><p>Tu t'abonnes en indiquant ton adresse e-mail, puis tu paies par carte sur la page sécurisée de Stripe. L'abonnement se renouvelle automatiquement chaque mois jusqu'à sa résiliation. Quand tu passes de Cadence à Cadence + Coach, tu paies la différence au prorata de la période en cours. Quand tu repasses à Cadence, l'écart est crédité sur ta prochaine facture.</p>
+<h3>4. Durée et résiliation</h3><p>Sans engagement : tu résilies quand tu veux, depuis Menu, Mon compte, ou depuis le portail de facturation. La résiliation prend effet à la fin de la période déjà payée : tu gardes ton accès jusqu'à cette date, puis l'application se verrouille et ne garde qu'un aperçu. Tu peux annuler ta résiliation tant que la période n'est pas terminée.</p>
+<h3>5. Droit de rétractation</h3><p>Tu disposes en principe de 14 jours pour te rétracter. Cadence est un service numérique fourni immédiatement : en t'abonnant, tu demandes l'exécution du service dès la souscription et tu reconnais que tu perds ton droit de rétractation une fois le service pleinement exécuté ou commencé avec ton accord exprès (article L221-28 du Code de la consommation). Cet accord est recueilli avant le paiement.</p>
+<h3>6. Remboursement</h3><p>Chaque mois commencé est dû. Aucun remboursement au prorata n'est fait en cas de résiliation en cours de période, sauf obligation légale ou geste commercial de l'éditeur.</p>
+<h3>7. Disponibilité et garanties</h3><p>L'éditeur s'efforce d'assurer le service sans interruption mais ne peut la garantir. Tu bénéficies des garanties légales applicables aux contenus et services numériques, notamment la garantie de conformité.</p>
+<h3>8. Données personnelles</h3><p>Voir la politique de confidentialité.</p>
+<h3>9. Médiation et litiges</h3><p>En cas de litige, écris d'abord à ${m}. Si aucune solution n'est trouvée, tu peux gratuitement recourir au médiateur de la consommation : ${esc(EDITEUR.mediateur||'coordonnées du médiateur à renseigner avant l\'ouverture des paiements')}. Tu peux aussi utiliser la plateforme européenne de règlement en ligne des litiges (ec.europa.eu/consumers/odr). Le droit français s'applique.</p>`},
   cgu:()=>{const m=esc(EDITEUR.email);return `<h2>Conditions générales d'utilisation</h2><p class="note">Version du ${MAJ}</p>
-<h3>1. Objet</h3><p>Ces conditions encadrent l'utilisation de Cadence, une application web gratuite qui propose un agenda, une liste de tâches avec rappels, un suivi des séances de sport et de la progression, un calcul de besoins caloriques et de macronutriments, des plans de repas, une liste de courses, un journal alimentaire et un suivi du poids. Utiliser Cadence vaut acceptation de ces conditions.</p>
-<h3>2. Accès</h3><p>Cadence est gratuite, sans compte et sans publicité. Elle fonctionne dans un navigateur récent ; certaines fonctions demandent une connexion internet. L'éditeur peut modifier, suspendre ou arrêter Cadence à tout moment, sans préavis ni indemnité. Cadence est un projet personnel : aucune disponibilité n'est garantie.</p>
+<h3>1. Objet</h3><p>Ces conditions encadrent l'utilisation de Cadence, une application web sur abonnement qui propose un agenda, une liste de tâches avec rappels, un suivi des séances de sport et de la progression, un calcul de besoins caloriques et de macronutriments, des plans de repas, une liste de courses, un journal alimentaire et un suivi du poids. Utiliser Cadence vaut acceptation de ces conditions.</p>
+<h3>2. Accès</h3><p>Cadence s'utilise avec un abonnement mensuel, identifié par ton adresse e-mail, aux conditions décrites dans les conditions de vente. Elle ne contient aucune publicité. Elle fonctionne dans un navigateur récent ; certaines fonctions demandent une connexion internet. L'éditeur peut modifier, suspendre ou arrêter Cadence à tout moment, sans préavis ni indemnité. L'éditeur s'efforce de maintenir le service disponible mais n'en garantit pas une disponibilité continue.</p>
 <h3>3. Âge</h3><p>Cadence s'adresse aux personnes de 15 ans et plus. Avant 15 ans, son utilisation demande l'accord d'un parent. La reconnaissance des repas par photo est réservée aux personnes de 18 ans et plus, comme l'exigent les conditions de l'API Gemini de Google.</p>
-<h3>4. Tes données</h3><p>Tout ce que tu saisis est enregistré uniquement dans le stockage de ton navigateur, sur ton appareil. L'éditeur n'y a pas accès et ne peut pas les récupérer pour toi. Si tu supprimes l'application, effaces les données de ton navigateur ou changes d'appareil, elles sont perdues, sauf si tu as copié une sauvegarde. Tu es responsable de tes sauvegardes.</p>
-<h3>5. Services tiers</h3><p>Le scan de code-barres interroge Open Food Facts, une base de données collaborative : les informations peuvent être incomplètes ou fausses, l'étiquette du produit fait foi.</p><p>La reconnaissance par photo utilise l'API Gemini de Google avec une clé personnelle que tu crées toi-même, gratuitement, sur Google AI Studio. Tu acceptes alors les conditions de Google, tu es seul responsable de ta clé et de son usage, et tu ne dois pas la partager. N'envoie pas de photos montrant des personnes ou des informations personnelles.</p><p>L'éditeur ne contrôle pas ces services et ne garantit ni leur disponibilité ni leurs résultats.</p>
+<h3>4. Tes données</h3><p>Tes données de suivi (agenda, tâches, séances, repas, poids, sorties importées) sont enregistrées uniquement dans le stockage de ton navigateur, sur ton appareil. L'éditeur n'y a pas accès et ne peut pas les récupérer pour toi. Si tu supprimes l'application, effaces les données de ton navigateur ou changes d'appareil, elles sont perdues, sauf si tu as copié une sauvegarde. Tu es responsable de tes sauvegardes.</p>
+<h3>5. Services tiers</h3><p>Le scan de code-barres interroge Open Food Facts, une base de données collaborative : les informations peuvent être incomplètes ou fausses, l'étiquette du produit fait foi.</p><p>La reconnaissance par photo utilise l'API Gemini de Google avec une clé personnelle que tu crées toi-même, gratuitement, sur Google AI Studio. Tu acceptes alors les conditions de Google, tu es seul responsable de ta clé et de son usage, et tu ne dois pas la partager. N'envoie pas de photos montrant des personnes ou des informations personnelles.</p><p>Si tu connectes Strava ou Intervals.icu (réservé à Cadence + Coach), Cadence lit tes activités en lecture seule pour adapter les séances. Tu acceptes les conditions de ces services, tu peux révoquer l'accès à tout moment, et ces données ne servent à aucun autre usage. Une clé Intervals.icu reste sur ton appareil et ne doit pas être partagée.</p><p>L'éditeur ne contrôle pas ces services et ne garantit ni leur disponibilité ni leurs résultats.</p>
 <h3>6. Avertissement santé</h3><p>Cadence donne des estimations générales : formule de Mifflin-St Jeor pour la dépense énergétique, valeurs nutritionnelles moyennes, estimations par intelligence artificielle qui peuvent être fausses. Cadence n'est pas un dispositif médical et ne remplace pas l'avis d'un médecin ou d'un diététicien.</p><p>Avant de modifier fortement ton alimentation ou ton activité physique, parles-en à un professionnel de santé, en particulier si tu as une maladie, si tu es enceinte ou allaites, si tu as moins de 18 ans, ou si tu as ou as eu des troubles du comportement alimentaire. Si compter les calories devient une source d'angoisse ou d'obsession, arrête d'utiliser ces fonctions et parles-en à ton médecin.</p>
 <h3>7. Rappels</h3><p>Les rappels dépendent de ton appareil et de ton navigateur. Ils peuvent ne pas se déclencher, par exemple quand l'application est fermée ou que les notifications sont désactivées. Ne t'y fie pas pour des échéances importantes comme un traitement médical, un examen ou un rendez-vous.</p>
 <h3>8. Responsabilité</h3><p>Cadence est fournie telle quelle. Dans les limites prévues par la loi, l'éditeur n'est pas responsable des pertes de données, des erreurs de calcul ou d'estimation, ni des conséquences de leur utilisation.</p>
-<h3>9. Utilisation interdite</h3><p>Tu t'engages à ne pas perturber le fonctionnement de Cadence, à ne pas la revendre ni la republier sous ton nom, et à ne pas l'utiliser pour un usage illégal.</p>
+<h3>9. Utilisation interdite</h3><p>Tu t'engages à ne pas perturber le fonctionnement de Cadence, à ne pas la revendre ni la republier sous ton nom, à ne pas partager ton abonnement avec d'autres personnes, et à ne pas l'utiliser pour un usage illégal.</p>
 <h3>10. Propriété intellectuelle</h3><p>Voir les mentions légales.</p>
 <h3>11. Modifications</h3><p>Ces conditions peuvent évoluer. La nouvelle version s'affiche au lancement suivant et doit être acceptée pour continuer à utiliser Cadence.</p>
 <h3>12. Droit applicable et contact</h3><p>Ces conditions sont soumises au droit français. En cas de désaccord, écris d'abord à ${m} pour chercher une solution amiable. À défaut, les tribunaux français seront compétents.</p>`},
   conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
-<h3>En résumé</h3><p>Cadence ne collecte aucune donnée personnelle sur un serveur de l'éditeur. Il n'y a ni compte, ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
+<h3>En résumé</h3><p>Tes données de santé et de suivi (poids, repas, séances, sorties) restent sur ton appareil. Le serveur de l'éditeur ne garde que ce qui est nécessaire à l'abonnement et aux rappels, décrit ci-dessous. Il n'y a ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
 <h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, tes séances de sport, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, ta clé Gemini si tu en ajoutes une, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Réglages (icône en haut à gauche), puis « Effacer les données de ce profil », ou en supprimant l'application. Si plusieurs profils existent sur l'appareil, chacun a ses données, son code et sa clé séparés.</p>
+<h3>Ce que garde le serveur de Cadence</h3><ul>
+<li><b>Abonnement</b> : ton adresse e-mail, ton identifiant client Stripe, ta formule et l'état de ton abonnement (base légale : exécution du contrat), conservés tant que l'abonnement existe, puis le temps de nos obligations comptables.</li>
+<li><b>Rappels push</b> (si tu les actives) : l'adresse d'envoi de ton navigateur, et l'heure et l'intitulé de tes rappels, supprimés quand tu désactives les notifications.</li>
+<li><b>Strava</b> (si tu le connectes, Cadence + Coach) : un jeton d'accès en lecture seule. Tes activités sont lues puis gardées sur ton appareil, pas sur le serveur. Tu peux déconnecter Strava dans Mon compte.</li>
+<li><b>Intervals.icu</b> (si tu le connectes) : ta clé reste sur ton appareil. Elle transite par le serveur le temps de la requête, sans être enregistrée.</li>
+<li><b>Photos de repas</b> sans clé personnelle : la photo transite par le serveur vers Google, sans être conservée.</li></ul>
 <h3>Ce qui est envoyé à d'autres services</h3><ul>
+<li><b>Stripe</b> (paiement) : ton e-mail et ton moyen de paiement, traités par Stripe selon sa politique. L'éditeur ne voit pas ta carte.</li>
+<li><b>Cloudflare</b> : héberge le serveur d'abonnements et voit ton adresse IP.</li>
 <li><b>Hébergeur du site</b> : quand tu ouvres ou mets à jour Cadence, ton adresse IP et des informations techniques peuvent être enregistrées dans les journaux de l'hébergeur, selon sa propre politique.</li>
 <li><b>Open Food Facts</b> (association française) : seulement quand tu cherches un produit, le code-barres et ton adresse IP. Rien d'autre.</li>
 <li><b>Google, API Gemini</b> : seulement quand tu analyses une photo, la photo réduite, ta clé et ton adresse IP. Google traite ces données selon les conditions de l'API Gemini et sa politique de confidentialité, que tu acceptes en créant ta clé, et peut les traiter en dehors de l'Union européenne. Selon ces conditions, les contenus envoyés avec une clé gratuite peuvent servir à améliorer les services de Google : vérifie les conditions en vigueur et n'envoie pas de photos montrant des personnes ou des informations personnelles. Cadence ne garde pas la photo.</li>
 <li><b>jsDelivr</b> : la première fois que tu scannes un code-barres, la bibliothèque de lecture est téléchargée depuis cdn.jsdelivr.net, qui voit ton adresse IP.</li></ul>
-<h3>Responsable</h3><p>${n} édite Cadence mais ne reçoit et ne conserve aucune de tes données. Pour les envois décrits ci-dessus, chaque service est responsable du traitement qu'il effectue.</p>
-<h3>Tes droits</h3><p>Le RGPD te donne des droits d'accès, de rectification, d'effacement et d'opposition. Comme tes données restent sur ton appareil, tu les exerces directement dans Cadence. Pour les données envoyées à Open Food Facts ou à Google, adresse-toi à eux. Pour toute question : ${m}. Tu peux aussi saisir la CNIL (cnil.fr).</p>`}
+<h3>Responsable</h3><p>${n} est responsable du traitement de ton adresse e-mail et des données d'abonnement. Ton suivi sportif et alimentaire reste sur ton appareil, hors de portée de l'éditeur. Pour les envois décrits ci-dessus, chaque service est responsable du traitement qu'il effectue. Des transferts hors de l'Union européenne (États-Unis) peuvent avoir lieu vers Cloudflare, Google et Stripe, encadrés par leurs engagements contractuels.</p>
+<h3>Tes droits</h3><p>Le RGPD te donne des droits d'accès, de rectification, d'effacement et d'opposition. Tes données de suivi restent sur ton appareil : tu les exerces directement dans Cadence. Pour ton e-mail et ton abonnement, écris à l'adresse de contact ci-dessous, la suppression est faite sur demande. Pour les données envoyées à Open Food Facts ou à Google, adresse-toi à eux. Pour toute question : ${m}. Tu peux aussi saisir la CNIL (cnil.fr).</p>`}
 };
 function renderLegal(){
   const d=LEGAL[V.doc]?V.doc:'cgu';
@@ -3532,7 +3557,7 @@ const fmtPace=sec=>{sec=Math.round(sec);return Math.floor(sec/60)+':'+String(sec
 const fmtDur=m=>m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'):m+' min';
 function stravaOn(){return !!(S.strava&&S.strava.sk)}
 function stravaStats(){
-  const src=(stravaOn()&&Array.isArray(S.strava.acts)?S.strava.acts:[]).concat(Array.isArray(S.acts)?S.acts:[]);if(!src.length||!coachUnlocked())return null;
+  const src=(stravaOn()&&Array.isArray(S.strava.acts)?S.strava.acts:[]).concat(icuOn()&&Array.isArray(S.icu.acts)?S.icu.acts:[],Array.isArray(S.acts)?S.acts:[]);if(!src.length||!coachUnlocked())return null;
   const now=Date.now(),A=src.map(a=>Object.assign({k:actKind(a.t),dt:(now-Date.parse(a.d))/864e5},a)).filter(a=>a.k&&a.dt>=0);
   const last7=A.filter(a=>a.dt<=7).reduce((x,a)=>x+a.min,0),prev=A.filter(a=>a.dt>7&&a.dt<=28).reduce((x,a)=>x+a.min,0)/3;
   const best=(k,lo,hi,mk)=>A.filter(a=>a.k===k&&a.dt<=42&&a.min>=lo&&a.min<=hi&&a.km>=mk).reduce((b,a)=>{const sp=a.min*60/a.km;return !b||sp<b?sp:b},0);
@@ -3566,7 +3591,19 @@ function stravaBoot(){
     if(r){history.replaceState(null,'',location.pathname);
       if(r==='ok'&&q.get('sk')){S.strava={sk:q.get('sk'),acts:[],at:0};touch();V.tab='coach';render();toast('Strava connecté');stravaSync(true).then(ok=>{render();if(ok)toast('Activités récupérées')});return}
       toast('Connexion Strava impossible. Réessaie plus tard.')}}catch(e){}
-  stravaSync(false).then(ok=>{if(ok&&V.tab==='coach')render()});
+  stravaSync(false).then(ok=>{if(ok&&V.tab==='coach')render()});icuSync(false).then(ok=>{if(ok&&V.tab==='coach')render()});
+}
+function icuOn(){return !!(S.icu&&S.icu.key)}
+async function icuSync(force){
+  const c=S.icu,l=licenseGet();if(!icuOn()||!coachUnlocked())return false;
+  if(!force&&c.at&&Date.now()-c.at<30*6e4)return false;
+  try{
+    const r=await fetch(WORKER_URL+'/icu/activities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:c.key,email:l&&l.email||''})});
+    if(r.status===401){c.bad=true;touch();return false}
+    if(!r.ok)return false;
+    const d=await r.json();if(!Array.isArray(d.acts))return false;
+    c.acts=d.acts;c.at=Date.now();c.bad=false;touch();return true;
+  }catch(e){return false}
 }
 function actAdd(a){
   S.acts=Array.isArray(S.acts)?S.acts:[];
@@ -3604,9 +3641,10 @@ function stravaCard(){
   if(!coachUnlocked())return '';
   const x=stravaStats(),on=stravaOn();
   const form=V.actForm?'<div class="actf"><select id="act-t"><option value="Run">Course à pied</option><option value="Ride">Vélo</option><option value="Swim">Natation</option></select><div class="r2"><label><span class="lab">Distance (km)</span><input type="number" id="act-km" inputmode="decimal" step="0.1" min="0"></label><label><span class="lab">Durée (min)</span><input type="number" id="act-min" inputmode="numeric" min="1"></label></div><label><span class="lab">Jour</span><input type="date" id="act-d" max="'+todayISO+'" value="'+todayISO+'"></label><div class="row" style="justify-content:flex-start;gap:8px;margin-top:8px"><button type="button" class="primary" data-act="actsave">Ajouter</button><button type="button" class="linkbtn" data-act="actform">Annuler</button></div></div>':'';
-  const btns=V.actForm?'':'<div class="row" style="justify-content:flex-start;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="ghost" data-act="actform">Ajouter une sortie</button><button type="button" class="ghost" data-act="actfile">Importer un fichier</button>'+(on?'<button type="button" class="linkbtn" data-act="stravasync">Actualiser Strava</button>':'')+'</div>';
+  const icuForm=V.icuForm?'<div class="actf"><p class="note"><b>Garmin, gratuit, en 2 minutes</b><br>1. Crée un compte gratuit sur intervals.icu.<br>2. Dans Réglages › Connexions, relie ton compte Garmin (tes sorties arrivent toutes seules).<br>3. Tout en bas de Réglages, copie ta « clé API » et colle-la ici.</p><input type="password" id="icu-key" autocomplete="off" placeholder="Clé API intervals.icu" value="'+esc(icuOn()?S.icu.key:'')+'"><div class="row" style="justify-content:flex-start;gap:8px"><button type="button" class="primary" data-act="icusave">Connecter</button><button type="button" class="linkbtn" data-act="icuform">Annuler</button></div></div>':'';
+  const btns=V.actForm||V.icuForm?'':'<div class="row" style="justify-content:flex-start;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="ghost" data-act="actform">Ajouter une sortie</button><button type="button" class="ghost" data-act="actfile">Importer un fichier</button><button type="button" class="ghost" data-act="icuform">'+(icuOn()?'Garmin connecté':'Connecter Garmin')+'</button>'+(on?'<button type="button" class="linkbtn" data-act="stravasync">Actualiser Strava</button>':'')+'</div>';
   const sum=x?'<p class="note" style="margin:4px 0 8px">7 derniers jours : '+fmtDur(Math.round(x.last7))+(x.load?' ('+(x.load>=1?'+':'')+Math.round((x.load-1)*100)+' % vs ta moyenne)':'')+(x.runSeuil?' · seuil course ≈ '+fmtPace(x.runSeuil)+' /km':'')+(x.swimSeuil?' · seuil natation ≈ '+fmtPace(x.swimSeuil)+' /100 m':'')+'</p>':'<p class="note" style="margin:4px 0 8px">Ajoute tes sorties de course, vélo ou natation : le coach estime ton allure seuil et adapte la charge de la semaine.</p>';
-  return '<section class="card strv"><div class="row"><b>Mes sorties</b>'+(on?'<span class="note">Strava connecté</span>':'')+'</div>'+sum+(x?actList(x):'')+form+btns
+  return '<section class="card strv"><div class="row"><b>Mes sorties</b>'+(on?'<span class="note">Strava connecté</span>':icuOn()?'<span class="note">'+(S.icu.bad?'Clé à vérifier':'Garmin connecté')+'</span>':'')+'</div>'+sum+(x?actList(x):'')+form+icuForm+btns
    +'<input type="file" id="act-file" accept=".gpx,.tcx" multiple hidden>'
    +(on?'':'<button type="button" class="linkbtn" data-act="stravaconnect" style="display:block;margin-top:8px">Connecter Strava (avec abonnement Strava)</button>')+'</section>';
 }
@@ -3615,7 +3653,7 @@ function accStrava(){
   const body=!coachUnlocked()?'<p class="note">Avec Cadence + Coach, ajoute tes sorties (à la main ou par fichier GPX/TCX) : le coach estime ton allure seuil et adapte la charge de la semaine.</p><button type="button" class="primary" data-act="cpsale">Découvrir Cadence + Coach</button>'
    :'<p class="note" style="margin-bottom:8px">Ajoute tes sorties sur la page Coach : à la main, ou en important un fichier GPX ou TCX exporté de Garmin Connect ou Strava. Si tu as un abonnement Strava, tu peux aussi le connecter.</p>'
     +'<button type="button" class="ghost" data-act="actgo">Aller à mes sorties</button>'
-    +(on?' <button type="button" class="linkbtn" data-act="stravaoff">Déconnecter Strava</button>':'');
+    +(on?' <button type="button" class="linkbtn" data-act="stravaoff">Déconnecter Strava</button>':'')+(icuOn()?' <button type="button" class="linkbtn" data-act="icuoff">Déconnecter Garmin</button>':'');
   return acc('strava','strava','Mes sorties',n?n+' sortie'+(n>1?'s':'')+(on?' · Strava connecté':''):'Aucune sortie',body);
 }
 function evScale(s,n){
@@ -3958,8 +3996,8 @@ function maybeOnb(){if(!coachActive())return;if(!S.tuto||!S.setup||!$('#setup').
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
 function coachSaleCTA(){return licensePlan()==='base'
-  ?'<button type="button" class="primary big" data-act="planchange" data-plan="coach" style="width:100%">Passer à Cadence + Coach</button><p class="note cs-fine">Tu paies seulement la différence, au prorata du mois en cours.</p>'
-  :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach · '+PRICE_COACH+' / mois</button><p class="note cs-fine">Sans engagement, résiliable à tout moment.</p>'}
+  ?'<button type="button" class="primary big" data-act="planchange" data-plan="coach" style="width:100%">Passer à Cadence + Coach</button><p class="note cs-fine">Tu paies seulement la différence, au prorata du mois en cours. En continuant, tu demandes l\'accès immédiat et renonces à ton droit de rétractation (conditions de vente).</p>'
+  :'<button type="button" class="primary big" data-act="cpsub" style="width:100%">Débloquer le coach · '+PRICE_COACH+' / mois</button><p class="note cs-fine">Sans engagement, résiliable à tout moment. En continuant, tu demandes l\'accès immédiat et renonces à ton droit de rétractation (conditions de vente).</p>'}
 function openCoachSale(){
   $('#ss-head').textContent='Cadence + Coach';
   $('#ss-sub').textContent=PRICE_COACH+' / mois · sans engagement';
@@ -3983,7 +4021,7 @@ function renderCoachPreview(){
    +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:12px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
 }
-const COACH_LOCKED_ACTS=['actform','actfile','actsave','stravaconnect','stravasync','cstyletxt','cevent','cevdel','evopen','cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
+const COACH_LOCKED_ACTS=['icuform','icusave','actform','actfile','actsave','stravaconnect','stravasync','cstyletxt','cevent','cevdel','evopen','cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
 function coachPaywallNudge(){openCoachSale()}
 function renderCoach(){
   if(!coachUnlocked())return renderCoachPreview();
@@ -4368,6 +4406,9 @@ document.addEventListener('click',e=>{
     render();window.scrollTo({top:0,behavior:'smooth'});
   }
   else if(a==='actgo'){V.tab='coach';render();window.scrollTo(0,0)}
+  else if(a==='icuform'){V.icuForm=!V.icuForm;V.actForm=false;render()}
+  else if(a==='icusave'){const k=($('#icu-key').value||'').trim();if(k.length<8){toast('Colle ta clé API intervals.icu.');return}S.icu={key:k,acts:[],at:0};V.icuForm=false;touch();render();toast('Vérification…');icuSync(true).then(ok=>{render();toast(ok?'Garmin connecté':'Clé refusée ou service indisponible')})}
+  else if(a==='icuoff'){delete S.icu;touch();render();toast('Garmin déconnecté')}
   else if(a==='actform'){V.actForm=!V.actForm;render()}
   else if(a==='actfile'){const f=$('#act-file');if(f)f.click()}
   else if(a==='actsave'){const km=parseFloat($('#act-km').value)||0,min=parseInt($('#act-min').value,10),d=$('#act-d').value||todayISO;
@@ -4499,6 +4540,7 @@ document.addEventListener('click',e=>{
     const email=($('#lic-email').value||'').trim().toLowerCase();
     const msg=$('#lic-msg');
     if(!email){msg.textContent="Entre ton email avant de t'abonner.";return}
+    if(!$('#lic-waiver').checked){msg.textContent="Coche la case sur l'accès immédiat et le droit de rétractation pour continuer.";return}
     rememberCheckout(email,b.dataset.plan==='coach'?'coach':'base');
     location.href=WORKER_URL+'/checkout?plan='+(b.dataset.plan==='coach'?'coach':'base')+'&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }

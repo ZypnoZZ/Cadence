@@ -9,6 +9,7 @@
 // Et une liaison KV (Settings > Bindings > KV Namespace) nommée : LICENSES
 // Notifications push : ajoute un déclencheur Cron (Settings > Triggers > Cron) : */5 * * * *
 //   (les clés VAPID sont créées automatiquement et gardées dans LICENSES ; VAPID_SUBJECT facultatif)
+//   STRIPE_TERMS           (facultatif) mettre 1 une fois l'adresse des conditions saisie dans Stripe (Paramètres > Informations publiques)
 //   STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET  (facultatif) identifiants de l'application créée sur strava.com/settings/api
 //     (domaine de rappel : le domaine de ce worker, sans https://)
 // Changement de formule : dans Stripe, portail client > autoriser le changement d'abonnement entre les deux prix.
@@ -277,6 +278,28 @@ export default {
 
     if (url.pathname.startsWith('/strava/')) return stravaRoutes(request, env, url);
 
+    // POST /icu/activities {key, email} : relaie la lecture des activités Intervals.icu (clé jamais enregistrée)
+    if (url.pathname === '/icu/activities' && request.method === 'POST') {
+      let b = {}; try { b = await request.json(); } catch (e) {}
+      const key = String(b.key || '').trim(), email = String(b.email || '').trim().toLowerCase();
+      if (!key) return json({ error: 'clé manquante' }, 400);
+      const lic = email && await env.LICENSES.get('lic:' + email, { type: 'json' });
+      if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
+      const day = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+      try {
+        const r = await fetch('https://intervals.icu/api/v1/athlete/0/activities?oldest=' + day(56) + '&newest=' + day(-1), { headers: { Authorization: 'Basic ' + btoa('API_KEY:' + key) } });
+        if (r.status === 401 || r.status === 403) return json({ error: 'clé refusée' }, 401);
+        if (!r.ok) return json({ error: 'intervals indisponible' }, 502);
+        const list = await r.json();
+        const acts = (Array.isArray(list) ? list : []).filter(a => SKIND(a.type || '')).map(a => ({
+          t: a.type, d: a.start_date_local, km: Math.round((a.distance || 0) / 10) / 100, min: Math.round((a.moving_time || a.elapsed_time || 0) / 60),
+          hr: a.average_heartrate ? Math.round(a.average_heartrate) : null, w: a.icu_average_watts ? Math.round(a.icu_average_watts) : null,
+          up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60)
+        })).filter(a => a.d && a.min > 0);
+        return json({ acts });
+      } catch (e) { return json({ error: 'intervals indisponible' }, 502); }
+    }
+
     if (url.pathname.startsWith('/push/')) {
       const r = await pushRoutes(request, env, url);
       if (r) return r;
@@ -321,6 +344,8 @@ export default {
           'subscription_data[metadata][plan]': plan,
           'line_items[0][price]': plan === 'coach' ? env.STRIPE_PRICE_COACH : env.STRIPE_PRICE_ID,
           'line_items[0][quantity]': '1',
+          'custom_text[submit][message]': 'En validant, tu demandes l\'accès immédiat à Cadence et tu reconnais perdre ton droit de rétractation de 14 jours une fois le service commencé (conditions de vente de l\'application).',
+          ...(env.STRIPE_TERMS ? { 'consent_collection[terms_of_service]': 'required' } : {}),
           success_url: appUrl + '?lic=ok',
           cancel_url: appUrl + '?lic=cancel'
         });
