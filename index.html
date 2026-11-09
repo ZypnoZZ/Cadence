@@ -168,10 +168,10 @@ p{margin:0}
 .tag{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
 .type{font-size:12px;color:var(--muted)}
 .item .m.sub{opacity:.85}
-.group-h{font-family:var(--font-display);font-size:18px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.group-h{font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 .group-h.late{color:var(--d-late)}
 .group-h.today{color:var(--d-today)}
-.empty{border:1px dashed var(--line);border-radius:8px;padding:16px;color:var(--muted);text-align:center}
+.empty{padding:6px 2px;color:var(--muted);font-size:14px}
 details summary{cursor:pointer;font-weight:600;color:var(--muted);margin:18px 0 8px}
 
 /* Formulaires */
@@ -327,7 +327,6 @@ label.ghost{color:var(--ink);font-weight:600}
 .pad .del{font-size:24px;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 .pad .del.press{background:rgba(255,255,255,.12)}
 @media (prefers-reduced-motion:no-preference){
-  .shake{animation:shake .4s}
   .lock.enter .logo{animation:pop .6s cubic-bezier(.2,1.5,.4,1) both}
   .lock.enter h2{animation:up .45s .08s ease both}
   .lock.enter .lock-hello,.lock.enter #lock-msg{animation:up .45s .14s ease both}
@@ -339,6 +338,11 @@ label.ghost{color:var(--ink);font-weight:600}
   .splash small{animation:up .5s .45s ease both}
   .splash.out{animation:out .4s ease forwards}
 }
+#lock .pdots.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)!important}
+#lock .pdots.shake i{animation:jig .12s linear 4 alternate}
+#lock .pdots.shake i:nth-child(even){animation-direction:alternate-reverse}
+@keyframes jig{from{transform:translateY(-2px) scale(1.18)}to{transform:translateY(2px) scale(1.18)}}
+.hap{position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none}
 @keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
 @keyframes pop{from{opacity:0;transform:scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -469,6 +473,7 @@ label.ghost{color:var(--ink);font-weight:600}
 </div>
 
 <div id="splash" class="splash" hidden><div class="aur" aria-hidden="true"></div><div class="logo" style="position:relative"><svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round"><path d="M29.5 12A12 12 0 1 0 29.5 28"/><circle cx="30.5" cy="20" r="2.8" fill="#fff" stroke="none"/></svg></div><b style="position:relative">Cadence</b><small style="position:relative">Sport · Tâches · Nutrition</small></div>
+<label class="hap" id="hap" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 <div id="lock" class="lock" hidden>
   <div class="aur" aria-hidden="true"></div>
   <div class="lock-in">
@@ -645,7 +650,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 14';
+const APP_VERSION='2026.11.09 · 15';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.TON-COMPTE.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -884,11 +889,10 @@ function renderColors(){
 function itemHTML(it,showDate){
   const dc=DATE_C[dateState(it)];
   const when=[showDate?esc(dateLabel(it)):'',it.time?esc(it.time):''].filter(Boolean).join(' · ');
-  const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':'','<span class="type">'+esc(TYPES[it.type].label)+'</span>'].filter(Boolean);
+  const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':''].filter(Boolean);
   const extra=[];
   if(it.type==='sport'&&it.dur)extra.push(esc(it.dur)+' min');
-  const rl=remindLabel(it);if(rl)extra.push(esc(rl));
-  if(it.ex)extra.push('Exemple');
+
   return '<li class="item'+(it.done?' done':'')+'" style="--c:'+itemColor(it)+'">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
    +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+(it.type==='sport'?' <span class="type">· '+esc(it.sport)+'</span>':'')+'</div>'
@@ -916,31 +920,29 @@ function renderAgenda(){
   const sp=S.items.filter(i=>i.type==='sport'&&i.date>=iso(ws)&&i.date<=iso(we));
   const spDone=sp.filter(i=>i.done).length;
   const dayItems=by[V.sel]||[];
-  const exNote=S.items.some(i=>i.ex)?'<div class="card note" style="margin-top:14px">Les éléments marqués « Exemple » montrent le fonctionnement de l\'agenda. <button type="button" class="linkbtn" data-act="clearex">Effacer les exemples</button></div>':'';
+  const exNote=S.items.some(i=>i.ex)?'<div class="card note" style="margin-top:14px">Des exemples sont affichés pour te montrer l\'agenda. <button type="button" class="linkbtn" data-act="clearex">Effacer les exemples</button></div>':'';
   return '<div class="cal-head"><h2>'+esc(cap(FMT.month.format(m)))+'</h2><div class="cal-nav"><button type="button" data-act="prev" aria-label="Mois précédent">‹</button><button type="button" class="today-btn" data-act="today">Aujourd\'hui</button><button type="button" data-act="next" aria-label="Mois suivant">›</button></div></div>'
    +'<div class="wd" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>'
    +'<div class="grid">'+cells+'</div>'
-   +'<div class="legend">'+Object.keys(TYPES).map(k=>'<span><i style="background:var('+TYPES[k].c+')"></i>'+TYPES[k].label+'</span>').join('')+'</div>'
-   +'<p class="week-line">Cette semaine : <b>'+spDone+'</b> séance'+(spDone>1?'s':'')+' faite'+(spDone>1?'s':'')+' sur <b>'+sp.length+'</b> prévue'+(sp.length>1?'s':'')+'.</p>'
-   +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2><span class="note">'+dayItems.length+' élément'+(dayItems.length>1?'s':'')+'</span></div>'
-   +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu ce jour-là. Touche + pour ajouter une séance, une échéance ou une tâche.</div>')
+   +(sp.length?'<p class="week-line">Séances cette semaine : <b>'+spDone+'/'+sp.length+'</b></p>':'')
+   +'<div class="day-title"><h2>'+esc(cap(FMT.long.format(parseISO(V.sel))))+'</h2></div>'
+   +(dayItems.length?'<ul class="list">'+dayItems.map(i=>itemHTML(i,false)).join('')+'</ul>':'<div class="empty">Rien de prévu.</div>')
    +exNote
-   +'<p class="note" style="margin-top:14px">Les rappels s\'affichent en haut de l\'écran tant que Cadence est ouverte.</p>'
-   +'<div id="todos" style="margin-top:28px;padding-top:18px;border-top:1px solid var(--line)">'+renderTodos()+'</div>';
+   +'<div id="todos" style="margin-top:24px">'+renderTodos()+'</div>';
 }
 
 function renderTodos(){
-  const open=S.items.filter(i=>i.type!=='sport'&&!i.done).sort(byDT);
+  const open=S.items.filter(i=>i.type!=='sport'&&!i.done&&i.date!==V.sel).sort(byDT);
   const wk=iso(addDays(today,7));
   const groups=[['En retard',i=>i.date<todayISO,'late'],["Aujourd'hui",i=>i.date===todayISO,'today'],['Cette semaine',i=>i.date>todayISO&&i.date<=wk,''],['Plus tard',i=>i.date>wk,'']];
-  let html='<h2 style="font-size:30px;margin-bottom:4px">À faire</h2><p class="note">Tâches et échéances importantes, classées par date. Les séances de sport restent dans le calendrier.</p>';
+  let html='<h2 style="font-size:24px;margin-bottom:2px">À faire</h2>';
   let any=false;
   for(const [label,fn,cls] of groups){
     const l=open.filter(fn);if(!l.length)continue;any=true;
     const showDate=label!=="Aujourd'hui";
     html+='<h3 class="group-h '+cls+'">'+label+' · '+l.length+'</h3><ul class="list">'+l.map(i=>itemHTML(i,showDate)).join('')+'</ul>';
   }
-  if(!any)html+='<div class="empty" style="margin-top:16px">Tout est fait. Touche + pour ajouter une tâche.</div>';
+  if(!any)html+='<div class="empty">Rien à faire.</div>';
   const done=S.items.filter(i=>i.type!=='sport'&&i.done).sort(byDT).reverse().slice(0,12);
   if(done.length)html+='<details><summary>Terminées ('+done.length+')</summary><ul class="list">'+done.map(i=>itemHTML(i,true)).join('')+'</ul></details>';
   return html;
@@ -1710,6 +1712,11 @@ function lockTry(){try{return JSON.parse(localStorage.getItem(LS_LOCKTRY)||'null
 function saveTry(t){try{localStorage.setItem(LS_LOCKTRY,JSON.stringify(t))}catch(e){}}
 async function pinHash(code,salt){const d=new TextEncoder().encode(salt+':'+code);const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function drawDots(){const c=lockCfg();if(!c)return;const el=$('#lock-dots');if(el.children.length!==c.len)el.innerHTML='<i></i>'.repeat(c.len);for(let i=0;i<el.children.length;i++)el.children[i].classList.toggle('on',i<L.entry.length)}
+function haptic(n){
+  try{if(navigator.vibrate&&navigator.vibrate(n>1?[60,50,60,50,60].slice(0,2*n-1):15))return}catch(e){}
+  const l=$('#hap');if(!l)return;
+  for(let i=0;i<(n||1);i++)setTimeout(()=>{try{l.click()}catch(e){}},i*110);
+}
 function lockGreet(){const h=new Date().getHours();return h<5?'Bonne nuit':h<18?'Bonjour':'Bonsoir'}
 function playLockEnter(){const l=$('#lock');if(l.hidden||!$('#splash').hidden)return;l.classList.remove('enter','out');void l.offsetWidth;l.classList.add('enter')}
 function runSplash(){
@@ -1752,7 +1759,7 @@ async function pinKey(d){
   saveTry(t);
   const dots=$('#lock-dots');dots.classList.add('shake','bad');
   for(const d of dots.children)d.classList.add('on');
-  try{navigator.vibrate&&navigator.vibrate(80)}catch(e){}
+  haptic(3);
   setTimeout(()=>{dots.classList.remove('shake','bad');drawDots()},420);
   setLockMsg('Code incorrect');
 }
@@ -2147,7 +2154,7 @@ if(IS_PWA){
     const pad=$('#lock .pad');
     pad.addEventListener('pointerdown',e=>{
       const b=e.target.closest('button[data-d]');if(!b)return;
-      L.pd=Date.now();b.classList.add('press');setTimeout(()=>b.classList.remove('press'),110);
+      L.pd=Date.now();haptic(1);b.classList.add('press');setTimeout(()=>b.classList.remove('press'),110);
       pinKey(b.dataset.d);
     });
     document.addEventListener('keydown',e=>{
