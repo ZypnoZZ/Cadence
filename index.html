@@ -657,6 +657,101 @@ label.ghost{color:var(--ink);font-weight:600}
 .abo-st small{color:var(--muted);font-size:12.5px}
 .abo-st.off b{color:var(--danger,#d33)}
 .danger-t{color:var(--danger,#d33)!important}
+
+/* ----- Messages d'abonnement ----- */
+.pscrim{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:24px;background:rgba(10,16,22,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pscrim[hidden],.celeb[hidden],.tuto[hidden]{display:none}
+.pcard{width:min(360px,100%);background:var(--surface);border-radius:28px;padding:28px 22px 20px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pcin .4s cubic-bezier(.2,1.25,.4,1)}
+@keyframes pcin{from{transform:translateY(24px) scale(.92);opacity:0}}
+.pcard h2{font-size:23px;margin:0 0 6px}
+.pcard p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
+.pic{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;margin:0 auto 16px;--t:#10b981;background:color-mix(in srgb,var(--t) 16%,transparent);color:var(--t)}
+.pic.pt-ok{--t:#10b981}.pic.pt-warn{--t:#f59e0b}.pic.pt-end{--t:#ef4444}.pic.pt-info{--t:var(--accent)}
+.pic svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;animation:picpop .5s .1s cubic-bezier(.3,1.6,.5,1) both}
+.pic.draw path{stroke-dasharray:1;stroke-dashoffset:1;animation:picdraw .5s .3s ease forwards}
+.pic.spin i{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes picpop{from{transform:scale(.3);opacity:0}}
+@keyframes picdraw{to{stroke-dashoffset:0}}
+.pcount{margin:18px 0 0;padding:16px 14px 14px;border-radius:20px;background:var(--soft)}
+.pc-n{font-family:var(--font-display);font-size:56px;font-weight:800;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.pc-l{font-size:14px;font-weight:700;color:var(--muted);margin:4px 0 12px}
+.pc-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.pc-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f59e0b,#ef4444);animation:pcbar .9s .2s ease both}
+@keyframes pcbar{from{width:0!important}}
+.pcount small{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+.cdbar{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:10px 14px;border-radius:14px;border:1px solid color-mix(in srgb,#f59e0b 45%,transparent);background:color-mix(in srgb,#f59e0b 12%,var(--surface));color:var(--ink);font:inherit;font-size:14px;text-align:left}
+.cdbar b{font-weight:700}
+.cdbar .go{margin-left:auto;color:var(--muted)}
+.cdring{--p:60;width:128px;height:128px;border-radius:50%;margin:6px auto 10px;display:grid;place-items:center;background:conic-gradient(#f59e0b calc(var(--p)*1%),var(--line) 0)}
+.cdring>div{width:104px;height:104px;border-radius:50%;background:var(--surface);display:grid;place-items:center;align-content:center}
+.cdring b{font-family:var(--font-display);font-size:38px;line-height:1}
+.cdring span{font-size:12px;color:var(--muted);font-weight:700}
+/* ----- Animation Coach débloqué ----- */
+.celeb{position:fixed;inset:0;z-index:97;display:grid;place-items:center;padding:24px;background:radial-gradient(120% 90% at 50% 20%,color-mix(in srgb,var(--accent) 28%,var(--bg)),var(--bg));animation:clbg .4s ease}
+@keyframes clbg{from{opacity:0}}
+.cl-wrap{width:min(380px,100%);text-align:center}
+.cl-t{font-size:30px;margin:26px 0 6px;animation:clfade .5s 1.7s both}
+.cl-s{color:var(--muted);font-size:15px;line-height:1.45;margin:0 auto;max-width:300px;animation:clfade .5s 1.85s both}
+.cl-go{width:100%;margin-top:26px;animation:clfade .5s 2.1s both}
+@keyframes clfade{from{opacity:0;transform:translateY(10px)}}
+.cl-bar{display:flex;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:12px 6px 8px;box-shadow:0 18px 40px rgba(0,0,0,.18);animation:clbar .5s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes clbar{from{transform:translateY(30px) scale(.94);opacity:0}}
+.cl-slot{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:600;color:var(--muted);overflow:visible}
+.cl-slot svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cl-out{animation:clout .7s .7s cubic-bezier(.5,0,.3,1) forwards}
+@keyframes clout{to{flex-grow:.0001;opacity:0;transform:scale(.3);margin:0}}
+.cl-in{flex-grow:.0001;opacity:0;transform:scale(.3);animation:clin .8s .7s cubic-bezier(.3,1.3,.4,1) forwards;position:relative}
+@keyframes clin{to{flex-grow:1;opacity:1;transform:none}}
+.cl-bub{position:relative;display:grid;place-items:center;width:46px;height:46px;margin-top:-26px;border-radius:50%;background:var(--grad);border:3px solid var(--surface);box-shadow:0 8px 20px var(--glow);animation:cldrop .9s 1s cubic-bezier(.25,1.5,.5,1) both}
+.cl-bub svg{stroke:#fff;width:22px;height:22px}
+@keyframes cldrop{0%{transform:translateY(-190px) scale(1.7) rotate(-25deg);opacity:0}25%{opacity:1}100%{transform:none}}
+.cl-in>span:last-child{color:var(--accent);animation:clfade .4s 1.7s both}
+.cl-sp{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.cl-sp i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0;animation:clsp .8s 1.75s ease-out both}
+.cl-sp i:nth-child(odd){background:#f59e0b;width:5px;height:5px}
+@keyframes clsp{0%{opacity:1;transform:rotate(var(--a)) translateY(0)}100%{opacity:0;transform:rotate(var(--a)) translateY(-62px)}}
+.cl-un{position:relative;width:200px;height:200px;margin:0 auto}
+.cl-rings i{position:absolute;inset:50px;border-radius:50%;border:2px solid var(--accent);opacity:0;animation:clring 1.4s 1.3s ease-out both}
+.cl-rings i:nth-child(2){animation-delay:1.55s}.cl-rings i:nth-child(3){animation-delay:1.8s}
+@keyframes clring{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(2.1)}}
+.cl-core{position:absolute;inset:48px;border-radius:50%;background:var(--grad);display:grid;place-items:center;box-shadow:0 14px 36px var(--glow);animation:clcore 1s .1s cubic-bezier(.25,1.4,.4,1) both}
+@keyframes clcore{from{transform:scale(.2);opacity:0}}
+.cl-core svg{grid-area:1/1;width:50px;height:50px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.cl-lock{animation:cllock 1.5s .5s ease both}
+.cl-lock .sh{transform-box:fill-box;transform-origin:100% 100%;animation:clsh .7s .95s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes cllock{0%{transform:none}8%{transform:rotate(-10deg)}16%{transform:rotate(9deg)}24%{transform:rotate(-7deg)}32%{transform:rotate(5deg)}40%{transform:none}78%{transform:none;opacity:1}100%{transform:scale(.4);opacity:0}}
+@keyframes clsh{to{transform:translateY(-4px) rotate(-38deg)}}
+.cl-bolt{animation:clbolt .7s 1.55s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes clbolt{from{transform:scale(.2) rotate(-30deg);opacity:0}}
+.cl-un .cl-sp i{animation-delay:1.55s}
+@media (prefers-reduced-motion:reduce){.celeb *,.pcard,.pcard *{animation-duration:.01s!important;animation-delay:0s!important}}
+/* ----- Tutoriel ----- */
+.tuto{display:flex;flex-direction:column;z-index:93}
+.tuto-top{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+.tuto-dots{display:flex;gap:6px}
+.tuto-dots i{width:7px;height:7px;border-radius:99px;background:var(--line);transition:width .3s ease,background .3s ease}
+.tuto-dots i.on{width:22px;background:var(--accent)}
+.tuto-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;padding:10px 0}
+.tuto-hero{position:relative;display:grid;place-items:center;width:132px;height:132px;border-radius:40px;background:var(--grad);box-shadow:0 18px 44px var(--glow)}
+.tuto-hero svg{width:60px;height:60px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tuto-hero.pop{animation:thero .55s cubic-bezier(.3,1.5,.5,1)}
+.tuto-hero::after{content:'';position:absolute;inset:-10px;border-radius:48px;border:2px solid var(--accent);opacity:0;animation:tring 2.2s 0.4s ease-out infinite}
+@keyframes thero{from{transform:scale(.7) rotate(-8deg);opacity:.2}}
+@keyframes tring{0%{opacity:.5;transform:scale(.94)}100%{opacity:0;transform:scale(1.18)}}
+.tmini{display:flex;width:min(360px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px 6px 10px}
+.ms{position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:600;color:var(--muted);opacity:.45;transition:opacity .3s ease,transform .4s cubic-bezier(.3,1.5,.5,1),color .3s ease}
+.ms svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ms.on{opacity:1;color:var(--accent);transform:translateY(-6px) scale(1.15)}
+.ms-bub{display:grid;place-items:center;width:40px;height:40px;margin-top:-18px;border-radius:50%;background:var(--grad);box-shadow:0 6px 14px var(--glow)}
+.ms-bub svg{stroke:#fff;width:20px;height:20px}
+.tuto-text{text-align:center;min-height:178px}
+.tuto-text h2{font-size:28px;margin:0 0 8px}
+.tuto-text p{color:var(--muted);font-size:16px;line-height:1.5;margin:0 auto;max-width:340px}
+.tuto-text .ck{display:flex;gap:10px;align-items:flex-start;text-align:left;margin:14px auto 4px;max-width:340px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:14.5px}
+.tuto-text .tnote{font-size:12.5px;margin-top:2px}
+.tuto-btns{display:flex;gap:10px;padding-top:6px}
+.tuto-btns .primary{flex:1}
+@media (prefers-reduced-motion:reduce){.tuto-hero::after{animation:none}.tuto-hero.pop{animation:none}}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
@@ -789,6 +884,14 @@ label.ghost{color:var(--ink);font-weight:600}
     <label style="margin-top:12px"><span class="lab">Nouveau dossier</span><input type="text" id="mv-new" maxlength="30" placeholder="Ex. Programme été, Jambes, Course…"></label>
     <button type="button" class="primary" data-act="wmvcreate" style="width:100%">Créer le dossier</button>
   </div>
+</div>
+<div id="psheet" class="pscrim" hidden role="dialog" aria-modal="true" aria-live="polite"><div class="pcard" id="pcard"></div></div>
+<div id="celeb" class="celeb" hidden role="dialog" aria-modal="true" aria-label="Coach débloqué"><div class="cl-wrap" id="cl-wrap"></div></div>
+<div id="tuto" class="player tuto" hidden role="dialog" aria-label="Découverte de Cadence">
+  <div class="tuto-top"><div class="tuto-dots" id="tuto-dots"></div><button type="button" class="linkbtn" data-act="tutoskip">Passer</button></div>
+  <div class="tuto-stage"><div class="tuto-hero" id="tuto-hero"></div><nav class="tmini" id="tmini" aria-hidden="true"></nav></div>
+  <div class="tuto-text" id="tuto-text" aria-live="polite"></div>
+  <div class="tuto-btns" id="tuto-btns"></div>
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
 <div id="updsheet" class="scrim upd" hidden>
@@ -1095,7 +1198,7 @@ const EDITEUR={
 };
 /* ===================================================== */
 const CGU_VERSION='2026-11-09';
-const APP_VERSION='2026.11.09 · 44';
+const APP_VERSION='2026.11.09 · 45';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1122,22 +1225,18 @@ const fmtEnd=t=>new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long'}).fo
 async function licenseSync(){
   const l=licenseGet();if(!l||l.type!=='sub'||!l.email)return;
   const key=x=>[!!x.active,x.plan||'base',x.cancelAt||0].join('|'),before=key(l);
-  toast('Mise à jour de ton abonnement…');
-  let d=null;
-  for(let i=0;i<12;i++){
+  pSheet({loading:true,title:'Mise à jour de ton abonnement…',sub:'Stripe confirme ta modification, ça ne prend que quelques secondes.'});
+  let d=null,changed=false;
+  for(let i=0;i<9;i++){
     try{d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json()}catch(e){}
-    if(d&&key(d)!==before)break;
-    await new Promise(r=>setTimeout(r,i<6?1500:3000));
+    if(d&&key(d)!==before){changed=true;break}
+    await sleep(1500);
   }
-  if(!d)return;
+  if(!d){$('#psheet').hidden=true;toast('Impossible de vérifier pour le moment');return}
   licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
   V.lic=false;updateGate();render();
-  const now=licenseGet();
-  if(!licLive(now))toast('Abonnement résilié. Tes données restent sur ce téléphone.');
-  else if(now.cancelAt&&now.cancelAt!==(l.cancelAt||null))toast('Résiliation enregistrée : accès complet jusqu\'au '+fmtEnd(now.cancelAt));
-  else if(!now.cancelAt&&l.cancelAt)toast('Résiliation annulée, ton abonnement continue');
-  else if(now.plan!==(l.plan||'base'))toast(now.plan==='coach'?'Cadence + Coach activé 🎉':'Formule Cadence activée');
-  else toast('Abonnement à jour');
+  if(!changed){$('#psheet').hidden=true;toast('Aucun changement');return}
+  planFeedback(l,licenseGet());
 }
 // Après le paiement Stripe : on vérifie l'abonnement tout seul (le webhook peut mettre quelques secondes).
 async function licenseActivate(){
@@ -1154,7 +1253,7 @@ async function licenseActivate(){
         licenseSet({type:'sub',email:l.email,active:true,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
         $('#license').classList.remove('busy');if(msg)msg.textContent='';V.lic=false;
         updateGate();render();
-        toast(was?(d.plan==='coach'?'Cadence + Coach activé 🎉':'Abonnement mis à jour'):'Bienvenue dans Cadence 🎉');
+        planFeedback(was?l:null,licenseGet());
         return;
       }
     }catch(e){}
@@ -1163,6 +1262,113 @@ async function licenseActivate(){
   $('#license').classList.remove('busy');
   const cur=licenseGet();if(cur){delete cur.pending;licenseSet(cur)}
   if(msg)msg.textContent='Paiement bien reçu, la validation prend un peu plus de temps. Appuie sur « J\'ai déjà un abonnement » dans une minute.';
+}
+
+/* ---------- Messages d'abonnement, compte à rebours, animation Coach ---------- */
+const PS_IC={check:'<path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',lock:'<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'};
+const dLeft=t=>Math.max(0,Math.ceil((t-Date.now())/864e5));
+const dTxt=n=>n<=1?'1 jour restant':n+' jours restants';
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function pSheet(o){
+  const el=$('#psheet');
+  const ic=o.loading?'<span class="pic spin" aria-hidden="true"><i></i></span>':'<span class="pic pt-'+(o.tone||'ok')+(o.icon==='check'?' draw':'')+'" aria-hidden="true"><svg viewBox="0 0 24 24">'+(PS_IC[o.icon]||PS_IC.check)+'</svg></span>';
+  let h=ic+'<h2>'+esc(o.title)+'</h2>'+(o.sub?'<p>'+esc(o.sub)+'</p>':'');
+  if(o.days!=null)h+='<div class="pcount"><div class="pc-n" id="pc-n">0</div><div class="pc-l">'+(o.days>1?'jours restants':'jour restant')+'</div><div class="pc-bar"><i style="width:'+Math.max(4,Math.min(100,o.days/31*100))+'%"></i></div>'+(o.until?'<small>Accès complet jusqu\'au '+esc(o.until)+'</small>':'')+'</div>';
+  if(!o.loading){
+    h+='<button type="button" class="primary" data-act="pclose" style="width:100%;margin-top:18px">'+esc(o.btn||'OK')+'</button>';
+    if(o.link)h+='<button type="button" class="linkbtn" data-act="'+o.link.act+'"'+(o.link.attrs||'')+' style="display:block;margin:10px auto 0">'+esc(o.link.label)+'</button>';
+  }
+  $('#pcard').innerHTML=h;el.hidden=false;
+  if(o.days!=null){const n=$('#pc-n'),t0=performance.now(),step=t=>{const k=Math.min(1,(t-t0)/800);if(n)n.textContent=Math.round(o.days*(1-Math.pow(1-k,3)));if(k<1&&!el.hidden)requestAnimationFrame(step)};requestAnimationFrame(step)}
+}
+function pClose(){$('#psheet').hidden=true;setTimeout(()=>{maybeTuto();maybeOnb()},250)}
+function planFeedback(before,now){
+  const bl=!!(before&&licLive(before)),nl=licLive(now),wasCoach=bl&&before.plan==='coach';
+  if(!nl){if(bl)pSheet({tone:'end',icon:'lock',title:'Abonnement terminé',sub:'Tes données restent sur ce téléphone. Réabonne-toi quand tu veux pour tout retrouver.',btn:'Compris'});else $('#psheet').hidden=true;return}
+  if(now.plan==='coach'&&!wasCoach){$('#psheet').hidden=true;celebrate(prefs().coach===false?'integrate':'unlock');return}
+  if(now.cancelAt&&(!bl||(before.cancelAt||null)!==now.cancelAt)){
+    pSheet({tone:'warn',icon:'clock',title:'Résiliation enregistrée',sub:'Tu gardes tout Cadence jusqu\'à la fin de la période payée. Ensuite, l\'app se verrouille et il faudra te réabonner pour la retrouver.',days:dLeft(now.cancelAt),until:fmtEnd(now.cancelAt),btn:'Compris',link:{label:'Finalement, je garde mon abonnement',act:'licportal',attrs:' data-flow=""'}});return}
+  if(bl&&before.cancelAt&&!now.cancelAt){pSheet({tone:'ok',icon:'undo',title:'Résiliation annulée',sub:'Ton abonnement continue normalement. Rien ne change.',btn:'Super'});return}
+  if(wasCoach&&now.plan==='base'){pSheet({tone:'info',icon:'info',title:'Formule Cadence',sub:'Le coach est mis de côté. Tu peux le reprendre quand tu veux depuis l\'onglet Coach.',btn:'OK'});return}
+  if(!bl){pSheet({tone:'ok',icon:'check',title:'Bienvenue dans Cadence',sub:'Ton abonnement est actif. Tout est prêt !',btn:'C\'est parti'});return}
+  $('#psheet').hidden=true;toast('Abonnement à jour');
+}
+const CL_BOLT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg>';
+const clSparks=()=>'<span class="cl-sp" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<i style="--a:'+(i*30)+'deg"></i>').join('')+'</span>';
+function celebrate(kind){
+  const tabIc=t=>((document.querySelector('.tabs [data-tab="'+t+'"]')||{}).innerHTML||'');
+  const slot=t=>'<div class="cl-slot'+(t==='suivi'?' cl-out':'')+'">'+tabIc(t)+'</div>';
+  let h;
+  if(kind==='integrate'){
+    h='<div class="cl-bar" aria-hidden="true">'+slot('agenda')+slot('seances')+slot('suivi')
+     +'<div class="cl-slot cl-in"><span class="cl-bub">'+CL_BOLT+clSparks()+'</span><span>Coach</span></div>'
+     +slot('journal')+slot('nutrition')+'</div>'
+     +'<h2 class="cl-t">Le coach prend place</h2><p class="cl-s">Il rejoint ta barre, au milieu. Ton suivi reste dans Menu › Mon suivi.</p>';
+  }else{
+    h='<div class="cl-un" aria-hidden="true"><span class="cl-rings"><i></i><i></i><i></i></span><span class="cl-core">'
+     +'<svg class="cl-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+     +'<span class="cl-bolt" style="grid-area:1/1;display:grid">'+CL_BOLT+'</span></span>'+clSparks()+'</div>'
+     +'<h2 class="cl-t">Coach débloqué</h2><p class="cl-s">Ton programme t\'attend. Quelques questions et il se construit autour de toi.</p>';
+  }
+  V.celeb={kind,needOnb:!S.coach||!S.coach.start};
+  $('#cl-wrap').innerHTML=h+'<button type="button" class="primary big cl-go" data-act="celebdone">Découvrir mon coach</button>';
+  $('#celeb').hidden=false;
+  try{setTimeout(()=>haptic(2),1000)}catch(e){}
+}
+function celebDone(){
+  const c=V.celeb||{};$('#celeb').hidden=true;V.celeb=null;
+  if(c.kind==='integrate'){S.prefs=Object.assign(prefs(),{coach:true});touch()}
+  V.tab='coach';render();window.scrollTo(0,0);
+  const b=document.querySelector('.tabs .ctab');if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');setTimeout(()=>b.classList.remove('pop'),700)}
+  if(coachActive()&&(c.needOnb||!S.onb)&&$('#onb').hidden){V.onbShown=true;openOnb()}
+}
+/* ---------- Tutoriel de découverte ---------- */
+const TUTO=[
+  {k:'welcome',t:'Bienvenue dans Cadence',x:'Ton agenda, tes séances de sport et ton alimentation, au même endroit. Un petit tour de 30 secondes pour tout comprendre.'},
+  {k:'agenda',t:'Ton agenda',x:'Note tes rendez-vous, tes tâches et tes séances. Appuie sur « + » pour ajouter, et reçois un rappel au bon moment.'},
+  {k:'seances',t:'Tes séances',x:'Crée tes entraînements, note tes séries et tes charges, puis retrouve ton historique et tes progrès.'},
+  {k:'coach',t:'Ton coach'},
+  {k:'journal',t:'Ton assiette',x:'Ajoute ce que tu manges en quelques secondes, grâce à un catalogue d\'aliments classés par catégories.'},
+  {k:'nutrition',t:'Ta nutrition',x:'Tes objectifs de calories et de macros, des menus, ta liste de courses et ton suivi.'},
+  {k:'menu',t:'Ton menu',x:'Touche la roue en haut à gauche : ton compte, tes profils, ton abonnement, la sauvegarde et le code de verrouillage.'}
+];
+function tutoIcon(k){
+  if(k==='welcome'||k==='coach')return CL_BOLT;
+  if(k==='menu'){const g=document.querySelector('[data-act=dopen] svg');return g?g.outerHTML:''}
+  const g=document.querySelector('.tabs [data-tab="'+k+'"] svg');return g?g.outerHTML:'';
+}
+function maybeTuto(){
+  if(S.tuto||V.tutoShown||V.tuto)return;
+  if(!$('#gate').hidden||!$('#license').hidden||!$('#lock').hidden||!$('#onb').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;
+  if(V.tab==='legal'||licenseExpired())return;
+  V.tutoShown=true;openTuto(false);
+}
+function openTuto(replay){
+  V.tuto={i:0,hide:replay?prefs().coach===false:false};
+  const tabs=['agenda','seances','coach','journal','nutrition'];
+  const src=t=>(document.querySelector('.tabs [data-tab="'+t+'"]')||{}).innerHTML||'';
+  $('#tmini').innerHTML=tabs.map(t=>'<div class="ms" data-t="'+t+'">'+(t==='coach'?'<span class="ms-bub">'+CL_BOLT+'</span>Coach':src(t))+'</div>').join('');
+  $('#tuto').hidden=false;renderTuto(true);
+}
+function renderTuto(first){
+  const T=V.tuto;if(!T)return;
+  const st=TUTO[T.i],last=T.i===TUTO.length-1;
+  $('#tuto-dots').innerHTML=TUTO.map((_,i)=>'<i class="'+(i===T.i?'on':'')+'"></i>').join('');
+  const hero=$('#tuto-hero');hero.innerHTML=tutoIcon(st.k);hero.classList.remove('pop');void hero.offsetWidth;hero.classList.add('pop');
+  document.querySelectorAll('#tmini .ms').forEach(m=>m.classList.toggle('on',m.dataset.t===st.k));
+  let x=st.x;
+  if(st.k==='coach')x=coachUnlocked()?'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il est inclus dans ta formule.':'Il crée un programme de 12 semaines selon ton objectif, ton niveau et ton matériel, puis te guide séance après séance. Il fait partie de la formule Cadence + Coach : sans elle, tu en as un aperçu.';
+  $('#tuto-text').innerHTML='<h2>'+esc(st.t)+'</h2><p>'+esc(x)+'</p>'
+    +(st.k==='coach'?'<label class="ck"><input type="checkbox" id="tuto-hide"'+(T.hide?' checked':'')+'><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><p class="tnote">Tu pourras le remettre à tout moment dans Menu › Séances et coach.</p>':'');
+  $('#tuto-btns').innerHTML=(T.i>0?'<button type="button" class="ghost" data-act="tutoback">‹ Retour</button>':'')
+    +'<button type="button" class="primary big" data-act="'+(last?'tutoskip':'tutonext')+'">'+(T.i===0?'Commencer la visite':last?'C\'est parti':'Suivant')+'</button>';
+}
+function finishTuto(){
+  const T=V.tuto;$('#tuto').hidden=true;V.tuto=null;S.tuto=1;
+  if(T&&T.hide!==(prefs().coach===false))S.prefs=Object.assign(prefs(),{coach:!T.hide});
+  touch();
+  if(V.tab==='coach'&&prefs().coach===false)V.tab='seances';
+  render();window.scrollTo(0,0);setTimeout(maybeOnb,200);
 }
 function licenseExpired(){const l=licenseGet();return IS_PWA&&!!l&&l.type==='sub'&&!!l.email&&!licLive(l)}
 function renderExpiredCard(){
@@ -1823,7 +2029,10 @@ function renderSettings(){
     else if(l.type==='admin')body='<p class="note">Accès administrateur (gratuit), coach inclus.</p><button type="button" class="ghost" data-act="liclogout" style="margin-top:10px">Se déconnecter</button>';
     else{
       const live=licLive(l),pl=l.plan==='coach'?'Cadence + Coach':'Cadence';
-      body='<div class="abo-st'+(live?'':' off')+'"><b>'+(live?pl:'Abonnement terminé')+'</b><span>'+(live?(l.cancelAt?'Résilié · accès complet jusqu\'au '+fmtEnd(l.cancelAt):(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois · renouvellement automatique'):'Tes données restent sur ce téléphone.')+'</span><small>'+esc(l.email||'')+'</small></div>';
+      if(live&&l.cancelAt){const d=dLeft(l.cancelAt);body='<div class="abo-st"><b>'+pl+' · résilié</b><span>Accès complet jusqu\'au '+fmtEnd(l.cancelAt)+'</span><small>'+esc(l.email||'')+'</small></div>'
+        +'<div class="cdring" style="--p:'+Math.max(4,Math.min(100,d/31*100))+'"><div><b>'+d+'</b><span>'+(d>1?'jours':'jour')+'</span></div></div>'
+        +'<p class="note" style="text-align:center;margin-bottom:6px">Ensuite, il faudra te réabonner ('+(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois) pour retrouver l\'accès complet.</p>'}
+      else body='<div class="abo-st'+(live?'':' off')+'"><b>'+(live?pl:'Abonnement terminé')+'</b><span>'+(live?(l.cancelAt?'Résilié · accès complet jusqu\'au '+fmtEnd(l.cancelAt):(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois · renouvellement automatique'):'Tes données restent sur ce téléphone.')+'</span><small>'+esc(l.email||'')+'</small></div>';
       const btn=(act,lbl,cls,extra)=>'<button type="button" class="'+(cls||'ghost')+'" data-act="'+act+'"'+(extra||'')+' style="width:100%;margin-top:8px">'+lbl+'</button>';
       if(!live)body+=btn('expsub','Me réabonner','primary',' data-plan="base"');
       else{
@@ -1889,7 +2098,7 @@ const DR_IC={
   trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>'
 };
 const drSvg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+DR_IC[k]+'</svg>';
-function planLabel(){const l=licenseGet();if(!IS_PWA)return '';if(!l)return 'Aucun abonnement';if(l.type==='admin')return 'Accès complet';if(l.type==='sub'&&licLive(l))return (l.plan==='coach'?'Cadence + Coach':'Cadence')+(l.cancelAt?' · fin le '+fmtEnd(l.cancelAt):'');return 'Abonnement terminé'}
+function planLabel(){const l=licenseGet();if(!IS_PWA)return '';if(!l)return 'Aucun abonnement';if(l.type==='admin')return 'Accès complet';if(l.type==='sub'&&licLive(l))return (l.plan==='coach'?'Cadence + Coach':'Cadence')+(l.cancelAt?' · J-'+dLeft(l.cancelAt):'');return 'Abonnement terminé'}
 function openDrawer(){
   const p=S.profile,name=IS_PWA?curProfile().name:'Mon compte',P=IS_PWA?profiles():null;
   const ini=n=>(String(n).trim()[0]||'?').toUpperCase();
@@ -1910,7 +2119,7 @@ function openDrawer(){
     h+=list('Abonnement',[row('abo','star','Mon abonnement','#f59e0b',pl)]);
     h+=list('Préférences',[row('train','dumb','Séances et coach','#10b981',prefs().coach?'Coach activé':'Mes séances'),row('notif','bell','Notifications','#ef4444',pushInfo()?'Activées':''),row('theme','moon','Apparence','#334155',{auto:'Auto',light:'Clair',dark:'Sombre'}[themePref()])]);
     h+=list('Sécurité et données',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
-    h+=list('Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
+    h+=list('Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('','info','Revoir le tutoriel','#6366f1','','tutoopen'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
     h+='<div class="dr-list" style="margin-top:18px">'
       +(lk?'<button type="button" class="dr-row" data-act="locknow"><span class="dr-ic" style="--c:#0ea5e9">'+drSvg('lock')+'</span><span class="lbl">Verrouiller maintenant</span></button>':'')
       +'<button type="button" class="dr-row red" data-act="drlogout"><span class="dr-ic">'+drSvg('out')+'</span><span class="lbl">Se déconnecter</span></button></div>'
@@ -2826,10 +3035,15 @@ function render(){
     v.innerHTML=renderExpiredCard()+'<div class="lockprev" inert aria-hidden="true">'+v.innerHTML+'</div>';
     $('#fab').hidden=true;
   }
+  {const l=licenseGet();
+   if(IS_PWA&&l&&l.type==='sub'&&licLive(l)&&l.cancelAt&&!(V.tab==='settings'&&V.sec==='abo')&&V.tab!=='legal'){
+     const d=dLeft(l.cancelAt);
+     v.insertAdjacentHTML('afterbegin','<button type="button" class="cdbar" data-act="sec" data-sec="abo"><span aria-hidden="true">⏳</span><span>Abonnement résilié · <b>'+dTxt(d)+'</b></span><span class="go" aria-hidden="true">›</span></button>');
+   }}
   if(V.tab==='macros'||(V.tab==='nutrition'&&(V.nseg||'macros')==='macros'))updateRateBox();
   updateGate();
   if(V.dsheet&&!$('#dsheet').hidden)openDay(V.dsheet);
-  setTimeout(maybeOnb,0);
+  setTimeout(()=>{maybeTuto();maybeOnb()},0);
 }
 
 /* ---------- Feuille d'édition ---------- */
@@ -3233,7 +3447,7 @@ function finishOnb(){
   delete S.coach.equip;S.onb=1;V.onb=null;touch();
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
-function maybeOnb(){if(!coachActive())return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
+function maybeOnb(){if(!coachActive())return;if(!S.tuto||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
 function coachSaleCTA(){return licensePlan()==='base'
@@ -3760,7 +3974,7 @@ document.addEventListener('click',e=>{
   else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
     fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
       licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
-      if(d.active){render();toast('Content de te revoir 🎉')}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
+      if(d.active){render();planFeedback(null,licenseGet())}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
     }).catch(()=>{const m2=$('#exp-msg');if(m2)m2.textContent='Impossible de vérifier pour le moment.'})}
   else if(a==='wipe'){
     if(!V.wipeArmed){V.wipeArmed=true;b.textContent='Confirmer : tout effacer';return}
@@ -3800,6 +4014,12 @@ document.addEventListener('click',e=>{
     P.list=P.list.filter(x=>x.id!==pid);P.active=P.list[0].id;saveProfiles();switchProfile(P.active);
   }
   else if(a==='dopen'){openDrawer()}
+  else if(a==='pclose'){pClose()}
+  else if(a==='celebdone'){celebDone()}
+  else if(a==='tutonext'){if(V.tuto){V.tuto.i=Math.min(TUTO.length-1,V.tuto.i+1);renderTuto()}}
+  else if(a==='tutoback'){if(V.tuto){V.tuto.i=Math.max(0,V.tuto.i-1);renderTuto()}}
+  else if(a==='tutoskip'){finishTuto()}
+  else if(a==='tutoopen'){closeDrawer();openTuto(true)}
   else if(a==='drprofile'){const pid=b.dataset.pid;if(pid===profiles().active){closeDrawer();V.tab='settings';V.sec='account';render();window.scrollTo(0,0);return}closeDrawer();switchProfile(pid);toast('Profil « '+curProfile().name+' »')}
   else if(a==='locknow'){closeDrawer();showLock()}
   else if(a==='drlogout'){
@@ -3940,6 +4160,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{
+  if(e.target.id==='tuto-hide'&&V.tuto)V.tuto.hide=e.target.checked;
   if(e.target.id==='w-title'){const w=curW();if(w&&!w.ex.length&&hasPrev(w))render()}
   else if(e.target.id==='wp-ex'){V.wpEx=e.target.value;render()}
 });
