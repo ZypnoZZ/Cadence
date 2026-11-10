@@ -537,7 +537,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 @keyframes scanl{from{transform:translateY(-40px)}to{transform:translateY(40px)}}
 .bchint{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#fff;font-weight:600;font-size:13.5px;text-shadow:0 1px 4px rgba(0,0,0,.6)}
 .cal-head .cgoal{font-size:13px;font-weight:600;color:var(--accent);background:var(--soft);padding:6px 10px;border-radius:99px;white-space:nowrap}
-.progcard{display:flex;width:100%;align-items:center;gap:12px;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--accent);background:linear-gradient(135deg,rgba(115,102,255,.14),rgba(245,138,106,.10)),var(--surface);color:var(--ink);margin-bottom:12px}
+.progcard{display:flex;width:100%;align-items:center;gap:12px;text-align:left;padding:14px;border-radius:16px;border:0;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,transparent),rgba(245,138,106,.08)),var(--surface);color:var(--ink);margin-bottom:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
 .pc-ic{width:40px;height:40px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;font-size:20px;flex:none}
 .pc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.pc-t b{font-size:16px}.pc-t span{font-size:12.5px;color:var(--muted)}
 .pc-go{font-weight:700;color:var(--accent);font-size:14px}
@@ -630,6 +630,15 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .isw.dr .isl,.isw.open-r .isl{visibility:visible}.isw.dl .isd{visibility:visible}
 .cstate{margin:6px 4px 0;color:var(--accent);font-weight:600;text-align:left}
 .cpoff{display:flex;gap:10px;align-items:center;border-style:dashed}.cpoff>div{flex:1;min-width:0}.cpoff .ghost{flex:none}
+#view.pg-in{animation:pgIn .32s cubic-bezier(.2,.8,.3,1)}
+#view.pg-in>*{animation:pgItem .42s cubic-bezier(.2,.8,.3,1) both}
+#view.pg-in>*:nth-child(2){animation-delay:.03s}#view.pg-in>*:nth-child(3){animation-delay:.06s}#view.pg-in>*:nth-child(4){animation-delay:.09s}#view.pg-in>*:nth-child(5){animation-delay:.12s}#view.pg-in>*:nth-child(n+6){animation-delay:.15s}
+@keyframes pgIn{from{opacity:.4}to{opacity:1}}
+@keyframes pgItem{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#view.sw-next{animation:swNext .3s cubic-bezier(.2,.8,.3,1)}#view.sw-prev{animation:swPrev .3s cubic-bezier(.2,.8,.3,1)}
+@keyframes swNext{from{opacity:.3;transform:translateX(28%)}to{opacity:1;transform:none}}
+@keyframes swPrev{from{opacity:.3;transform:translateX(-28%)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#view.pg-in>*,#view.sw-next,#view.sw-prev{animation:pgIn .25s ease both}}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}.kpis b{display:block;font-family:var(--font-display);font-size:26px}.kpis span{font-size:12.5px;color:var(--muted)}
@@ -1436,7 +1445,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 86';
+const APP_VERSION='2026.11.10 · 87';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3003,9 +3012,10 @@ function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else mo
 })();
 // Glisser horizontalement pour changer d'onglet (sur la page ou sur la barre du bas)
 const TAB_ORDER=['agenda','seances','coach','journal','nutrition'];
+function pageAnim(c){const v=$('#view');if(!v)return;v.classList.remove('pg-in','sw-next','sw-prev');void v.offsetWidth;v.classList.add(c);clearTimeout(V.pgT);V.pgT=setTimeout(()=>v.classList.remove(c),600)}
 function goTab(t,dir){
   if(t==='coach'||V.tab!==t)V.cours=false;V.recItem=null;V.tab=t;closeDrawer();render();window.scrollTo(0,0);
-  const v=$('#view');if(v&&dir){v.classList.remove('in-next','in-prev');void v.offsetWidth;v.classList.add(dir>0?'in-next':'in-prev');setTimeout(()=>v.classList.remove('in-next','in-prev'),300)}
+  pageAnim(dir>0?'sw-next':dir<0?'sw-prev':'pg-in');
 }
 (function(){
   const NO='.grid,.jswipe,.isf,.isa,.swf,.swa,.sc,.eqs,.fbar,.unit,.weeks,.wkstrip,.modes,.recchips,input,textarea,select,.dgh,[data-noswipe],.pchips,.dur2';
@@ -4874,9 +4884,10 @@ document.addEventListener('click',e=>{
     if(t==='macros'||t==='meals'){V.nseg=t==='meals'?'repas':'macros';t='nutrition'}
     if(t==='settings'){openDrawer();return}
     if(t==='todos')t='agenda';
+    const chg=V.tab!==t||(t==='coach'&&V.cours);
     if(t==='coach'||V.tab!==t)V.cours=false;
     if(V.tab!==t||t==='records')V.recItem=null;
-    V.tab=t;closeDrawer();render();window.scrollTo(0,0);
+    V.tab=t;closeDrawer();render();window.scrollTo(0,0);if(chg)pageAnim('pg-in');
   }
   else if(a==='prev'){shiftMonth(-1)}
   else if(a==='next'){shiftMonth(1)}
@@ -4931,13 +4942,13 @@ document.addEventListener('click',e=>{
   else if(a==='lvllater'){V.luLater=true;render()}
   else if(a==='recseg'){V.recSeg=b.dataset.v;V.recFam='all';render()}
   else if(a==='recfam'){V.recFam=b.dataset.v;render()}
-  else if(a==='recopen'){V.recItem={cat:b.dataset.c,name:b.dataset.n};render();window.scrollTo(0,0)}
+  else if(a==='recopen'){V.recItem={cat:b.dataset.c,name:b.dataset.n};render();window.scrollTo(0,0);pageAnim('sw-next')}
   else if(a==='recnew'){const n=(b.dataset.n||'').trim();if(n){V.recItem={cat:(V.recSeg||'lift')==='gym'?'gym':'force',name:n.slice(0,60)};render();window.scrollTo(0,0)}}
-  else if(a==='recback'){V.recItem=null;render();window.scrollTo(0,0)}
+  else if(a==='recback'){V.recItem=null;render();window.scrollTo(0,0);pageAnim('sw-prev')}
   else if(a==='recadd'){recAdd()}
   else if(a==='recdel'){S.records=recList().filter(x=>x.id!==b.dataset.id);touch();render()}
-  else if(a==='coursopen'){V.cours=true;render();window.scrollTo(0,0)}
-  else if(a==='coursback'){V.cours=false;render();window.scrollTo(0,0)}
+  else if(a==='coursopen'){V.cours=true;render();window.scrollTo(0,0);pageAnim('sw-next')}
+  else if(a==='coursback'){V.cours=false;render();window.scrollTo(0,0);pageAnim('sw-prev')}
   else if(a==='courscat'){V.coursCat=b.dataset.v;render()}
   else if(a==='coursl'){V.coursLvl=b.dataset.v==='all'?'all':+b.dataset.v;render()}
   else if(a==='coursx'){V.coursOpen=V.coursOpen===b.dataset.k?null:b.dataset.k;render()}
@@ -5221,7 +5232,7 @@ document.addEventListener('click',e=>{
   }
   else if(a==='dclose'){closeDrawer()}
   else if(a==='drgroup'){const i=+b.dataset.grp;if(!V.drOpen)V.drOpen=new Set();if(V.drOpen.has(i))V.drOpen.delete(i);else V.drOpen.add(i);openDrawer();return}
-  else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else if(x==='suivi')V.tab='suivi';else if(x==='records')V.tab='records';else if(x==='cgu'||x==='conf'||x==='mentions'){if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=x}else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0)}
+  else if(a==='sec'){const x=b.dataset.sec;if(x==='poids')V.tab='poids';else if(x==='suivi')V.tab='suivi';else if(x==='records')V.tab='records';else if(x==='cgu'||x==='conf'||x==='mentions'){if(V.tab!=='legal')V.prevTab=V.tab;V.tab='legal';V.doc=x}else{V.tab='settings';V.sec=x}closeDrawer();render();window.scrollTo(0,0);pageAnim('pg-in')}
   else if(a==='nadd'){V.jday=todayISO;V.tab='journal';render();window.scrollTo(0,0);openFood()}
   else if(a==='nate'){const i=+b.dataset.i,m=(V.planMeals||[])[i];if(!m)return;const meal=m.tpl.replace(/\d+$/,'');
     S.log[todayISO]=(S.log[todayISO]||[]).concat(m.items.map(it=>{const fd=FOODS[it.id],r=it.g/100;return {id:uid(),meal,name:fd.n,g:it.g,k:Math.round((fd.p*4+fd.c*4+fd.f*9)*r),p:Math.round(fd.p*r*10)/10,c:Math.round(fd.c*r*10)/10,f:Math.round(fd.f*r*10)/10,src:'menu',plan:m.tpl+'#'+i}}));
