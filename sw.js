@@ -1,4 +1,4 @@
-const CACHE='cadence-v87';
+const CACHE='cadence-v88';
 const WORKER='https://cadence-license.m6hkhvkg5v.workers.dev';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()))});
