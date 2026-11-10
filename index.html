@@ -593,6 +593,18 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .lvh{display:flex;align-items:baseline;justify-content:space-between;margin:20px 2px 8px;padding-bottom:6px;border-bottom:2px solid var(--line);font-size:19px}.lvh em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}.lvh.lv0{border-color:#34c759}.lvh.lv1{border-color:#ff9f0a}.lvh.lv2{border-color:#ff453a}.lvh.lv0 span{color:#28a745}.lvh.lv1 span{color:#e08600}.lvh.lv2 span{color:#e5372c}
 .cc{border-left:5px solid var(--lvc)}.cc.lv0{--lvc:#34c759}.cc.lv1{--lvc:#ff9f0a}.cc.lv2{--lvc:#ff453a}
 .lvb{font-style:normal;display:inline-block;margin-right:8px;padding:2px 8px;border-radius:99px;background:var(--lvc);color:#fff;letter-spacing:.02em}
+.reclv{display:flex;gap:14px;align-items:center}.reclv-b{flex:1;min-width:0}.lvr{margin:4px 0 10px}.lvr-t{display:flex;justify-content:space-between;font-weight:600;font-size:14px;margin-bottom:5px}.lvr-t small{font-size:11px;margin-left:1px}
+.lvr i{display:block;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--c) var(--w),var(--soft) var(--w))}
+.reclv-r{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px}.ring{--p:0;width:92px;height:92px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--soft) 0);display:grid;place-items:center;position:relative}
+.ring::before{content:'';position:absolute;inset:9px;border-radius:50%;background:var(--surface)}.ring b{position:relative;font-family:var(--font-display);font-size:30px;line-height:1}.ring small{position:absolute;bottom:22px;font-size:11px;color:var(--muted)}
+.recchips .fchip{color:var(--fc);background:color-mix(in srgb,var(--fc) 13%,transparent);border-color:transparent}.recchips .fchip[aria-pressed="true"]{background:var(--fc);color:#fff}
+.recsearch{position:sticky;top:6px;z-index:5;margin-bottom:6px}.recsearch input{width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;min-height:46px;border-radius:99px;padding:0 18px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.recgrp h3{display:flex;align-items:center;gap:8px;font-size:19px;margin:16px 2px 4px}.recgrp h3 i{width:9px;height:9px;border-radius:50%}
+.recrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 2px;color:var(--ink);font:inherit;font-size:16px}
+.recrow span{flex:1;min-width:0;display:flex;flex-direction:column}.recrow small{font-size:12px;color:var(--muted)}.recrow b{font-variant-numeric:tabular-nums;font-weight:700}.recrow i{font-style:normal;color:var(--muted)}
+.recbig b{display:block;font-family:var(--font-display);font-size:44px;line-height:1.1;margin-top:4px}.recbig small{font-size:18px;color:var(--muted)}
+.rmgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.rmgrid div{background:var(--soft);border-radius:12px;padding:10px;display:flex;flex-direction:column}.rmgrid span{font-size:12px;color:var(--muted);font-weight:600}.rmgrid b{font-size:20px}.rmgrid small{font-size:11px;color:var(--muted);min-height:14px}
+.rech{padding:8px 0;border-bottom:1px solid var(--line)}.rech:last-child{border-bottom:0}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}.kpis b{display:block;font-family:var(--font-display);font-size:26px}.kpis span{font-size:12.5px;color:var(--muted)}
@@ -1390,7 +1402,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 71';
+const APP_VERSION='2026.11.10 · 72';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3887,110 +3899,142 @@ const PROG={
 };
 /* ---------- Records ---------- */
 const REC_RM=[1,2,3,5,8,10];
-const REC_SEG=[['force','Force'],['gym','Gymnique'],['course','Course'],['natation','Natation'],['velo','Vélo']];
-const REC_DIST={course:[['1 km',1],['5 km',5],['10 km',10],['Semi-marathon',21.0975],['Marathon',42.195]],natation:[['50 m',.05],['100 m',.1],['200 m',.2],['400 m',.4],['800 m',.8],['1 500 m',1.5]],velo:[['10 km',10],['20 km',20],['40 km',40],['100 km',100]]};
-const REC_GYM=['Pompes','Tractions','Dips','Squats','Abdominaux','Gainage','Planche','L-sit','Poirier','Pistol squat','Muscle-up'];
+const REC_TOP=[['lift','Muscu'],['gym','Gym'],['cardio','Cardio']];
+const REC_FAM={
+ lift:[['squat','Squats','#ff453a',['Squat','Front squat','Squat bulgare','Presse à cuisses','Overhead squat']],
+       ['dead','Soulevés de terre','#30d158',['Soulevé de terre','Soulevé de terre roumain','Soulevé de terre sumo','Hip thrust']],
+       ['press','Développés','#ff9f0a',['Développé couché','Développé incliné','Développé militaire','Push press','Dips lestés']],
+       ['pull','Tirages','#0a84ff',['Tractions lestées','Rowing barre','Tirage vertical','Rowing haltère']],
+       ['olym','Haltérophilie','#bf5af2',['Épaulé','Épaulé-jeté','Arraché','Power clean']],
+       ['other','Autres','#8e8e93',[]]],
+ gym:[['reps','Répétitions max','#64d2ff',['Tractions','Pompes','Dips','Muscle-up','Toes to bar','Pistol squats','Burpees en 1 min']],
+      ['hold','Temps tenu','#5e5ce6',['Gainage','Planche latérale','L-sit','Poirier','Front lever','Suspension à la barre']]],
+ cardio:[['course','Course à pied','#ff375f',[['1 km',1],['5 km',5],['10 km',10],['Semi-marathon',21.0975],['Marathon',42.195]]],
+         ['natation','Natation','#0a84ff',[['50 m',.05],['100 m',.1],['200 m',.2],['400 m',.4],['800 m',.8],['1 500 m',1.5]]],
+         ['velo','Vélo','#30d158',[['10 km',10],['20 km',20],['40 km',40],['100 km',100]]],
+         ['rameur','Rameur','#ff9f0a',[['500 m',.5],['2 000 m',2],['5 000 m',5]]]]
+};
 function recList(){return Array.isArray(S.records)?S.records:[]}
-const recT=sec=>{sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),x=sec%60;return h?h+' h '+String(m).padStart(2,'0')+' min '+String(x).padStart(2,'0')+' s':m+' min '+String(x).padStart(2,'0')+' s'};
+const recT=sec=>{sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),x=sec%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):m+':'+String(x).padStart(2,'0')};
+const mmss=p=>{p=Math.round(p);return Math.floor(p/60)+':'+String(p%60).padStart(2,'0')};
 function recPace(cat,km,sec){
-  if(cat==='course'){const p=sec/km;return Math.floor(p/60)+':'+String(Math.round(p%60)).padStart(2,'0').replace(/^60$/,'59')+' /km'}
-  if(cat==='natation'){const p=sec/(km*10);return Math.floor(p/60)+':'+String(Math.round(p%60)).padStart(2,'0').replace(/^60$/,'59')+' /100 m'}
+  if(cat==='course')return mmss(sec/km)+' /km';
+  if(cat==='natation')return mmss(sec/(km*10))+' /100 m';
+  if(cat==='rameur')return mmss(sec/(km*2))+' /500 m';
   return nf.format(Math.round(km/(sec/3600)*10)/10)+' km/h';
 }
+const lc=x=>String(x).trim().toLowerCase();
 function autoBest(name){
-  const k=String(name).trim().toLowerCase(),o={};
+  const k=lc(name),o={};
   for(const w of S.workouts)for(const e of w.ex){
-    if(e.kind==='cardio'||String(e.name).trim().toLowerCase()!==k)continue;
+    if(e.kind==='cardio'||e.bw||lc(e.name)!==k)continue;
     for(const st of e.sets||[]){const kg=+st.kg,r=+st.r;if(!(kg>0&&r>0))continue;for(const n of REC_RM)if(r>=n&&(!o[n]||kg>o[n].kg))o[n]={kg,date:w.date}}
   }
   return o;
 }
 function autoReps(name){
-  const k=String(name).trim().toLowerCase();let b=0;
-  for(const w of S.workouts)for(const e of w.ex){if(e.kind==='cardio'||String(e.name).trim().toLowerCase()!==k)continue;for(const st of e.sets||[]){if(!(+st.kg>0)&&+st.r>b&&!e.pl)b=+st.r}}
+  const k=lc(name);let b=0;
+  for(const w of S.workouts)for(const e of w.ex){if(e.kind==='cardio'||lc(e.name)!==k)continue;for(const st of e.sets||[]){if(!(+st.kg>0)&&+st.r>b)b=+st.r}}
   return b;
 }
-function recForce(){
-  const L=recList().filter(r=>r.cat==='force'),names=[...new Set(L.map(r=>r.name.trim()))];
-  const dl=[...new Set([...knownExos().keys(),...EXOS])].sort((a,b)=>a.localeCompare(b,'fr'));
-  let h='<section class="card"><b>Nouveau record</b><label><span class="lab">Exercice</span><input type="text" id="rc-name" list="dl-rexo" maxlength="60" placeholder="Ex. Développé couché"></label><datalist id="dl-rexo">'+dl.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist>'
-   +'<div class="r2"><label><span class="lab">Série maximale</span><select id="rc-n">'+REC_RM.map(n=>'<option value="'+n+'">'+n+' RM</option>').join('')+'</select></label><label><span class="lab">Charge (kg)</span><input type="number" id="rc-kg" inputmode="decimal" step="0.5" min="0" placeholder="100"></label></div>'
-   +'<label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer le record</button><p class="note" style="margin-top:6px">1 RM : la charge maximale pour une répétition. 3 RM : la charge maximale pour 3 répétitions, etc.</p></section>';
-  const auto=new Map();for(const w of S.workouts)for(const e of w.ex){if(e.kind==='cardio')continue;const k=e.name.trim();if(k&&!names.some(n=>n.toLowerCase()===k.toLowerCase())){const b=autoBest(k);if(b[1]||b[3]||b[5])auto.set(k,b)}}
-  for(const nm of names){
-    const man={};for(const r of L.filter(x=>x.name.trim()===nm))if(!man[r.n]||r.kg>man[r.n].kg)man[r.n]=r;
-    const au=autoBest(nm);
-    h+='<section class="card"><b style="font-size:18px">'+esc(nm)+'</b><table class="ptable" style="margin-top:6px"><tbody>'
-     +REC_RM.filter(n=>man[n]||au[n]).map(n=>{const m=man[n],a=au[n],useA=a&&(!m||a.kg>m.kg);return '<tr><td>'+n+' RM</td><td><b>'+nf.format(useA?a.kg:m.kg)+' kg</b></td><td class="note">'+esc(FMT.short.format(parseISO(useA?a.date:m.date)))+(useA?' · séances':'')+'</td><td>'+(!useA&&m?'<button type="button" class="jdel" data-act="recdel" data-id="'+m.id+'" aria-label="Supprimer ce record">×</button>':'')+'</td></tr>'}).join('')+'</tbody></table></section>';
+// Meilleures valeurs
+function liftBest(name){const o={};for(const r of recList())if(r.cat==='force'&&lc(r.name)===lc(name)&&(!o[r.n]||r.kg>o[r.n].kg))o[r.n]={kg:r.kg,date:r.date,id:r.id};const a=autoBest(name);for(const n of REC_RM)if(a[n]&&(!o[n]||a[n].kg>o[n].kg))o[n]={kg:a[n].kg,date:a[n].date,auto:1};return o}
+function liftTop(o){let b=null;for(const n of REC_RM)if(o[n]){const v=e1rm(o[n].kg,n);if(!b||v>b.v)b={v,n,kg:o[n].kg}}return b}
+function gymKind(name){return REC_FAM.gym[1][3].some(x=>lc(x)===lc(name))?'hold':(recList().find(r=>r.cat==='gym'&&lc(r.name)===lc(name))||{}).k||'reps'}
+function gymBest(name){const k=gymKind(name);let v=0;for(const r of recList())if(r.cat==='gym'&&lc(r.name)===lc(name)&&r.k===k&&r.v>v)v=r.v;if(k==='reps')v=Math.max(v,autoReps(name));return {k,v}}
+function enduBest(cat,label){let b=null;for(const r of recList())if(r.cat===cat&&r.label===label&&(!b||r.secs<b.secs))b=r;return b}
+function liftNames(){
+  const pre=new Set(REC_FAM.lift.flatMap(f=>f[3].map(lc)));const extra=new Map();
+  for(const r of recList())if(r.cat==='force'&&!pre.has(lc(r.name)))extra.set(lc(r.name),r.name.trim());
+  for(const w of S.workouts)for(const e of w.ex)if(e.kind!=='cardio'&&!e.bw&&!pre.has(lc(e.name))&&(e.sets||[]).some(st=>+st.kg>0&&+st.r>0))extra.set(lc(e.name),e.name.trim());
+  return [...extra.values()].sort((a,b)=>a.localeCompare(b,'fr'));
+}
+function gymNames(fam){const pre=REC_FAM.gym.find(f=>f[0]===fam)[3],set=new Set(pre.map(lc)),ex=[];for(const r of recList())if(r.cat==='gym'&&r.k===fam&&!set.has(lc(r.name))&&!REC_FAM.gym.some(f=>f[3].some(x=>lc(x)===lc(r.name)))){set.add(lc(r.name));ex.push(r.name.trim())}return pre.concat(ex)}
+// Niveau estimé
+function recLevel(){
+  const bw=+((S.profile||{}).weight)||0,cl=x=>Math.max(0,Math.min(1,x)),avg=a=>a.length?a.reduce((t,x)=>t+x,0)/a.length:null;
+  const f=[];if(bw)for(const [n,t] of [['Squat',2],['Développé couché',1.5],['Soulevé de terre',2.5],['Développé militaire',1]]){const b=liftTop(liftBest(n));if(b)f.push(cl(b.v/bw/t))}
+  const g=[];for(const [n,t] of [['Tractions',20],['Pompes',50],['Dips',30],['Gainage',180],['L-sit',30]]){const b=gymBest(n);if(b.v)g.push(cl(b.v/t))}
+  const c=[];const lin=(v,lo,hi)=>cl((lo-v)/(lo-hi));
+  let x;if(x=enduBest('course','5 km'))c.push(lin(x.secs,40*60,17*60));if(x=enduBest('course','10 km'))c.push(lin(x.secs,85*60,36*60));
+  if(x=enduBest('natation','100 m'))c.push(lin(x.secs,180,60));if(x=enduBest('velo','40 km'))c.push(cl((40/(x.secs/3600)-18)/(42-18)));
+  if(x=enduBest('rameur','2 000 m'))c.push(lin(x.secs,11*60,6.5*60));
+  const L=[avg(f),avg(g),avg(c)],ok=L.filter(v=>v!=null);
+  return {f:L[0],g:L[1],c:L[2],all:ok.length?avg(ok):null,bw};
+}
+function recLevelCard(){
+  const L=recLevel(),pc=v=>v==null?'—':Math.round(v*100)+'<small>%</small>',bar=(lab,v,col)=>'<div class="lvr"><div class="lvr-t"><span>'+lab+'</span><b style="color:'+col+'">'+pc(v)+'</b></div><i style="--w:'+Math.round((v||0)*100)+'%;--c:'+col+'"></i></div>';
+  const a=L.all==null?0:Math.round(L.all*100);
+  return '<section class="card reclv"><div class="reclv-b">'+bar('Force',L.f,'#ff453a')+bar('Gymnastique',L.g,'#64d2ff')+bar('Cardio',L.c,'#ff9f0a')+'</div><div class="reclv-r"><span class="lab">Niveau</span><div class="ring" style="--p:'+a+'"><b>'+(L.all==null?'—':a)+'</b>'+(L.all==null?'':'<small>%</small>')+'</div></div></section>'
+   +'<p class="note" style="margin:-4px 2px 12px">Estimation à partir de tes records'+(L.bw?' et de ton poids ('+nf.format(L.bw)+' kg)':'')+'.</p>';
+}
+function recRow(name,val,cat,col,sub){return '<button type="button" class="recrow" data-act="recopen" data-c="'+cat+'" data-n="'+esc(name)+'" data-s="'+esc(lc(name))+'"><span>'+esc(name)+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><b>'+(val||'')+'</b><i aria-hidden="true">›</i></button>'}
+function recListHTML(){
+  const top=V.recSeg&&REC_FAM[V.recSeg]?V.recSeg:'lift',fam=V.recFam||'all',fams=REC_FAM[top];
+  let h='<div class="eqs sc recchips" style="margin-bottom:10px"><button type="button" data-act="recfam" data-v="all" aria-pressed="'+(fam==='all')+'">Tout</button>'+fams.map(f=>'<button type="button" data-act="recfam" data-v="'+f[0]+'" style="--fc:'+f[2]+'" class="fchip" aria-pressed="'+(fam===f[0])+'">'+f[1]+'</button>').join('')+'</div>';
+  h+='<div class="recsearch"><input type="search" id="rec-q" placeholder="Rechercher un exercice" autocomplete="off" enterkeyhint="search"></div>';
+  for(const f of fams){
+    if(fam!=='all'&&fam!==f[0])continue;
+    let rows='';
+    if(top==='lift'){const names=f[0]==='other'?liftNames():f[3];for(const n of names){const t=liftTop(liftBest(n));rows+=recRow(n,t?nf.format(t.kg)+' kg':'',  'force',f[2],t&&t.n>1?t.n+' RM':'')}}
+    else if(top==='gym'){for(const n of gymNames(f[0])){const b=gymBest(n);rows+=recRow(n,b.v?(b.k==='hold'?b.v+' s':b.v+' rép.'):'','gym',f[2])}}
+    else for(const d of f[3]){const b=enduBest(f[0],d[0]);rows+=recRow(d[0],b?recT(b.secs):'',f[0],f[2],b?recPace(f[0],b.km,b.secs):'')}
+    if(top==='lift'&&f[0]==='other'&&!rows)rows='<p class="note" style="padding:10px 2px">Tes autres exercices apparaîtront ici. Cherche un nom ci-dessus pour en ajouter un.</p>';
+    h+='<section class="recgrp" data-g="'+f[0]+'"><h3><span>'+f[1]+'</span><i style="background:'+f[2]+'"></i></h3>'+rows+'</section>';
   }
-  if(auto.size){
-    h+='<p class="clab" style="margin-top:14px">Détectés dans tes séances</p>';
-    h+='<section class="card"><table class="ptable"><tbody>'+[...auto.entries()].sort((a,b)=>(b[1][1]?b[1][1].kg:0)-(a[1][1]?a[1][1].kg:0)).slice(0,12).map(([k,b])=>{const t=REC_RM.filter(n=>b[n]).slice(0,3);return '<tr><td>'+esc(k)+'</td><td class="note">'+t.map(n=>n+' RM '+nf.format(b[n].kg)+' kg').join(' · ')+'</td></tr>'}).join('')+'</tbody></table></section>';
-  }
-  if(!names.length&&!auto.size)h+='<p class="note" style="margin-top:8px">Aucun record pour l\'instant. Enregistre le premier ci-dessus : tes séances alimentent aussi cette liste automatiquement.</p>';
+  if(top!=='cardio')h+='<button type="button" class="ghost recnew" data-act="recnew" hidden style="width:100%;margin-top:8px"></button>';
   return h;
 }
-function recGym(){
-  const L=recList().filter(r=>r.cat==='gym'),names=[...new Set(L.map(r=>r.name.trim()))];
-  let h='<section class="card"><b>Nouveau record</b><label><span class="lab">Mouvement</span><input type="text" id="rc-name" list="dl-rgym" maxlength="60" placeholder="Ex. Tractions"></label><datalist id="dl-rgym">'+REC_GYM.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist>'
-   +'<div class="r2"><label><span class="lab">Type</span><select id="rc-k"><option value="reps">Répétitions</option><option value="hold">Temps tenu (s)</option></select></label><label><span class="lab">Valeur</span><input type="number" id="rc-v" inputmode="numeric" min="0" placeholder="12"></label></div>'
-   +'<label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer le record</button></section>';
-  for(const nm of names){
-    const items=L.filter(x=>x.name.trim()===nm).sort((a,b)=>b.date<a.date?-1:1),kinds=[...new Set(items.map(x=>x.k))];
-    for(const k of kinds){
-      const it=items.filter(x=>x.k===k),best=it.reduce((m,x)=>x.v>m.v?x:m,it[0]),au=k==='reps'?autoReps(nm):0;
-      h+='<section class="card"><div class="row"><b style="font-size:18px">'+esc(nm)+'</b><span class="note">'+(k==='reps'?'répétitions':'temps tenu')+'</span></div><p style="font-size:30px;font-family:var(--font-display);font-weight:700;margin:4px 0">'+(k==='hold'?best.v+' s':Math.max(best.v,au)+' rép.')+'</p><p class="note">'+(au>best.v?'Détecté dans tes séances':'Le '+esc(FMT.short.format(parseISO(best.date))))+(it.length>1?' · '+it.length+' essais':'')+'</p>'
-       +it.slice(0,5).map(x=>'<div class="row" style="margin-top:4px"><span class="note">'+esc(FMT.short.format(parseISO(x.date)))+' : '+x.v+(k==='hold'?' s':' rép.')+'</span><button type="button" class="jdel" data-act="recdel" data-id="'+x.id+'" aria-label="Supprimer">×</button></div>').join('')+'</section>';
-    }
+function recDetail(){
+  const it=V.recItem,cat=it.cat,name=it.name;
+  let h='<div class="cal-head"><button type="button" class="linkbtn" data-act="recback">‹ Records</button><span></span></div><h2 style="font-size:28px;margin:0 2px 12px">'+esc(name)+'</h2>';
+  if(cat==='force'){
+    const o=liftBest(name),t=liftTop(o);
+    h+='<section class="card recbig"><span class="lab">Meilleure charge</span><b>'+(t?nf.format(t.kg)+'<small> kg</small>':'—')+'</b>'+(t?'<p class="note">'+(t.n===1?'1 RM':t.n+' RM · 1 RM estimé '+num(t.v,0)+' kg')+'</p>':'')+'</section>';
+    h+='<section class="card"><div class="rmgrid">'+REC_RM.map(n=>'<div><span>'+n+' RM</span><b>'+(o[n]?nf.format(o[n].kg):'—')+'</b><small>'+(o[n]?esc(FMT.short.format(parseISO(o[n].date)))+(o[n].auto?' · séance':''):'')+'</small></div>').join('')+'</div></section>';
+    h+='<section class="card"><b>Ajouter un record</b><div class="r2" style="margin-top:8px"><label><span class="lab">Série max</span><select id="rc-n">'+REC_RM.map(n=>'<option value="'+n+'">'+n+' RM</option>').join('')+'</select></label><label><span class="lab">Charge (kg)</span><input type="number" id="rc-kg" inputmode="decimal" step="0.5" min="0"></label></div><label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer</button></section>';
+    const hist=recList().filter(r=>r.cat==='force'&&lc(r.name)===lc(name)).sort((a,b)=>a.date<b.date?1:-1);
+    if(hist.length)h+='<p class="clab">Historique</p><section class="card">'+hist.map(r=>'<div class="row rech"><span>'+r.n+' RM · <b>'+nf.format(r.kg)+' kg</b></span><span class="note">'+esc(FMT.short.format(parseISO(r.date)))+'</span><button type="button" class="jdel" data-act="recdel" data-id="'+r.id+'" aria-label="Supprimer">×</button></div>').join('')+'</section>';
+  }else if(cat==='gym'){
+    const b=gymBest(name),k=b.k,pre=REC_FAM.gym.some(f=>f[3].some(x=>lc(x)===lc(name)));
+    h+='<section class="card recbig"><span class="lab">'+(k==='hold'?'Temps tenu maximum':'Répétitions maximum')+'</span><b>'+(b.v?b.v+'<small>'+(k==='hold'?' s':' rép.')+'</small>':'—')+'</b></section>';
+    h+='<section class="card"><b>Ajouter un record</b><div class="r2" style="margin-top:8px">'+(pre?'<input type="hidden" id="rc-k" value="'+k+'">':'<label><span class="lab">Type</span><select id="rc-k"><option value="reps">Répétitions</option><option value="hold"'+(k==='hold'?' selected':'')+'>Temps tenu (s)</option></select></label>')+'<label><span class="lab">'+(k==='hold'?'Secondes':'Répétitions')+'</span><input type="number" id="rc-v" inputmode="numeric" min="0"></label></div><label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer</button></section>';
+    const hist=recList().filter(r=>r.cat==='gym'&&lc(r.name)===lc(name)).sort((a,b)=>a.date<b.date?1:-1);
+    if(hist.length)h+='<p class="clab">Historique</p><section class="card">'+hist.map(r=>'<div class="row rech"><span><b>'+r.v+(r.k==='hold'?' s':' rép.')+'</b></span><span class="note">'+esc(FMT.short.format(parseISO(r.date)))+'</span><button type="button" class="jdel" data-act="recdel" data-id="'+r.id+'" aria-label="Supprimer">×</button></div>').join('')+'</section>';
+  }else{
+    const f=REC_FAM.cardio.find(x=>x[0]===cat),d=f[3].find(x=>x[0]===name),b=enduBest(cat,name);
+    h+='<section class="card recbig"><span class="lab">'+esc(f[1])+' · meilleur temps</span><b>'+(b?recT(b.secs):'—')+'</b>'+(b?'<p class="note">'+esc(recPace(cat,b.km,b.secs))+' · '+esc(FMT.short.format(parseISO(b.date)))+'</p>':'')+'</section>';
+    h+='<section class="card"><b>Ajouter un temps</b><span class="dur2" style="margin:8px 0"><input type="number" id="rc-h" min="0" inputmode="numeric" aria-label="Heures" placeholder="0"><b>h</b><input type="number" id="rc-m" min="0" max="59" inputmode="numeric" aria-label="Minutes" placeholder="0"><b>min</b><input type="number" id="rc-s" min="0" max="59" inputmode="numeric" aria-label="Secondes" placeholder="0"><b>s</b></span><label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer</button></section>';
+    const hist=recList().filter(r=>r.cat===cat&&r.label===name).sort((a,b)=>a.secs-b.secs);
+    if(hist.length)h+='<p class="clab">Historique</p><section class="card">'+hist.map((r,i)=>'<div class="row rech"><span>'+(i?'':'🏆 ')+'<b>'+recT(r.secs)+'</b></span><span class="note">'+esc(FMT.short.format(parseISO(r.date)))+'</span><button type="button" class="jdel" data-act="recdel" data-id="'+r.id+'" aria-label="Supprimer">×</button></div>').join('')+'</section>';
+    V.recItem.km=d?d[1]:0;
   }
-  if(!names.length)h+='<p class="note" style="margin-top:8px">Note ton nombre maximum de tractions, pompes, dips… ou le temps tenu en planche, L-sit, poirier.</p>';
-  return h;
-}
-function recEndu(cat){
-  const L=recList().filter(r=>r.cat===cat),D=REC_DIST[cat],lab={course:'Course à pied',natation:'Natation',velo:'Vélo'}[cat];
-  let h='<section class="card"><b>Nouveau record</b><label><span class="lab">Distance</span><select id="rc-d">'+D.map((d,i)=>'<option value="'+i+'">'+d[0]+'</option>').join('')+'<option value="x">Autre distance</option></select></label>'
-   +'<label><span class="lab">Si autre : distance en '+(cat==='natation'?'mètres':'km')+'</span><input type="number" id="rc-dx" inputmode="decimal" step="0.01" min="0" placeholder="'+(cat==='natation'?'750':'15')+'"></label>'
-   +'<span class="lab">Temps</span><span class="dur2" style="margin-bottom:8px"><input type="number" id="rc-h" min="0" inputmode="numeric" aria-label="Heures" placeholder="0"><b>h</b><input type="number" id="rc-m" min="0" max="59" inputmode="numeric" aria-label="Minutes" placeholder="0"><b>min</b><input type="number" id="rc-s" min="0" max="59" inputmode="numeric" aria-label="Secondes" placeholder="0"><b>s</b></span>'
-   +'<label><span class="lab">Date</span><input type="date" id="rc-date" value="'+todayISO+'"></label><button type="button" class="primary" data-act="recadd" style="width:100%;margin-top:6px">Enregistrer le record</button></section>';
-  const groups=new Map();for(const r of L){const k=r.label;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
-  const order=[...groups.entries()].sort((a,b)=>a[1][0].km-b[1][0].km);
-  for(const [lb,it] of order){
-    it.sort((a,b)=>a.secs-b.secs);const best=it[0];
-    h+='<section class="card"><div class="row"><b style="font-size:18px">'+esc(lb)+'</b><span class="note">'+esc(recPace(cat,best.km,best.secs))+'</span></div><p style="font-size:30px;font-family:var(--font-display);font-weight:700;margin:4px 0">🏆 '+esc(recT(best.secs))+'</p><p class="note">Le '+esc(FMT.short.format(parseISO(best.date)))+'</p>'
-     +it.map((x,i)=>'<div class="row" style="margin-top:4px"><span class="note">'+(i?'':'★ ')+esc(recT(x.secs))+' · '+esc(FMT.short.format(parseISO(x.date)))+'</span><button type="button" class="jdel" data-act="recdel" data-id="'+x.id+'" aria-label="Supprimer">×</button></div>').join('')+'</section>';
-  }
-  if(!groups.size)h+='<p class="note" style="margin-top:8px">Aucun record de '+lab.toLowerCase()+' pour l\'instant.</p>';
   return h;
 }
 function renderRecords(){
-  const sg=V.recSeg||'force';
+  if(V.recItem)return recDetail();
+  const top=V.recSeg&&REC_FAM[V.recSeg]?V.recSeg:'lift';
   return '<div class="cal-head"><button type="button" class="linkbtn" data-act="tab" data-tab="seances">‹ Séances</button><h2>Records</h2><span></span></div>'
-   +'<div class="eqs sc" style="margin-bottom:12px">'+REC_SEG.map(x=>'<button type="button" data-act="recseg" data-v="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
-   +(sg==='force'?recForce():sg==='gym'?recGym():recEndu(sg));
+   +recLevelCard()
+   +'<div class="modes" style="margin-bottom:10px">'+REC_TOP.map(x=>'<button type="button" data-act="recseg" data-v="'+x[0]+'" aria-pressed="'+(top===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
+   +recListHTML();
 }
 function recAdd(){
-  const sg=V.recSeg||'force',date=($('#rc-date')||{}).value||todayISO,id=uid();let r;
-  if(sg==='force'){
-    const name=($('#rc-name').value||'').trim(),kg=parseFloat(($('#rc-kg').value||'').replace(',','.')),n=+$('#rc-n').value;
-    if(!name||!(kg>0)){toast('Indique l\'exercice et la charge');return}
-    r={id,date,cat:'force',name:name.slice(0,60),n,kg:Math.round(kg*100)/100};
-    const prev=Math.max(0,...recList().filter(x=>x.cat==='force'&&x.name.toLowerCase()===name.toLowerCase()&&x.n===n).map(x=>x.kg),autoBest(name)[n]?autoBest(name)[n].kg:0);
-    r.pr=kg>prev;
-  }else if(sg==='gym'){
-    const name=($('#rc-name').value||'').trim(),v=parseInt($('#rc-v').value,10),k=$('#rc-k').value;
-    if(!name||!(v>0)){toast('Indique le mouvement et la valeur');return}
-    r={id,date,cat:'gym',name:name.slice(0,60),k,v};
-    r.pr=v>Math.max(0,...recList().filter(x=>x.cat==='gym'&&x.k===k&&x.name.toLowerCase()===name.toLowerCase()).map(x=>x.v));
+  const it=V.recItem;if(!it)return;const date=($('#rc-date')||{}).value||todayISO,id=uid();let r,pr;
+  if(it.cat==='force'){
+    const kg=parseFloat(($('#rc-kg').value||'').replace(',','.')),n=+$('#rc-n').value;
+    if(!(kg>0)){toast('Indique la charge');return}
+    const o=liftBest(it.name);pr=!o[n]||kg>o[n].kg;r={id,date,cat:'force',name:it.name,n,kg:Math.round(kg*100)/100};
+  }else if(it.cat==='gym'){
+    const v=parseInt($('#rc-v').value,10),k=$('#rc-k').value;
+    if(!(v>0)){toast('Indique la valeur');return}
+    pr=v>gymBest(it.name).v;r={id,date,cat:'gym',name:it.name,k,v};
   }else{
-    const D=REC_DIST[sg],di=$('#rc-d').value;let km,label;
-    if(di==='x'){const x=parseFloat(($('#rc-dx').value||'').replace(',','.'));if(!(x>0)){toast('Indique la distance');return}km=sg==='natation'?x/1000:x;label=sg==='natation'?nf.format(x)+' m':nf.format(x)+' km'}
-    else{km=D[+di][1];label=D[+di][0]}
     const secs=(parseInt($('#rc-h').value,10)||0)*3600+(parseInt($('#rc-m').value,10)||0)*60+(parseInt($('#rc-s').value,10)||0);
     if(!(secs>0)){toast('Indique le temps');return}
-    r={id,date,cat:sg,label,km,secs};
-    const olds=recList().filter(x=>x.cat===sg&&x.label===label);r.pr=!olds.length||secs<Math.min(...olds.map(x=>x.secs));
+    const b=enduBest(it.cat,it.name);pr=!b||secs<b.secs;r={id,date,cat:it.cat,label:it.name,km:it.km,secs};
   }
-  S.records=recList().concat([r]);touch();render();toast(r.pr?'Nouveau record ! 🏆':'Enregistré');
+  S.records=recList().concat([r]);touch();render();toast(pr?'Nouveau record ! 🏆':'Enregistré');
 }
 /* ---------- D'autres cours ---------- */
 const COURS_CATS=[['cali','Callisthénie'],['yoga','Yoga et pilates'],['souple','Souplesse et mobilité'],['cardio','Cardio et sports'],['calme','Détente et équilibre']];
@@ -4636,6 +4680,7 @@ document.addEventListener('click',e=>{
     if(t==='settings'){openDrawer();return}
     if(t==='todos')t='agenda';
     if(t==='coach'||V.tab!==t)V.cours=false;
+    if(V.tab!==t||t==='records')V.recItem=null;
     V.tab=t;closeDrawer();render();window.scrollTo(0,0);
   }
   else if(a==='prev'){shiftMonth(-1)}
@@ -4688,7 +4733,11 @@ document.addEventListener('click',e=>{
   else if(a==='crestart'){S.coach=Object.assign(coachCfg(),{start:iso(monday(today))});delete S.coach.equip;V.cweek=1;touch();render();window.scrollTo(0,0)}
   else if(a==='lvlup'){const lu=levelUp();if(lu){S.coach=Object.assign(coachCfg(),{start:progStart(),level:lu.next,lvlAt:doneCount()});touch();render()}}
   else if(a==='lvllater'){V.luLater=true;render()}
-  else if(a==='recseg'){V.recSeg=b.dataset.v;render()}
+  else if(a==='recseg'){V.recSeg=b.dataset.v;V.recFam='all';render()}
+  else if(a==='recfam'){V.recFam=b.dataset.v;render()}
+  else if(a==='recopen'){V.recItem={cat:b.dataset.c,name:b.dataset.n};render();window.scrollTo(0,0)}
+  else if(a==='recnew'){const n=(b.dataset.n||'').trim();if(n){V.recItem={cat:(V.recSeg||'lift')==='gym'?'gym':'force',name:n.slice(0,60)};render();window.scrollTo(0,0)}}
+  else if(a==='recback'){V.recItem=null;render();window.scrollTo(0,0)}
   else if(a==='recadd'){recAdd()}
   else if(a==='recdel'){S.records=recList().filter(x=>x.id!==b.dataset.id);touch();render()}
   else if(a==='coursopen'){V.cours=true;render();window.scrollTo(0,0)}
@@ -5113,6 +5162,10 @@ document.addEventListener('input',e=>{
   else return;
   touch();
 });
+document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc(e.target.value);
+  document.querySelectorAll('.recrow').forEach(r=>{r.hidden=!!q&&!r.dataset.s.includes(q)});
+  document.querySelectorAll('.recgrp').forEach(g=>{g.hidden=!!q&&!g.querySelector('.recrow:not([hidden])')});
+  const nb=$('.recnew');if(nb){const ex=[...document.querySelectorAll('.recrow')].some(r=>r.dataset.s===q);nb.hidden=!q||ex;nb.dataset.n=e.target.value.trim();nb.textContent='+ Ajouter « '+e.target.value.trim()+' »'}});
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{
   if(e.target.id==='coach-hide'&&e.target.checked){S.prefs=Object.assign(prefs(),{coach:false});touch();V.barTab=undefined;V.tab='seances';pushSync(true);render();toast('Onglet Coach masqué. Tu peux le remettre dans Menu › Séances et coach.')}
