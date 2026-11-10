@@ -573,13 +573,17 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .dragging{position:relative;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,.28);background:var(--surface);border-radius:14px;transition:none!important}
 body.dg-on{-webkit-user-select:none;user-select:none;overscroll-behavior:none}
 .cs-ex summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent);padding:8px 0 0}
-.fbar{display:flex;gap:4px;overflow-x:auto;padding:4px 2px 0;margin-bottom:12px;border-bottom:2px solid var(--line);scrollbar-width:none;align-items:flex-end}
-.fbar button{flex:none;display:flex;align-items:center;gap:6px;padding:9px 13px 8px;border-radius:12px 12px 0 0;border:1px solid transparent;border-bottom:0;background:transparent;color:var(--muted);font-weight:600;font-size:13.5px;margin-bottom:-2px}
-.fbar button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.fbar button span{background:var(--soft);color:var(--muted);font-weight:700;font-size:11.5px;padding:1px 7px;border-radius:99px}
-.fbar button[aria-pressed="true"]{background:var(--surface);border-color:var(--line);color:var(--accent);box-shadow:inset 0 3px 0 var(--accent);border-bottom:2px solid var(--surface)}.fbar button[aria-pressed="true"] span{background:var(--accent);color:var(--on-accent)}
-.fbar .fadd{color:var(--accent);border:1px dashed var(--accent);border-bottom:0;margin-left:6px;margin-bottom:6px;border-radius:10px;padding:6px 10px}
-.fbar .fk-arch{margin-left:auto}
+.fbar{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none;align-items:center}.fbar::-webkit-scrollbar{display:none}
+.fbar button{flex:none;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:13.5px;white-space:nowrap}
+.fbar button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.fbar button span{color:var(--muted);font-weight:600;font-size:12.5px}
+.fbar button[aria-pressed="true"]{background:var(--soft);border-color:var(--accent);color:var(--accent)}.fbar button[aria-pressed="true"] span{color:var(--accent)}.fbar button[aria-pressed="true"] svg{opacity:1}
+.fbar .fadd{border-style:dashed;color:var(--accent);background:transparent}
+.eqs.sc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px}.eqs.sc::-webkit-scrollbar{display:none}.eqs.sc button{flex:none;white-space:nowrap}
+.ibtn{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;text-decoration:none;padding:0}.ibtn.on{border-color:var(--accent);color:var(--accent)}
+.cacts{display:flex;gap:8px;align-items:center;margin-top:10px}.cacts .primary,.cacts .ghost{flex:1;min-width:0}
+.qlinks{display:flex;gap:8px;margin:6px 0 4px}.qlinks button{flex:1}
+details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more summary{cursor:pointer;text-align:center;padding:8px;list-style:none;font-weight:600}details.more summary::-webkit-details-marker{display:none}details.more[open] summary{color:var(--ink)}
 .swr.arch .wcard{background:transparent;border-style:dashed;opacity:.82}.swr.arch .wcard b::before{content:'🗄 ';font-size:15px}
 .ftag{background:var(--soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-size:12px;font-weight:700}
 .lvh{display:flex;align-items:baseline;justify-content:space-between;margin:20px 2px 8px;padding-bottom:6px;border-bottom:2px solid var(--line);font-size:19px}.lvh em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}.lvh.lv0{border-color:#34c759}.lvh.lv1{border-color:#ff9f0a}.lvh.lv2{border-color:#ff453a}
@@ -1379,7 +1383,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 68';
+const APP_VERSION='2026.11.10 · 69';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2662,8 +2666,7 @@ function renderSeances(){
   if(uiSimple()&&!V.wfull)return renderSeancesSimple();
   const sg=V.wseg||'hist';
   return '<div class="cal-head"><h2>Séances</h2><button type="button" class="primary" data-act="wnew">Nouvelle séance</button></div>'+(coachActive()?levelBanner()+todayCoachCard(false):'')
-   +'<button type="button" class="ghost" data-act="tab" data-tab="records" style="width:100%;margin-bottom:12px">🏆 Mes records</button>'
-   +'<div class="modes">'+[['hist','Historique'],['suivi','Suivi'],['prog','Par exercice']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
+      +'<div class="modes">'+[['hist','Historique'],['suivi','Suivi'],['prog','Par exercice']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'<button type="button" data-act="tab" data-tab="records">🏆 Records</button></div>'
    +(sg==='hist'?seancesHist():sg==='suivi'?perChips()+suiviSport():seancesProg())
    +(uiSimple()?'<button type="button" class="linkbtn" data-act="wsimple" style="display:block;margin:16px auto">Revenir à l\'affichage simple</button>':'');
 }
@@ -2687,7 +2690,7 @@ function wFilter(list){
 function folderBar(){
   const f=V.wfolder||'all',fs=wFolders(),cnt=k=>S.workouts.filter(w=>k==='arch'?w.archived:!w.archived&&(k==='all'||w.folder===k)).length;
   const ic={all:'<path d="M4 6h16M4 12h16M4 18h16"/>',arch:'<path d="M3 5h18v4H3zM5 9v10h14V9M10 13h4"/>',f:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
-  return '<div class="fbar">'+[['all','Toutes'],...fs.map(x=>[x.id,x.name]),['arch','Archives']].map(x=>'<button type="button" class="'+(x[0]==='arch'?'fk-arch':'')+'" data-act="wfold" data-f="'+x[0]+'" aria-pressed="'+(f===x[0])+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+(x[0]==='all'?ic.all:x[0]==='arch'?ic.arch:ic.f)+'</svg>'+esc(x[1])+' <span>'+cnt(x[0])+'</span></button>').join('')+'<button type="button" data-act="wnewfold" class="fadd" aria-label="Nouveau dossier">+ Dossier</button></div>';
+  return '<div class="fbar">'+[['all','Toutes'],...fs.map(x=>[x.id,x.name]),['arch','Archives']].map(x=>'<button type="button" data-act="wfold" data-f="'+x[0]+'" aria-pressed="'+(f===x[0])+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+(x[0]==='all'?ic.all:x[0]==='arch'?ic.arch:ic.f)+'</svg>'+esc(x[1])+' <span>'+cnt(x[0])+'</span></button>').join('')+'<button type="button" data-act="wnewfold" class="fadd" aria-label="Nouveau dossier">+ Dossier</button></div>';
 }
 function wRow(w,simple){
   const v=wVol(w),fd=wFolders().find(x=>x.id===w.folder);
@@ -2753,10 +2756,9 @@ function renderSeancesSimple(){
   if(lu){const pct=Math.min(100,Math.round(lu.n/lu.need*100));h+='<section class="card"><div class="row"><b>Ta progression</b><span class="note">'+lu.n+' / '+lu.need+' séances</span></div><div class="bar" style="margin-top:8px"><i style="width:'+pct+'%;background:var(--grad)"></i></div><p class="note" style="margin-top:6px">Encore '+Math.max(0,lu.need-lu.n)+' séance'+(lu.need-lu.n>1?'s':'')+' avant de passer au niveau '+LVL[lu.next].l+'.</p></section>'}
   const plan=S.items.filter(i=>i.type==='sport'&&i.date===todayISO&&!i.done&&!i.coach);
   if(plan.length)h+='<section class="card"><b>Prévu dans ton agenda</b>'+plan.map(i=>'<div class="row" style="padding:8px 0;border-top:1px solid var(--line);margin-top:6px"><span>'+esc(i.title)+'</span><span style="display:flex;gap:6px"><button type="button" class="ghost" data-act="ishift" data-id="'+i.id+'">Décaler</button><button type="button" class="ghost" data-act="wnew" data-from="'+i.id+'">Noter</button></span></div>').join('')+'</section>';
-  h+='<section class="card"><b>Tu as fait une autre activité ?</b><p class="note" style="margin:4px 0 10px">Course, foot, piscine… note-la en deux secondes.</p><div class="eqs">'+['Course à pied','Vélo','Natation','Football','Marche','Autre sport'].map(x=>'<button type="button" data-act="wquick" data-n="'+x+'">'+x+'</button>').join('')+'</div></section>';
+  h+='<section class="card"><b>Tu as fait une autre activité ?</b><p class="note" style="margin:4px 0 10px">Course, foot, piscine… note-la en deux secondes.</p><div class="eqs sc">'+['Course à pied','Vélo','Natation','Football','Marche','Autre sport'].map(x=>'<button type="button" data-act="wquick" data-n="'+x+'">'+x+'</button>').join('')+'</div></section>';
   h+=S.workouts.length?'<h3 class="group-h">Mes séances</h3>'+wListHTML(S.workouts,true):'<p class="note" style="margin:6px 2px 14px">Tes séances apparaîtront ici.</p>';
-  h+='<button type="button" class="ghost" data-act="suivi" data-seg="sport" style="width:100%;margin-top:4px">📈 Voir mon suivi</button>';
-  h+='<button type="button" class="ghost" data-act="tab" data-tab="records" style="width:100%;margin-top:8px">🏆 Mes records</button>';
+  h+='<div class="qlinks"><button type="button" class="ghost" data-act="suivi" data-seg="sport">📈 Mon suivi</button><button type="button" class="ghost" data-act="tab" data-tab="records">🏆 Mes records</button></div>';
   h+='<button type="button" class="linkbtn" data-act="wfull" style="display:block;margin:16px auto">Affichage complet (historique, progrès, import)</button>';
   return h;
 }
@@ -3307,7 +3309,7 @@ const LEGAL={
 <h3>Éditeur</h3><p>${LIVE?'Cadence est éditée par '+n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':'Cadence est éditée par '+n+', particulier, à titre personnel et non commercial.'}<br>Contact : ${m}</p>
 <h3>Directeur de la publication</h3><p>${n}</p>
 <h3>Hébergement et paiement</h3><p>${esc(EDITEUR.hebergeur)}</p><p>Les paiements sont traités par Stripe Payments Europe, Ltd. (Dublin, Irlande). L'éditeur ne voit ni ne conserve ton numéro de carte.</p>
-<h3>Illustrations et vidéos</h3><p>Photos des exercices : Free Exercise DB (github.com/yuhonas/free-exercise-db), placées dans le domaine public (Unlicense). Les vidéos explicatives sont de simples liens vers YouTube : elles restent hébergées par leurs auteurs, qui en conservent les droits.</p>
+<h3>Illustrations et vidéos</h3><p>Photos des exercices : Free Exercise DB (github.com/yuhonas/free-exercise-db), placées dans le domaine public (Unlicense). Les vidéos explicatives sont de simples liens vers YouTube : Cadence ne les copie, ne les télécharge et ne les héberge pas. Elles restent hébergées par leurs auteurs, qui en conservent tous les droits, et leur licence n'est pas vérifiée par Cadence. Chaque cours propose aussi une recherche limitée aux vidéos sous licence Creative Commons ; pense à respecter les conditions de la licence si tu réutilises une vidéo.</p>
 <h3>Propriété intellectuelle</h3><p>Le code, le design, le nom et l'icône de Cadence appartiennent à ${n}. Leur reproduction sans autorisation écrite est interdite.</p>
 <p>Les informations sur les produits emballés proviennent d'<a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>. Ces données sont publiées sous licence Open Database License (ODbL) et appartiennent aux contributeurs d'Open Food Facts.</p>
 <p>La lecture des codes-barres utilise la bibliothèque libre ZXing, sous licence Apache 2.0.</p>`},
@@ -3953,7 +3955,7 @@ function recEndu(cat){
 function renderRecords(){
   const sg=V.recSeg||'force';
   return '<div class="cal-head"><button type="button" class="linkbtn" data-act="tab" data-tab="seances">‹ Séances</button><h2>Records</h2><span></span></div>'
-   +'<div class="eqs" style="margin-bottom:12px">'+REC_SEG.map(x=>'<button type="button" data-act="recseg" data-v="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
+   +'<div class="eqs sc" style="margin-bottom:12px">'+REC_SEG.map(x=>'<button type="button" data-act="recseg" data-v="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
    +(sg==='force'?recForce():sg==='gym'?recGym():recEndu(sg));
 }
 function recAdd(){
@@ -3985,14 +3987,14 @@ const COURS_CATS=[['cali','Callisthénie'],['yoga','Yoga et pilates'],['souple',
 const COURS_LV=['Débutant','Intermédiaire','Avancé'];
 const COURS=[
  ['cali-base','cali','Callisthénie : les bases',0,30,'Pousser, tirer, jambes et gainage avec ton poids du corps',[C('Échauffement articulaire',5),XF('Pompes',3,'8',60),XF('Squat au poids du corps',3,'15',60),XF('Rowing inversé sous une table',3,'8',75),XF('Dips sur chaise',3,'8',60),H('Gainage',3,30,45),XF('Pont fessier',3,'15',45)],'oUDzAatW6UE'],
- ['cali-bande','cali','Entraînement à l\'élastique',0,30,'Tout le corps à la maison avec une simple bande élastique',[C('Échauffement articulaire',5),XF('Tirage horizontal à l\'élastique',3,'12',60),XF('Développé épaules élastique',3,'12',60),XF('Pompes',3,'8',60),XF('Squat avec élastique',3,'15',60),XF('Face pull à l\'élastique',3,'15',45),H('Gainage',3,30,45)],null],
- ['cali-abdos','cali','Abdos et gainage',0,20,'Un tour complet du tronc, sans matériel',[H('Gainage',3,30,30),XF('Relevés de jambes',3,'10',45),H('Hollow body',3,20,30),H('Planche latérale',2,25,30),XF('Mountain climbers',3,'20',30),H('Arch hold (superman tenu)',3,20,30)],null],
+ ['cali-bande','cali','Entraînement à l\'élastique',0,30,'Tout le corps à la maison avec une simple bande élastique',[C('Échauffement articulaire',5),XF('Tirage horizontal à l\'élastique',3,'12',60),XF('Développé épaules élastique',3,'12',60),XF('Pompes',3,'8',60),XF('Squat avec élastique',3,'15',60),XF('Face pull à l\'élastique',3,'15',45),H('Gainage',3,30,45)],'uzhyH8DjZYY'],
+ ['cali-abdos','cali','Abdos et gainage',0,20,'Un tour complet du tronc, sans matériel',[H('Gainage',3,30,30),XF('Relevés de jambes',3,'10',45),H('Hollow body',3,20,30),H('Planche latérale',2,25,30),XF('Mountain climbers',3,'20',30),H('Arch hold (superman tenu)',3,20,30)],'_4FwUAr-4SQ'],
  ['cali-tractions','cali','Réussir ses premières tractions',0,30,'Suspensions, négatives et tirage horizontal pour passer de 0 à 1 traction',[C('Échauffement : poignets et épaules',5),H('Suspension à la barre',4,20,60),XF('Tractions négatives',4,'4',90),XF('Rowing inversé sous une table',3,'10',75),XF('Relevés de genoux suspendu',3,'8',60),H('Hollow body',3,25,45)],'0S2H3pPpLEA'],
  ['cali-full','cali','Circuit corps complet',1,35,'4 tours : pousser, tirer, jambes, tronc',[C('Échauffement',5),XF('Pompes',4,'12',45),XF('Tractions',4,'6',60),XF('Squats sautés',4,'12',45),XF('Dips aux barres',4,'8',45),XF('Relevés de jambes',4,'10',45)],'xWGzMW4mewE'],
  ['cali-pompes','cali','Pompes : toutes les variantes',1,30,'Diamant, archer, déclinées, pike : du plus simple au plus dur',[C('Échauffement : poignets et épaules',5),XF('Pompes',3,'15',60),XF('Pompes diamant',3,'10',60),XF('Pompes archer',3,'6 par côté',75),XF('Pompes déclinées',3,'10',60),XF('Pike push-ups',3,'8',60),H('Planche latérale',2,30,45)],'KfVbZRV8BsU'],
  ['cali-poirier','cali','Apprendre le poirier',1,30,'Poignets, épaules, gainage et équilibre contre le mur',[C('Échauffement : poignets et épaules',5),H('Équilibre contre le mur',5,30,60),XF('Pike push-ups',3,'8',60),H('Hollow body',3,30,45),H('Chandelle',3,30,45),H('Arch hold (superman tenu)',3,30,45)],'ATL79J-9z3g'],
- ['cali-jambes','cali','Jambes sans matériel',1,30,'Fentes, squats bulgares, pistol assisté et mollets',[C('Échauffement : mobilité des hanches',5),XF('Squat bulgare',3,'10 par jambe',75),XF('Fentes marchées',3,'12 par jambe',60),XF('Pistol squat assisté',3,'5 par jambe',90),XF('Pont fessier unilatéral',3,'12 par jambe',45),XF('Mollets à une jambe',3,'15 par jambe',45)],null],
- ['cali-grimpe','cali','Préhension et épaules du grimpeur',1,25,'Suspensions, tirage et gainage pour l\'escalade',[C('Échauffement : poignets et épaules',5),H('Suspension à la barre',4,25,60),XF('Tractions',4,'5',90),H('Suspension à un bras assistée',3,10,60),XF('Pompes',3,'12',45),H('Gainage',3,40,30)],null],
+ ['cali-jambes','cali','Jambes sans matériel',1,30,'Fentes, squats bulgares, pistol assisté et mollets',[C('Échauffement : mobilité des hanches',5),XF('Squat bulgare',3,'10 par jambe',75),XF('Fentes marchées',3,'12 par jambe',60),XF('Pistol squat assisté',3,'5 par jambe',90),XF('Pont fessier unilatéral',3,'12 par jambe',45),XF('Mollets à une jambe',3,'15 par jambe',45)],'SjQAHZ97pA8'],
+ ['cali-grimpe','cali','Préhension et épaules du grimpeur',1,25,'Suspensions, tirage et gainage pour l\'escalade',[C('Échauffement : poignets et épaules',5),H('Suspension à la barre',4,25,60),XF('Tractions',4,'5',90),H('Suspension à un bras assistée',3,10,60),XF('Pompes',3,'12',45),H('Gainage',3,40,30)],'OXOJgjL6Ek0'],
  ['cali-skills','cali','Skills : L-sit, planche, front lever',2,40,'Les positions tenues des gymnastes, par progressions',[C('Échauffement : poignets et épaules',6),H('L-sit aux barres',4,15,60),H('Planche (tuck) au sol',4,10,75),H('Front lever (tuck)',4,8,75),XF('Dips',3,'10',75),XF('Tractions',3,'8',90),H('Hollow body',3,45,45)],'vVlV_RQLE7E'],
  ['cali-muscleup','cali','Vers le muscle-up',2,40,'Tractions explosives, dips et transition',[C('Échauffement : poignets et épaules',6),XF('Tractions explosives',5,'4',120),XF('Dips aux barres',4,'10',90),XF('Transition aux anneaux ou à la barre (négatif)',4,'3',120),XF('Tractions australiennes pieds surélevés',3,'10',75),H('Hollow body',3,40,45)],'e4LH2Pl8go8'],
  ['yoga-reveil','yoga','Yoga du réveil',0,15,'Réveiller le corps en douceur, dos et hanches',[H('Posture de l\'enfant',1,45,5),H('Chat-vache',2,40,5),H('Chien tête en bas',3,30,10),H('Fente basse (fléchisseurs de hanche)',2,30,10),H('Pliage en avant debout',2,30,10),H('Torsion du dos allongé',2,30,10)],'afH-Tw-wp8M'],
@@ -4009,23 +4011,24 @@ const COURS=[
  ['souple-dos','souple','Mobilité du dos et posture',0,10,'Dérouiller la colonne et ouvrir la cage thoracique',[H('Chat-vache',2,40,5),H('Rotation thoracique à quatre pattes',2,30,5),H('Posture de l\'enfant',2,40,5),H('Ouverture d\'épaules au mur',2,30,5),H('Torsion du dos allongé',2,30,5)],'UlSkBdEthp0'],
  ['souple-hanches','souple','Mobilité des hanches',0,15,'Gagner en amplitude pour squatter et courir',[C('Cercles de hanches',3),H('Guirlande (squat profond)',3,40,10),H('Fente basse (fléchisseurs de hanche)',2,40,10),H('90/90 des hanches',2,40,10),H('Étirement des fessiers (pigeon)',2,40,10)],'jg7JsMezS1M'],
  ['souple-epaules','souple','Épaules et poignets',0,12,'Pour les tractions, les pompes et le poirier',[C('Échauffement : poignets et épaules',4),H('Ouverture d\'épaules au mur',3,30,10),H('Étirement des pectoraux au mur',2,30,10),H('Étirement des poignets',2,30,10),H('Étirement des triceps',2,30,10)],'DXCt1WkgWX0'],
- ['souple-course','souple','Étirements après la course',0,12,'Mollets, cuisses, hanches : récupérer après un footing',[H('Étirement des mollets au mur',2,40,5),H('Étirement des quadriceps',2,40,5),H('Étirement des ischio-jambiers',2,40,5),H('Étirement des fléchisseurs de hanche',2,40,5),H('Étirement des fessiers (pigeon)',2,40,5)],null],
+ ['souple-course','souple','Étirements après la course',0,12,'Mollets, cuisses, hanches : récupérer après un footing',[H('Étirement des mollets au mur',2,40,5),H('Étirement des quadriceps',2,40,5),H('Étirement des ischio-jambiers',2,40,5),H('Étirement des fléchisseurs de hanche',2,40,5),H('Étirement des fessiers (pigeon)',2,40,5)],'wTU4BM_FxCY'],
  ['souple-grandecart','souple','Apprendre le grand écart',1,30,'Une séance de souplesse progressive, à répéter 3 fois par semaine',[C('Échauffement articulaire',5),H('Fente basse (fléchisseurs de hanche)',3,45,15),H('Étirement des ischio-jambiers',3,45,15),H('Grand écart facial (progressif)',3,60,20),H('Grand écart latéral (progressif)',3,60,20),H('Étirement des adducteurs (papillon)',2,45,15)],'2J_eTUzubSY'],
  ['cardio-corde','cardio','Corde à sauter',0,20,'Coordination, mollets et souffle',[C('Échauffement',3),C('Corde à sauter : rythme tranquille',3,'3 min'),C('Corde à sauter : pieds joints',3,'3 min'),C('Corde à sauter : alterné',3,'3 min'),C('Corde à sauter : double rotation (essais)',3,'3 min'),C('Retour au calme',3)],'8hS-HD19qjA'],
  ['cardio-boxe','cardio','Boxe : shadow-boxing',0,25,'Frappes dans le vide, esquives et déplacements',[C('Échauffement : corde ou jumping jacks',4),C('Round 1 : jab, croisé',3,'3 min'),C('Round 2 : crochets, esquives',3,'3 min'),C('Round 3 : enchaînements libres',3,'3 min'),C('Round 4 : vitesse',3,'3 min'),H('Gainage',3,30,30)],'uRvyD3YaMDI'],
- ['cardio-danse','cardio','Cardio dansé',0,20,'Bouger sur de la musique, sans chorégraphie imposée',[C('Échauffement : mobilité des épaules et des hanches',4),C('Danse libre : tempo tranquille',4,'4 min'),C('Danse libre : tempo rapide',4,'4 min'),C('Danse libre : tempo tranquille',4,'4 min'),C('Retour au calme',4)],null],
+ ['cardio-danse','cardio','Cardio dansé',0,20,'Bouger sur de la musique, sans chorégraphie imposée',[C('Échauffement : mobilité des épaules et des hanches',4),C('Danse libre : tempo tranquille',4,'4 min'),C('Danse libre : tempo rapide',4,'4 min'),C('Danse libre : tempo tranquille',4,'4 min'),C('Retour au calme',4)],'XIdwsYcxzl4'],
  ['cardio-gammes','cardio','Technique de course : gammes',0,20,'Montées de genoux, talons-fesses, foulées bondissantes',[C('Footing d\'échauffement',8),XF('Montées de genoux',3,'20 m',30),XF('Talons-fesses',3,'20 m',30),XF('Foulées bondissantes',3,'20 m',45),XF('Accélérations progressives',4,'60 m',60)],'uRaF82C-n1g'],
  ['cardio-hiit','cardio','HIIT 20 minutes sans matériel',1,20,'40 s d\'effort, 20 s de pause, 4 tours',[C('Échauffement',3),XF('Burpees',4,'40 s',20),XF('Squats sautés',4,'40 s',20),XF('Mountain climbers',4,'40 s',20),XF('Pompes',4,'40 s',20),XF('Jumping jacks',4,'40 s',20)],'CLQhHC0nKVs'],
- ['cardio-tabata','cardio','Tabata : 4 minutes qui comptent',1,20,'20 s d\'effort, 10 s de pause, 8 fois, sur 4 exercices',[C('Échauffement',4),XF('Tabata : squats sautés',8,'20 s',10),XF('Tabata : pompes',8,'20 s',10),XF('Tabata : mountain climbers',8,'20 s',10),XF('Tabata : burpees',8,'20 s',10)],null],
- ['cardio-coureur','cardio','Renforcement du coureur',1,30,'Chevilles, hanches et gainage pour éviter les blessures',[C('Échauffement',5),XF('Mollets à une jambe',3,'15 par jambe',45),XF('Fentes marchées',3,'12 par jambe',45),XF('Pont fessier unilatéral',3,'12 par jambe',45),H('Planche latérale',3,30,30),XF('Squat bulgare',3,'8 par jambe',60)],null],
- ['cardio-velo','cardio','Renforcement du cycliste',1,30,'Cuisses, fessiers et gainage pour pédaler plus fort',[C('Échauffement',5),XF('Squat avec pause en bas',4,'10',75),XF('Fentes arrière',3,'10 par jambe',60),XF('Pont fessier unilatéral',3,'12 par jambe',45),H('Gainage',3,45,30),H('Superman tenu',3,30,30)],null],
+ ['cardio-tabata','cardio','Tabata : 4 minutes qui comptent',1,20,'20 s d\'effort, 10 s de pause, 8 fois, sur 4 exercices',[C('Échauffement',4),XF('Tabata : squats sautés',8,'20 s',10),XF('Tabata : pompes',8,'20 s',10),XF('Tabata : mountain climbers',8,'20 s',10),XF('Tabata : burpees',8,'20 s',10)],'ZRRn4bWCq7I'],
+ ['cardio-coureur','cardio','Renforcement du coureur',1,30,'Chevilles, hanches et gainage pour éviter les blessures',[C('Échauffement',5),XF('Mollets à une jambe',3,'15 par jambe',45),XF('Fentes marchées',3,'12 par jambe',45),XF('Pont fessier unilatéral',3,'12 par jambe',45),H('Planche latérale',3,30,30),XF('Squat bulgare',3,'8 par jambe',60)],'jSO1-3Obt7Y'],
+ ['cardio-velo','cardio','Renforcement du cycliste',1,30,'Cuisses, fessiers et gainage pour pédaler plus fort',[C('Échauffement',5),XF('Squat avec pause en bas',4,'10',75),XF('Fentes arrière',3,'10 par jambe',60),XF('Pont fessier unilatéral',3,'12 par jambe',45),H('Gainage',3,45,30),H('Superman tenu',3,30,30)],'UmO2oBLwnDE'],
  ['cardio-natation','cardio','Natation à sec : épaules et gainage',1,20,'Renforcer ce qui fait nager vite, sans piscine',[C('Échauffement : poignets et épaules',4),XF('Y-T-W au sol',3,'10',45),XF('Rotations de tronc avec élastique',3,'12',45),H('Gainage',3,40,30),XF('Battements de jambes au sol',3,'30 s',30)],'vmp8LJ6nQi8'],
  ['calme-respiration','calme','Respiration et relaxation',0,10,'Cohérence cardiaque et relâchement, pour calmer le stress',[C('Respiration 5-5 (cohérence cardiaque)',5),C('Respiration carrée',3,'3 min'),C('Scan corporel',3)],'vs_8iqpGoEM'],
  ['calme-meditation','calme','Méditation guidée',0,15,'S\'asseoir, observer son souffle, laisser passer les pensées',[C('Installation et respiration',3),C('Attention au souffle',8),C('Scan corporel',4)],'UB6fOzZs_Rg'],
- ['calme-nidra','calme','Relaxation profonde (yoga nidra)',0,20,'Allongé, une relaxation guidée pour récupérer',[C('Installation, allongé',3),C('Scan corporel',8),C('Respiration lente',5),C('Retour en douceur',4)],null],
+ ['calme-nidra','calme','Relaxation profonde (yoga nidra)',0,20,'Allongé, une relaxation guidée pour récupérer',[C('Installation, allongé',3),C('Scan corporel',8),C('Respiration lente',5),C('Retour en douceur',4)],'l5fZttocKCU'],
  ['calme-taichi','calme','Tai-chi : mouvements lents',0,20,'Fluidité, équilibre et concentration',[C('Ancrage et respiration',3),XF('Ouverture et fermeture des bras',3,'8',20),XF('Transfert de poids lent',3,'10',20),XF('Cercles de bras en marchant',3,'8',20),C('Marche lente',5)],'aX1H9ChBRCU'],
  ['calme-equilibre','calme','Équilibre et proprioception',0,15,'Chevilles et genoux solides, utile pour tous les sports',[H('Équilibre sur une jambe',3,30,15),H('Arbre',2,30,10),XF('Fentes arrière lentes',3,'8 par jambe',30),XF('Planche vers l\'avant sur une jambe',3,'6 par jambe',30),H('Équilibre sur une jambe, yeux fermés',2,20,15)],'88nPdWX2o7U']
 ].map(c=>({key:c[0],cat:c[1],title:c[2],lvl:c[3],dur:c[4],focus:c[5],ex:c[6],vid:c[7],sport:c[1]==='cali'?'Musculation · Full body':c[1]==='cardio'?'Cardio':'Mobilité et étirements',wd:(new Date().getDay()+6)%7}));
+function coursCC(c){return 'https://www.youtube.com/results?search_query='+encodeURIComponent(c.title+' français')+'&sp=EgIwAQ%253D%253D'}
 function coursVid(c){return c.vid?'https://www.youtube.com/watch?v='+c.vid:'https://www.youtube.com/results?search_query='+encodeURIComponent(c.title+' cours complet français')}
 function coursLog(){return Array.isArray(S.coursLog)?S.coursLog:[]}
 function coursSuivi(){
@@ -4050,17 +4053,16 @@ function renderCours(){
    +'<div class="modes" style="margin-bottom:12px">'+[['cat','Catalogue'],['suivi','Mon suivi des cours']].map(x=>'<button type="button" data-act="coursseg" data-v="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
   if(sg==='suivi')return h+coursSuivi();
   const list=COURS.filter(c=>(cat==='all'||c.cat===cat)&&(lv==='all'||c.lvl===lv));
-  h+='<p class="note" style="margin:0 2px 12px">'+COURS.length+' cours classés par niveau. Lance-en un ou ajoute-le à ton agenda.</p>';
-  h+='<div class="eqs" style="margin-bottom:8px">'+[['all','Toutes catégories']].concat(COURS_CATS).map(x=>'<button type="button" data-act="courscat" data-v="'+x[0]+'" aria-pressed="'+(cat===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
-  h+='<div class="eqs" style="margin-bottom:12px">'+[['all','Tous niveaux'],[0,'Débutant'],[1,'Intermédiaire'],[2,'Avancé']].map(x=>'<button type="button" data-act="coursl" data-v="'+x[0]+'" aria-pressed="'+(String(lv)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>';
+  h+='<div class="eqs sc" style="margin-bottom:6px">'+[['all','Toutes ('+COURS.length+')']].concat(COURS_CATS).map(x=>'<button type="button" data-act="courscat" data-v="'+x[0]+'" aria-pressed="'+(cat===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
+  h+='<div class="eqs sc" style="margin-bottom:4px">'+[['all','Tous niveaux'],[0,'Débutant'],[1,'Intermédiaire'],[2,'Avancé']].map(x=>'<button type="button" data-act="coursl" data-v="'+x[0]+'" aria-pressed="'+(String(lv)===String(x[0]))+'">'+x[1]+'</button>').join('')+'</div>';
   if(!list.length)h+='<p class="note">Aucun cours avec ces filtres.</p>';
   for(let L=0;L<3;L++){
     const sub=list.filter(c=>c.lvl===L);if(!sub.length)continue;
     h+='<h3 class="lvh lv'+L+'"><span>'+COURS_LV[L]+'</span><em>'+sub.length+' cours</em></h3>';
     for(const c of sub){const open=V.coursOpen===c.key,ci=COURS.indexOf(c);
-      h+='<section class="card coach-s"><span class="cday">'+esc(COURS_CATS.find(x=>x[0]===c.cat)[1])+' · '+COURS_LV[c.lvl]+' · ≈ '+c.dur+' min</span><h3>'+esc(c.title)+'</h3><p class="note">'+esc(c.focus)+'</p>'
-       +(open?'<div class="ssl" style="margin-top:8px">'+c.ex.map((e,k)=>'<div class="ssx"><span class="ssn">'+(k+1)+'</span><div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'</div>').join('')+'</div>':'')
-       +'<div class="row" style="justify-content:flex-start;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="primary" data-act="coursgo" data-i="'+ci+'">Démarrer</button><button type="button" class="ghost" data-act="coursplan" data-i="'+ci+'">Ajouter à l\'agenda</button><a class="ghost vidlink" href="'+coursVid(c)+'" target="_blank" rel="noopener">▶ Vidéo</a><button type="button" class="linkbtn" data-act="coursx" data-k="'+c.key+'">'+(open?'Masquer':'Voir le détail')+'</button></div></section>'}
+      h+='<section class="card coach-s cc"><span class="cday">'+esc(COURS_CATS.find(x=>x[0]===c.cat)[1])+' · ≈ '+c.dur+' min</span><h3>'+esc(c.title)+'</h3><p class="note">'+esc(c.focus)+'</p>'
+       +(open?'<div class="ssl" style="margin-top:8px">'+c.ex.map((e,k)=>'<div class="ssx"><span class="ssn">'+(k+1)+'</span><div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+'</div>').join('')+'<p class="note" style="margin-top:8px">Vidéo du cours : lien vers YouTube, qui reste la propriété de son auteur. <a href="'+coursCC(c)+'" target="_blank" rel="noopener">Voir des vidéos libres de droits (Creative Commons)</a></p></div>':'')
+       +'<div class="cacts"><button type="button" class="primary" data-act="coursgo" data-i="'+ci+'">Démarrer</button><button type="button" class="ibtn" data-act="coursplan" data-i="'+ci+'" aria-label="Ajouter à l\'agenda" title="Ajouter à l\'agenda">📅</button><a class="ibtn" href="'+coursVid(c)+'" target="_blank" rel="noopener" aria-label="Voir une vidéo du cours" title="Vidéo">▶</a><button type="button" class="ibtn'+(open?' on':'')+'" data-act="coursx" data-k="'+c.key+'" aria-label="'+(open?'Masquer le détail':'Voir le détail')+'" aria-expanded="'+open+'">'+(open?'⌃':'⌄')+'</button></div></section>'}
   }
   return h;
 }
@@ -4353,22 +4355,22 @@ function renderCoach(){
    +'<button type="button" class="linkbtn" data-act="crestart" style="display:block;margin:14px auto 0">Recommencer le programme à la semaine 1</button></section>';
   // Plan sur 12 semaines
   if(cw>12)h+='<section class="card lvlup"><b>Programme de 12 semaines terminé 🎉</b><p class="note">Lance un nouveau cycle : le coach repart de la semaine 1 avec ton niveau actuel.</p><button type="button" class="primary" data-act="crestart" style="margin-top:8px">Nouveau programme</button></section>';
-  h+='<section class="card plan12"><div class="row"><b>Semaine '+Math.min(vw,12)+' sur 12</b><span class="note">'+esc(cap(FMT.short.format(addDays(start,(vw-1)*7))))+' → '+esc(FMT.short.format(addDays(start,(vw-1)*7+6)))+'</span></div>'
+  const p12='<div class="plan12"><div class="row"><b>Semaine '+Math.min(vw,12)+' sur 12</b><span class="note">'+esc(cap(FMT.short.format(addDays(start,(vw-1)*7))))+' → '+esc(FMT.short.format(addDays(start,(vw-1)*7+6)))+'</span></div>'
    +'<div class="weeks">'+Array.from({length:12},(_,i)=>{const n=i+1,wi=weekInfo(n);return '<button type="button" data-act="cweek" data-n="'+n+'" class="'+(wi.prog?'cp':'c'+wi.c)+(wi.deload?' dl':'')+(n===cw?' now':'')+(n<cw?' past':'')+'" aria-pressed="'+(n===vw)+'" aria-label="Semaine '+n+'">'+n+'</button>'}).join('')+'</div>'
    +(W.prog?'':'<div class="cycles">'+CYCLES.map((c,i)=>'<span class="c'+i+'"><i></i>'+c[0]+'</span>').join('')+'<span class="dl"><i></i>Allégée</span></div>')
    +'<p class="cyc-why"><b>'+(W.prog?'':'Cycle '+(W.c+1)+' · ')+W.name+(W.deload?' · semaine allégée':'')+'</b><br>'+esc(W.deload?'Récupère : une série de moins, charges un peu plus légères. C\'est là que tu progresses.':W.why)+'</p>'
    +(evPh?'<p class="cyc-why"><b style="color:var(--accent)">'+esc(evPh.name)+'</b><br>'+esc(evPh.why)+'</p>':'')
-   +(isCur?'':'<button type="button" class="linkbtn" data-act="cweek" data-n="'+Math.min(cw,12)+'">‹ Revenir à cette semaine</button>')+'</section>';
+   +(isCur?'':'<button type="button" class="linkbtn" data-act="cweek" data-n="'+Math.min(cw,12)+'">‹ Revenir à cette semaine</button>')+'</div>';
+  h+=acc('plan12','sport','Semaine '+Math.min(vw,12)+' sur 12',esc(cap(FMT.short.format(addDays(start,(vw-1)*7)))+' → '+FMT.short.format(addDays(start,(vw-1)*7+6))+(W.prog?'':' · '+W.name)),p12,false);
   // Semaine : bandeau des jours puis séances
   h+='<div class="wkstrip">'+WD.map((d,i)=>{const s=wk.find(x=>x.wd===i);return '<div'+(s?' data-act="sopen" data-i="'+wk.indexOf(s)+'"':'')+' class="'+(s?'on':'')+(isCur&&i===tw?' today':'')+'"><span>'+d.slice(0,1)+'</span><b>'+(s?esc(s.title.replace('Callisthénie · ','').split(' ')[0]):'Repos')+'</b></div>'}).join('')+'</div>';
   if(isCur&&ti<0)h+='<section class="card coach-s today"><span class="cday">Aujourd\'hui</span><h3>Repos</h3><p class="note">Récupère. Si tu veux bouger : 12 minutes d\'étirements.</p><div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="primary" data-act="cstretch">Étirements · 12 min</button></div></section>';
   if(ti>=0)h+=sessCard(wk[ti],ti,true,vw);
   h+=wk.map((s,i)=>i===ti?'':sessCard(s,i,false,vw)).join('');
   if(sa&&(strength||cfg.style==='crossfit'))h+='<p class="note" style="margin:4px 2px 12px">'+esc(sportTip(cfg,sa))+'</p>';
-  if(cfg.style!=='mobi')h+='<section class="card coach-s"><span class="cday">À tout moment</span><h3>Étirements de récupération</h3><p class="note">12 min, après une séance ou un jour de repos.</p><div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="ghost" data-act="cstretch">Commencer</button></div></section>';
   if(isCur)h+='<button type="button" class="ghost" data-act="cplanall" style="width:100%">Ajouter toute la semaine à l\'agenda</button>';
-  h+='<button type="button" class="card coach-s" data-act="coursopen" style="width:100%;text-align:left;display:block"><span class="cday">Découvrir</span><h3>D\'autres cours</h3><p class="note">Callisthénie, yoga, souplesse, boxe, méditation… des dizaines de cours pour apprendre autre chose.</p></button>';
-  h+='<label class="ck" style="margin-top:14px"><input type="checkbox" id="coach-hide"><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button>';
+  h+='<section class="card coach-s"><span class="cday">À tout moment</span><div class="cacts" style="margin-top:6px">'+(cfg.style!=='mobi'?'<button type="button" class="ghost" data-act="cstretch">Étirements</button>':'')+'<button type="button" class="primary" data-act="coursopen">D\'autres cours ›</button></div><p class="note" style="margin-top:8px">'+COURS.length+' cours : callisthénie, yoga, souplesse, boxe, méditation…</p></section>';
+  h+='<details class="more"><summary>Réglages du coach</summary><label class="ck"><input type="checkbox" id="coach-hide"><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button></details>';
   if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
   return h;
 }
@@ -4688,7 +4690,7 @@ document.addEventListener('click',e=>{
   else if(a==='coursgo'){const c=COURS[+b.dataset.i];if(c){const w=coachToWorkout(c);w.note='Cours : '+c.title;S.workouts.push(w);
     if(!coursLog().some(x=>x.key===c.key&&x.date===todayISO))S.coursLog=coursLog().concat([{id:uid(),date:todayISO,key:c.key,title:c.title,cat:c.cat,dur:c.dur}]);
     touch();askGuided(w)}}
-  else if(a==='coursplan'){const c=COURS[+b.dataset.i];if(c){const ok=coachPlan(c);touch();b.textContent=ok?'Ajouté à l\'agenda':'Déjà dans l\'agenda';b.disabled=true}}
+  else if(a==='coursplan'){const c=COURS[+b.dataset.i];if(c){const ok=coachPlan(c);touch();b.textContent='✓';b.title=ok?'Ajouté à l\'agenda':'Déjà dans l\'agenda';b.disabled=true;toast(ok?'Ajouté à l\'agenda':'Déjà dans l\'agenda')}}
   else if(a==='cstretch'){const w=coachToWorkout(stretchSession());S.workouts.push(w);touch();askGuided(w)}
   else if(a==='wfull'){V.wfull=true;render();window.scrollTo(0,0)}
   else if(a==='wsimple'){V.wfull=false;render();window.scrollTo(0,0)}
