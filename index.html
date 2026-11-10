@@ -628,6 +628,7 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .isl{left:0;right:0;background:var(--soft);border-radius:8px;gap:6px;padding:6px;align-items:stretch}.isl button{border:0;border-radius:10px;font-weight:700;font-size:13px;width:86px;background:var(--surface);color:var(--accent);box-shadow:0 1px 0 var(--line)}.isl button:first-child{background:var(--grad,var(--accent));color:var(--on-accent)}.isl button:last-child{color:var(--ink);border:1px solid var(--line)}
 .isd{left:0;right:0;justify-content:flex-end;align-items:center;padding-right:20px;background:var(--danger);color:#fff;font-weight:700;font-size:14px}
 .isw.dr .isl,.isw.open-r .isl{visibility:visible}.isw.dl .isd{visibility:visible}
+.cpoff{display:flex;gap:10px;align-items:center;border-style:dashed}.cpoff>div{flex:1;min-width:0}.cpoff .ghost{flex:none}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}.kpis b{display:block;font-family:var(--font-display);font-size:26px}.kpis span{font-size:12.5px;color:var(--muted)}
@@ -1434,7 +1435,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 81';
+const APP_VERSION='2026.11.10 · 82';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1652,7 +1653,6 @@ function finishTuto(){
   if(T&&T.set==='coach'){S.tutoC=1;touch();V.tab='coach';render();window.scrollTo(0,0);setTimeout(maybeOnb,200);return}
   S.tuto=1;
   touch();
-  if(V.tab==='coach'&&prefs().coach===false)V.tab='seances';
   render();window.scrollTo(0,0);setTimeout(()=>{maybeTuto();maybeOnb()},200);
 }
 const dietChips=d=>'<span class="clab">Régime</span><div class="eqs">'+DIET_BASE.map(x=>'<button type="button" data-act="dset" data-k="base" data-v="'+x[0]+'" aria-pressed="'+((d.base||'none')===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
@@ -2456,7 +2456,7 @@ function renderSettings(){
     const onoff=v=>v?'Activé':'Désactivé';
     return head+'<h2 class="pg-t">Séances et coach</h2>'
      +acc('t-coach','coach','Coach personnel',esc(coachActive()?'Programme actif':coachUnlocked()?'Programme à créer':'Cadence + Coach'),
-        row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Onglet Coach','Désactivé : l\'onglet Coach disparaît et tu crées tes propres séances dans Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
+        row('coach',p.coach,[[true,'Activé'],[false,'Désactivé']],'Séances du coach','Désactivé : l\'onglet Coach reste accessible, mais ses séances et suggestions n\'apparaissent plus dans l\'onglet Séances.'+(IS_PWA&&!coachUnlocked()?' Le coach fait partie de la formule Cadence + Coach.':''))
         +(coachActive()?'<button type="button" class="ghost" data-act="onbredo" style="width:100%;margin-top:6px">Refaire le questionnaire</button><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:8px auto 0">Revoir le tutoriel du coach</button>':''),true,[onoff(p.coach),!!p.coach])
      +acc('t-pend','seance','Pendant la séance',esc('Animations : '+({ask:'demander',always:'toujours',never:'jamais'}[p.anim]||'demander')+' · Minuteur : '+(p.timer?'oui':'non')),
         row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
@@ -2806,7 +2806,7 @@ function delWorkout(id){
 })();
 function renderSeancesSimple(){
   const lu=levelUp(),n=doneCount();
-  let h='<div class="cal-head"><h2>Séances</h2></div>'+levelBanner()+todayCoachCard(true);
+  let h='<div class="cal-head"><h2>Séances</h2></div>'+(coachActive()?levelBanner()+todayCoachCard(true):'');
   if(lu){const pct=Math.min(100,Math.round(lu.n/lu.need*100));h+='<section class="card"><div class="row"><b>Ta progression</b><span class="note">'+lu.n+' / '+lu.need+' séances</span></div><div class="bar" style="margin-top:8px"><i style="width:'+pct+'%;background:var(--grad)"></i></div><p class="note" style="margin-top:6px">Encore '+Math.max(0,lu.need-lu.n)+' séance'+(lu.need-lu.n>1?'s':'')+' avant de passer au niveau '+LVL[lu.next].l+'.</p></section>'}
   const plan=S.items.filter(i=>i.type==='sport'&&i.date===todayISO&&!i.done&&!i.coach);
   if(plan.length)h+='<section class="card"><b>Prévu dans ton agenda</b>'+plan.map(i=>'<div class="row" style="padding:8px 0;border-top:1px solid var(--line);margin-top:6px"><span>'+esc(i.title)+'</span><span style="display:flex;gap:6px"><button type="button" class="ghost" data-act="ishift" data-id="'+i.id+'">Décaler</button><button type="button" class="ghost" data-act="wnew" data-from="'+i.id+'">Noter</button></span></div>').join('')+'</section>';
@@ -3590,8 +3590,7 @@ function moveTabInd(){
 window.addEventListener('resize',()=>{const ind=$('.tabind');if(ind){ind.classList.add('still');V.barTab=undefined;moveTabInd()}});
 function render(){
   $('#today-label').textContent=headLabel();
-  if(V.tab==='coach'&&!prefs().coach)V.tab='seances';
-  $('.tabs').classList.toggle('nocoach',!prefs().coach);
+  $('.tabs').classList.remove('nocoach');
   document.querySelectorAll('.tabs button').forEach(b=>{if(b.dataset.tab===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   moveTabInd();
   {const g=$('.gear');if(g){if(V.tab==='settings'||V.tab==='poids')g.setAttribute('aria-current','page');else g.removeAttribute('aria-current')}}
@@ -4491,7 +4490,7 @@ function renderCoachPreview(){
    +(()=>{const sp=sportPref(),ev=evInfo();return ENDU.includes(sp.k)||ev?'<button type="button" class="card evteaser" data-act="cpsale"><span class="xbadge" style="margin:0">Expert</span><b>'+(ev?esc(ev.name)+(ev.days>0?' dans '+ev.days+' jours':''):'Séances seuil et expert')+'</b><small>Seuil, VMA, affûtage : le coach prépare ton échéance. 🔒 Cadence + Coach</small></button>':''})()
    +'<div class="cfeat">'+[['🗓','12 semaines','qui progressent'],['⏱','Séance guidée','avec minuteur'],['🎯','Sur mesure','niveau, matériel']].map(f=>'<button type="button" data-act="cpsale"><span aria-hidden="true">'+f[0]+'</span><b>'+f[1]+'</b><small>'+f[2]+'</small></button>').join('')+'</div>'
    +'<button type="button" class="primary big" data-act="cpsale" style="width:100%;margin-top:14px">Débloquer le coach</button>'
-   +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:12px auto">Je fais mes propres séances : masquer le coach</button>';
+   +'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:12px auto">Je fais mes propres séances</button>';
   return h;
 }
 const COACH_LOCKED_ACTS=['icuform','icusave','actform','actfile','actsave','stravaconnect','stravasync','cstyletxt','cevent','cevdel','evopen','cstart','cplan','cshift','cplanall','copen','cset','ceq','crestart','csporttxt','cstretch','onbredo'];
@@ -4514,6 +4513,7 @@ function renderCoach(){
   const W=weekInfo(Math.min(12,vw)),start=parseISO(progStart());
   let h='<div class="cal-head"><h2>Coach</h2><span class="cgoal">'+gl+(T.ok?' · '+nf.format(T.kcal)+' kcal':'')+'</span></div>'+(locked?'<button type="button" class="cpbar" data-act="cpunlock"><span class="cp-bub sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></svg></span><span class="cpbar-t"><b>Aperçu du coach</b><span>Voici le programme qu\'il te prépare. Débloque-le avec Cadence + Coach.</span></span><span class="cpbar-go">Débloquer</span></button><div class="cprev">':levelBanner());
   const ev=evInfo(),evPh=evPhase(vw),curPh=evPhase(cw);
+  if(!prefs().coach)h+='<section class="card cpoff"><div><b>Tu fais tes propres séances</b><p class="note">Le programme reste consultable ici, mais il n\'est plus proposé dans l\'onglet Séances.</p></div><button type="button" class="ghost" data-act="coachon">Réactiver</button></section>';
   // Mon programme : carte bien visible
   h+='<button type="button" class="progcard" data-act="copen" aria-expanded="'+!!V.coachOpen+'"><span class="pc-ic">⚙</span><span class="pc-t"><b>Mon programme</b><span>'+esc([sl,strength?fl[1]:'',withEq?(cfg.place==='gym'?'Salle':'Maison'):'',cfg.days+' séances / sem.',LVL[cfg.level].l].filter(Boolean).join(' · '))+'</span></span><span class="pc-go">'+(V.coachOpen?'Fermer':'Modifier')+'</span></button>';
   if(V.coachOpen)h+='<section class="card cset">'
@@ -4551,8 +4551,8 @@ function renderCoach(){
   h+=wk.map((s,i)=>i===ti?'':sessCard(s,i,false,vw)).join('');
   if(sa&&(strength||cfg.style==='crossfit'))h+='<p class="note" style="margin:4px 2px 12px">'+esc(sportTip(cfg,sa))+'</p>';
   h+='<section class="card coach-s"><span class="cday">À tout moment</span><div class="cacts" style="margin-top:6px">'+(cfg.style!=='mobi'?'<button type="button" class="ghost" data-act="cstretch">Étirements</button>':'')+'<button type="button" class="primary" data-act="coursopen">D\'autres cours ›</button></div><p class="note" style="margin-top:8px">'+COURS.length+' cours : callisthénie, yoga, souplesse, boxe, méditation…</p></section>';
-  h+='<details class="more"><summary>Réglages du coach</summary><label class="ck"><input type="checkbox" id="coach-hide"><span>Je fais mes propres séances : masquer l\'onglet Coach</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button></details>';
-  if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances : masquer le coach</button>';
+  h+='<details class="more"><summary>Réglages du coach</summary><label class="ck"><input type="checkbox" id="coach-hide"'+(prefs().coach?'':' checked')+'><span>Je fais mes propres séances : ne pas afficher les séances du coach dans Séances</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button></details>';
+  if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances</button>';
   return h;
 }
 function coachToWorkout(s,agendaId){
@@ -4829,7 +4829,7 @@ document.addEventListener('click',e=>{
   else if(a==='cstart'){$('#ssheet').hidden=true;const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const w=coachToWorkout(s);S.workouts.push(w);touch();askGuided(w)}
   else if(a==='pyes'||a==='pno'){if($('#pp-rem').checked){S.prefs=Object.assign(prefs(),{anim:a==='pyes'?'always':'never'});touch()}$('#pprompt').hidden=true;openPlayer(V.pendingW,a==='pyes')}
   else if(a==='pmanual'){$('#pprompt').hidden=true;V.tab='seances';V.wEdit=V.pendingW;render();window.scrollTo(0,0)}
-  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v});touch();if(b.dataset.k==='coachH'||b.dataset.k==='coach')pushSync(true);if(b.dataset.k==='coach'){V.barTab=undefined;if(v==='false'&&V.tab==='coach')V.tab='seances'}render();if(b.dataset.k==='coach'&&v==='false'&&!V.sec)toast('Coach masqué. Tu peux le réactiver dans Réglages, Séances et coach.')}
+  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v});touch();if(b.dataset.k==='coachH'||b.dataset.k==='coach')pushSync(true);if(b.dataset.k==='coach'){V.barTab=undefined;if(v==='false'&&V.tab==='coach')V.tab='seances'}render();if(b.dataset.k==='coach'&&v==='false'&&!V.sec)toast('Le coach ne proposera pas de séances. Tu peux le réactiver dans Réglages.')}
   else if(a==='onbredo'){closeDrawer();V.onbShown=true;openOnb()}
   else if(a==='onbpick'){const x=onbSteps()[V.onb.step],v=b.dataset.v;
     if(x.multi){const l=V.onb[x.k];V.onb[x.k]=l.includes(v)?l.filter(y=>y!==v):l.concat(v);renderOnb();return}
@@ -4841,7 +4841,8 @@ document.addEventListener('click',e=>{
   else if(a==='onbnext'){V.onb.step++;renderOnb()}
   else if(a==='onbback'){V.onb.step=Math.max(0,V.onb.step-1);renderOnb()}
   else if(a==='onbskip'){S.onb=1;touch();$('#onb').hidden=true;V.onb=null}
-  else if(a==='onbnocoach'){S.onb=1;S.prefs=Object.assign(prefs(),{coach:false});touch();$('#onb').hidden=true;V.onb=null;V.tab='seances';render();toast('Coach masqué. Tu peux le réactiver dans Réglages, Séances et coach.')}
+  else if(a==='coachon'){S.prefs=Object.assign(prefs(),{coach:true});touch();pushSync(true);render();toast('Séances du coach réactivées')}
+  else if(a==='onbnocoach'){S.onb=1;S.prefs=Object.assign(prefs(),{coach:false});touch();$('#onb').hidden=true;V.onb=null;V.tab='seances';render();toast('Le coach ne proposera pas de séances. Tu peux le réactiver dans Réglages.')}
   else if(a==='sopen'){if(e.target.closest('a'))return;openSess(+b.dataset.i)}
   else if(a==='ssclose'){$('#ssheet').hidden=true}
   else if(a==='updgo'){applyUpdate()}
@@ -5314,7 +5315,7 @@ document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc
   const nb=$('.recnew');if(nb){const ex=[...document.querySelectorAll('.recrow')].some(r=>r.dataset.s===q);nb.hidden=!q||ex;nb.dataset.n=e.target.value.trim();nb.textContent='+ Ajouter « '+e.target.value.trim()+' »'}});
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{
-  if(e.target.id==='coach-hide'&&e.target.checked){S.prefs=Object.assign(prefs(),{coach:false});touch();V.barTab=undefined;V.tab='seances';pushSync(true);render();toast('Onglet Coach masqué. Tu peux le remettre dans Menu › Séances et coach.')}
+  if(e.target.id==='coach-hide'){const off=e.target.checked;S.prefs=Object.assign(prefs(),{coach:!off});touch();pushSync(true);render();toast(off?'Séances du coach retirées de l\'onglet Séances':'Séances du coach de retour dans Séances')}
   if(e.target.id==='w-title'){const w=curW();if(w&&!w.ex.length&&hasPrev(w))render()}
   else if(e.target.id==='wp-ex'){V.wpEx=e.target.value;render()}
 });
