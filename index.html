@@ -262,8 +262,8 @@ input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;displa
 input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .r2>label,.r2>div{min-width:0;overflow:hidden}
 .swatches{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 14px}
-.sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--sw);padding:0;position:relative;flex:none;color:#fff;font-size:12px;font-weight:700}
-.sw[aria-checked="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--sw);padding:0;position:relative;flex:none;color:#fff;font-size:12px;font-weight:700}
+.sw[aria-checked="true"]{outline:2px solid var(--ink);outline-offset:2px}
 .sw.pick{background:conic-gradient(#e53935,#fdd835,#43a047,#00acc1,#1e88e5,#8e24aa,#e53935);overflow:hidden}
 .sw.pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;border:0;padding:0;min-height:0}
 .wdpick{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:2px 0 12px}
@@ -639,8 +639,12 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .mvlist{display:flex;flex-direction:column;gap:8px}
 .mvlist button{text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:600}
 .mvlist button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:96;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px;max-width:calc(100% - 32px)}
-.toast button{background:none;border:0;color:var(--accent);font-weight:700;font-size:14px;padding:0}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:200;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 8px 8px 12px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:13.5px;font-weight:600;max-width:calc(100% - 32px);animation:tdown .28s cubic-bezier(.2,1.3,.4,1)}
+.toast::before{content:'';flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+.toast span{min-width:0;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast:not(:has(button)){padding-right:16px}
+.toast button{flex:none;background:var(--accent);border:0;color:var(--on-accent);font-weight:700;font-size:12.5px;padding:6px 12px;border-radius:99px}
+@keyframes tdown{from{opacity:0;transform:translate(-50%,-16px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 .onb h2{font-size:30px;margin:4px 0 14px}
 .onb-opts{display:flex;flex-direction:column;gap:10px}
 .onb-opts button{text-align:left;padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;gap:4px}
@@ -670,6 +674,8 @@ button.big{min-height:52px;font-size:17px;padding:0 22px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .panel-head h2{font-size:26px}
 .x{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:transparent;font-size:22px;line-height:1}
+.factions{display:flex;flex-direction:column;gap:8px;margin-top:8px}.factions .primary{width:100%;min-height:50px}
+.delrow{display:flex;gap:8px}.delrow:not(:has(button:not([hidden]))){display:none}.delrow .danger{flex:1;min-width:0;min-height:40px;padding:6px 10px;font-size:13.5px;border-radius:10px}
 .actions{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
 .actions .primary{flex:1}
 .danger{background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 14px;font-weight:600}
@@ -1126,10 +1132,12 @@ label.ghost{color:var(--ink);font-weight:600}
     <label style="margin-bottom:0"><span class="lab">Couleur</span></label>
     <div class="swatches" id="f-colors" role="radiogroup" aria-label="Couleur"></div>
     <label><span class="lab">Notes</span><textarea id="f-notes" rows="2" maxlength="400"></textarea></label>
-    <div class="actions">
-      <button type="button" class="danger" id="f-del" data-act="delete" hidden>Supprimer</button>
-      <button type="button" class="danger" id="f-delser" data-act="delseries" hidden>Supprimer la série</button>
+    <div class="factions">
       <button type="submit" class="primary">Enregistrer</button>
+      <div class="delrow">
+        <button type="button" class="danger" id="f-del" data-act="delete" hidden>🗑 Supprimer</button>
+        <button type="button" class="danger" id="f-delser" data-act="delseries" hidden>Celle-ci et les suivantes</button>
+      </div>
     </div>
   </form>
 </div>
@@ -1419,7 +1427,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 76';
+const APP_VERSION='2026.11.10 · 77';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3593,7 +3601,7 @@ function openSheet(it,defaults){
   $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=!!(it&&it.rid);
   {const ri=$('#f-repinfo');if(it&&it.rid){ri.hidden=false;ri.textContent='Répétition : '+(REP_L[it.rep]||'série')+' · '+S.items.filter(x=>x.rid===it.rid&&x.date>=it.date).length+' à venir'}else ri.hidden=true}
   V.fColor=it&&okHex(it.color)?it.color:'';
-  const ds=$('#f-delser');ds.hidden=!(it&&it.rid&&S.items.filter(x=>x.rid===it.rid).length>1);ds.textContent='Supprimer cette date et les suivantes';V.delSerArmed=false;
+  const ds=$('#f-delser');ds.hidden=!(it&&it.rid&&S.items.filter(x=>x.rid===it.rid).length>1);ds.textContent='Toute la série';V.delSerArmed=false;
   const del=$('#f-del');del.hidden=!it;del.textContent='Supprimer';
   setFormType(d.type);updateSlot();updateRepeat();renderColors();
   $('#sheet').hidden=false;
@@ -4894,11 +4902,11 @@ document.addEventListener('click',e=>{
   else if(a==='add'){openSheet(null,{type:V.tab==='todos'?'todo':V.lastType,date:V.tab==='agenda'?V.sel:todayISO})}
   else if(a==='close'){closeSheet()}
   else if(a==='delete'){
-    if(!V.delArmed){V.delArmed=true;b.textContent='Confirmer la suppression';return}
-    S.items=S.items.filter(x=>x.id!==V.editId);closeSheet();touch();render();
+    const it=S.items.find(x=>x.id===V.editId);S.items=S.items.filter(x=>x.id!==V.editId);closeSheet();touch();render();if(V.dsheet)openDay(V.dsheet);
+    if(it)toast('« '+it.title+' » supprimé',()=>{S.items.push(it);touch();render();if(V.dsheet)openDay(V.dsheet)});
   }
   else if(a==='delseries'){
-    if(!V.delSerArmed){V.delSerArmed=true;b.textContent='Confirmer : supprimer la série';return}
+    if(!V.delSerArmed){V.delSerArmed=true;b.textContent='Confirmer ?';return}
     const cur=S.items.find(x=>x.id===V.editId);
     if(cur&&cur.rid)S.items=S.items.filter(x=>!(x.rid===cur.rid&&x.date>=cur.date));
     closeSheet();touch();render();
