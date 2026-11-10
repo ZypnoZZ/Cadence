@@ -751,7 +751,7 @@ button.big{min-height:52px;font-size:17px;padding:0 22px}
 .rsteps{margin:8px 0 0;padding-left:22px}
 .rsteps li{margin-bottom:10px;line-height:1.5}
 .rbtn{margin-top:8px;font-size:14px}
-.daypeek{position:fixed;z-index:40;left:max(16px,env(safe-area-inset-left,0px));right:calc(max(16px,env(safe-area-inset-right,0px)) + 68px);bottom:calc(76px + env(safe-area-inset-bottom,0px));min-height:56px;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 10px 28px rgba(0,0,0,.16);color:var(--ink);font:inherit;text-align:left;transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);animation:pkin .3s cubic-bezier(.2,.9,.3,1.2)}
+.daypeek{position:fixed;z-index:40;left:max(16px,env(safe-area-inset-left,0px));right:calc(max(16px,env(safe-area-inset-right,0px)) + 68px);bottom:calc(76px + env(safe-area-inset-bottom,0px));min-height:56px;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 97%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 10px 28px rgba(0,0,0,.16);color:var(--ink);font:inherit;text-align:left;transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);animation:pkin .3s cubic-bezier(.2,.9,.3,1.2)}
 .daypeek.off{opacity:0;transform:translateY(16px);pointer-events:none}
 @keyframes pkin{from{opacity:0;transform:translateY(16px)}}
 .daypeek .pk-d{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;flex:none;max-width:64px;line-height:1.15}
@@ -3882,7 +3882,7 @@ function dayPeek(){
   pk.innerHTML='<span class="pk-d">'+esc(cap(FMT.short.format(parseISO(V.sel))))+'</span><span class="pk-l">'+its.slice(0,3).map(i=>'<span class="pk-i'+(i.done?' done':'')+'">'+col(i)+(i.time?'<b>'+esc(i.time)+'</b> ':'')+esc(i.title)+'</span>').join('')+(its.length>3?'<span class="pk-more">+ '+(its.length-3)+' autre'+(its.length>4?'s':'')+'</span>':'')+'</span><span class="pk-go" aria-hidden="true">›</span>';
   pk.setAttribute('aria-label',its.length+' élément'+(its.length>1?'s':'')+' le '+FMT.long.format(parseISO(V.sel))+', ouvrir');
   peekSeen=false;pk.hidden=false;pk.classList.remove('off');
-  if('IntersectionObserver' in window){peekObs=new IntersectionObserver(es=>{const vis=es.some(e=>e.isIntersecting);pk.classList.toggle('off',vis)},{rootMargin:'0px 0px -140px 0px'});peekObs.observe(t)}
+  if('IntersectionObserver' in window){peekObs=new IntersectionObserver(es=>{const vis=es.some(e=>e.isIntersecting||e.boundingClientRect.top<0);pk.classList.toggle('off',vis)},{rootMargin:'0px 0px -140px 0px'});peekObs.observe(t)}
 }
 /* ---------- Feuille d'édition ---------- */
 function fillSelects(){
