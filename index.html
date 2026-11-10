@@ -616,6 +616,12 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .imove{display:flex;gap:6px;width:100%;flex-basis:100%;margin-top:8px}.imove input{flex:1;min-width:0}.imove .primary{flex:none;padding:0 14px}
 .iqd{display:flex;gap:6px;width:100%;flex-basis:100%;margin-top:6px}.iqd button{flex:1;padding:7px 4px;border-radius:99px;border:1px dashed var(--line);background:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:600}
 .iacts,.imove,.iqd{grid-column:1/-1}
+.isw{position:relative;border-radius:8px;overflow:hidden}
+.isw .isf{position:relative;z-index:1;transition:transform .2s ease;touch-action:pan-y}
+.isa{position:absolute;top:0;bottom:0;display:flex;visibility:hidden}
+.isl{left:0}.isl button{border:0;color:#fff;font-weight:700;font-size:13px;width:95px}.isl button:first-child{background:#0a84ff}.isl button:last-child{background:#8e8e93}
+.isd{left:0;right:0;justify-content:flex-end;align-items:center;padding-right:20px;background:var(--danger);color:#fff;font-weight:700;font-size:14px}
+.isw.dr .isl,.isw.open-r .isl{visibility:visible}.isw.dl .isd{visibility:visible}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}.kpis b{display:block;font-family:var(--font-display);font-size:26px}.kpis span{font-size:12.5px;color:var(--muted)}
@@ -1413,7 +1419,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 75';
+const APP_VERSION='2026.11.10 · 76';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1988,17 +1994,18 @@ function renderColors(){
    +PALETTE.map(x=>'<button type="button" class="sw" role="radio" data-act="fcolor" data-c="'+x+'" aria-checked="'+(c===x)+'" aria-label="Couleur '+x+'" style="--sw:'+x+'"></button>').join('')
    +'<label class="sw pick" role="radio" aria-checked="'+custom+'" aria-label="Couleur libre"'+(custom?' style="background:'+c+'"':'')+'><input type="color" id="f-colorpick" value="'+(okHex(c)?c:'#1E88E5')+'"></label>';
 }
-function itemHTML(it,showDate){
+function itemHTML(it,showDate,noSw){
   const dc=DATE_C[dateState(it)];
   const when=[showDate?esc(dateLabel(it)):'',it.time?esc(it.time):''].filter(Boolean).join(' · ');
   const top=[when?'<span class="when" style="color:var('+dc+')">'+when+'</span>':'',it.rid?'<span class="type">↻ '+esc(REP_L[it.rep]||'répété')+'</span>':''].filter(Boolean);
   const extra=[];
   if(it.type==='sport'&&it.dur)extra.push(esc(it.dur)+' min');
 
-  return '<li class="item'+(it.done?' done':'')+'" style="--c:'+itemColor(it)+'">'
+  const tg=noSw?'li':'div',open=noSw?'':'<li class="isw" data-id="'+it.id+'"><div class="isa isl"><button type="button" data-act="iswtom" data-id="'+it.id+'">Demain</button><button type="button" data-act="dedit" data-id="'+it.id+'">Modifier</button></div><div class="isa isd"><span>Supprimer</span></div>';
+  return open+'<'+tg+' class="item'+(noSw?'':' isf')+(it.done?' done':'')+'" style="--c:'+itemColor(it)+'">'
    +'<button type="button" class="chk" data-act="toggle" data-id="'+it.id+'" aria-pressed="'+!!it.done+'" aria-label="'+(it.done?'Marquer comme non fait':'Marquer comme fait')+'">✓</button>'
    +'<button type="button" class="body" data-act="edit" data-id="'+it.id+'"><div class="t">'+esc(it.title)+'</div>'
-   +(top.length?'<div class="m">'+top.join('')+'</div>':'')+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></li>';
+   +(top.length?'<div class="m">'+top.join('')+'</div>':'')+(extra.length?'<div class="m sub">'+extra.join(' · ')+'</div>':'')+'</button></'+tg+'>'+(noSw?'':'</li>');
 }
 function updateSlot(){
   const t=$('#f-time').value,d=$('#f-date').value,el=$('#f-slot');
@@ -2030,8 +2037,8 @@ function openDay(k){
   const h=holiday(k),hl=$('#d-hol');hl.hidden=!h;
   if(h){hl.textContent=h.n+(h.f?' · jour férié':'');hl.className='hol-line'+(h.f?'':' minor')}
   const its=groupBy()[k]||[];
-  $('#d-list').innerHTML=its.length?its.map(i=>{const mv=V.dmove===i.id;return itemHTML(i,false).replace(/<\/li>$/,'<div class="iacts"><button type="button" data-act="dedit" data-id="'+i.id+'">✎ Modifier</button><button type="button" data-act="dmove" data-id="'+i.id+'" aria-expanded="'+mv+'">↔ Déplacer</button><button type="button" class="del" data-act="ddel" data-id="'+i.id+'">🗑 Supprimer</button></div>'
-    +(mv?'<div class="imove"><input type="date" id="dm-date" value="'+i.date+'" aria-label="Nouveau jour"><input type="time" id="dm-time" value="'+esc(i.time||'')+'" aria-label="Nouvelle heure"><button type="button" class="primary" data-act="dmoveok" data-id="'+i.id+'">OK</button></div><div class="iqd">'+[[1,'Demain'],[2,'Après-demain'],[7,'+1 semaine']].map(x=>'<button type="button" data-act="dmoveq" data-id="'+i.id+'" data-n="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>':'')+'</li>')}).join(''):'<li class="empty">Rien de prévu ce jour-là.</li>';
+  $('#d-list').innerHTML=its.length?its.map(i=>{const mv=V.dmove===i.id;return itemHTML(i,false).replace(/<\/div><\/li>$/,'<div class="iacts"><button type="button" data-act="dedit" data-id="'+i.id+'">✎ Modifier</button><button type="button" data-act="dmove" data-id="'+i.id+'" aria-expanded="'+mv+'">↔ Déplacer</button><button type="button" class="del" data-act="ddel" data-id="'+i.id+'">🗑 Supprimer</button></div>'
+    +(mv?'<div class="imove"><input type="date" id="dm-date" value="'+i.date+'" aria-label="Nouveau jour"><input type="time" id="dm-time" value="'+esc(i.time||'')+'" aria-label="Nouvelle heure"><button type="button" class="primary" data-act="dmoveok" data-id="'+i.id+'">OK</button></div><div class="iqd">'+[[1,'Demain'],[2,'Après-demain'],[7,'+1 semaine']].map(x=>'<button type="button" data-act="dmoveq" data-id="'+i.id+'" data-n="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>':'')+'</div></li>')}).join(''):'<li class="empty">Rien de prévu ce jour-là.</li>';
   $('#dsheet').hidden=false;
 }
 function closeDay(){$('#dsheet').hidden=true;V.dsheet=null}
@@ -2897,6 +2904,32 @@ function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else mo
       setTimeout(()=>{closeWorkout();render();window.scrollTo(0,0);v.style.transition='none';v.style.transform='';v.style.opacity=''},200)}
     else{v.style.transform='';v.style.opacity=''}};
   document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
+})();
+// Glisser un élément de l'agenda : à gauche pour supprimer, à droite pour Demain / Modifier
+(function(){
+  let row=null,front=null,x0=0,y0=0,dx=0,lock=null,base=0;const W=190;
+  const close=ex=>document.querySelectorAll('.isw.open-r').forEach(r=>{if(r!==ex){r.classList.remove('open-r','dr','dl');r.querySelector('.isf').style.transform=''}});
+  document.addEventListener('touchstart',e=>{
+    const f=e.target.closest&&e.target.closest('.isf');
+    if(!f){if(!(e.target.closest&&e.target.closest('.isa')))close();row=null;return}
+    row=f.parentNode;front=f;close(row);x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;lock=null;base=row.classList.contains('open-r')?W:0;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!row)return;const t=e.touches[0];dx=t.clientX-x0;const dy=t.clientY-y0;
+    if(lock===null&&(Math.abs(dx)>8||Math.abs(dy)>8))lock=Math.abs(dx)>Math.abs(dy)?'x':'y';
+    if(lock!=='x')return;
+    const x=Math.max(-row.offsetWidth,Math.min(W+30,base+dx));
+    front.style.transition='none';front.style.transform='translateX('+x+'px)';
+    row.classList.toggle('dl',x<0);row.classList.toggle('dr',x>0);
+  },{passive:true});
+  const end=()=>{
+    if(!row)return;const r=row,f=front;row=null;if(lock!=='x')return;
+    V.swipedAt=Date.now();f.style.transition='';const x=base+dx;
+    if(x<-90){f.style.transform='translateX(-110%)';setTimeout(()=>{const i=S.items.findIndex(z=>z.id===r.dataset.id);if(i<0)return;const it=S.items[i];S.items.splice(i,1);touch();render();if(V.dsheet)openDay(V.dsheet);toast('« '+it.title+' » supprimé',()=>{S.items.push(it);touch();render();if(V.dsheet)openDay(V.dsheet)})},180);return}
+    if(x>60){r.classList.add('open-r');f.style.transform='translateX('+W+'px)';return}
+    r.classList.remove('open-r','dr','dl');f.style.transform='';
+  };
+  document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
 })();
 let DG=null;
 function dgScroller(el){while(el&&el!==document.body){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight)return el;el=el.parentElement}return document.scrollingElement||document.documentElement}
@@ -4845,7 +4878,8 @@ document.addEventListener('click',e=>{
     closeMonthPicker();render();openDay(v);
   }
   else if(a==='dadd'){const k=V.dsheet||V.sel;openSheet(null,{type:V.lastType,date:k})}
-  else if(a==='toggle'){const it=S.items.find(x=>x.id===b.dataset.id);if(it){it.done=!it.done;touch();render()}}
+  else if(a==='toggle'){if(Date.now()-(V.swipedAt||0)<400)return;const it=S.items.find(x=>x.id===b.dataset.id);if(it){it.done=!it.done;touch();render()}}
+  else if(a==='iswtom'){const it=S.items.find(x=>x.id===b.dataset.id);if(!it)return;const od=it.date;it.date=iso(addDays(parseISO(it.date),1));if(typeof markSilent==='function')markSilent(it);touch();render();if(V.dsheet)openDay(V.dsheet);toast('Déplacé au '+FMT.short.format(parseISO(it.date)),()=>{it.date=od;touch();render();if(V.dsheet)openDay(V.dsheet)})}
   else if(a==='dedit'){const it=S.items.find(x=>x.id===b.dataset.id);if(it){closeDay();openSheet(it)}}
   else if(a==='dmove'){V.dmove=V.dmove===b.dataset.id?null:b.dataset.id;openDay(V.dsheet)}
   else if(a==='dmoveok'||a==='dmoveq'){const it=S.items.find(x=>x.id===b.dataset.id);if(!it)return;
@@ -4855,7 +4889,7 @@ document.addEventListener('click',e=>{
     toast('Déplacé au '+FMT.short.format(parseISO(nd))+(it.time?' à '+it.time:''),()=>{it.date=old.date;it.time=old.time;touch();render();if(V.dsheet)openDay(V.dsheet)})}
   else if(a==='ddel'){const i=S.items.findIndex(x=>x.id===b.dataset.id);if(i<0)return;const it=S.items[i];S.items.splice(i,1);touch();render();openDay(V.dsheet);
     toast('« '+it.title+' » supprimé',()=>{S.items.push(it);touch();render();if(V.dsheet)openDay(V.dsheet)})}
-  else if(a==='edit'){const it=S.items.find(x=>x.id===b.dataset.id);if(it)openSheet(it)}
+  else if(a==='edit'){if(Date.now()-(V.swipedAt||0)<400)return;const it=S.items.find(x=>x.id===b.dataset.id);if(it)openSheet(it)}
   else if(a==='add'&&V.tab==='journal'){openFood()}
   else if(a==='add'){openSheet(null,{type:V.tab==='todos'?'todo':V.lastType,date:V.tab==='agenda'?V.sel:todayISO})}
   else if(a==='close'){closeSheet()}
