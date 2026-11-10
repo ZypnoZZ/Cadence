@@ -274,10 +274,139 @@ async function stravaRoutes(request, env, url) {
       const acts = (Array.isArray(list) ? list : []).filter(a => SKIND(a.sport_type || a.type || '')).map(a => ({
         t: a.sport_type || a.type, d: a.start_date_local, km: Math.round(a.distance / 10) / 100, min: Math.round(a.moving_time / 60),
         hr: a.average_heartrate ? Math.round(a.average_heartrate) : null, w: a.average_watts ? Math.round(a.average_watts) : null,
-        up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60)
+        up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60), id: a.id
       }));
       return json({ acts });
     } catch (e) { return json({ error: 'strava indisponible' }, 502); }
+  }
+  if (p === '/strava/activity') {
+    // Détail d'une sortie : kilomètres, calories, dénivelé (pour l'analyse de séance)
+    const lic = await env.LICENSES.get('lic:' + rec.email, { type: 'json' });
+    if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
+    const id = String(url.searchParams.get('id') || '').replace(/\D/g, '');
+    if (!id) return json({ error: 'id manquant' }, 400);
+    try {
+      if (rec.exp < Date.now() / 1000 + 60) {
+        const d = await stravaToken(env, { grant_type: 'refresh_token', refresh_token: rec.refresh });
+        Object.assign(rec, { access: d.access_token, refresh: d.refresh_token, exp: d.expires_at });
+        await env.LICENSES.put('strava:' + sk, JSON.stringify(rec));
+      }
+      const r = await fetch('https://www.strava.com/api/v3/activities/' + id, { headers: { Authorization: 'Bearer ' + rec.access } });
+      if (r.status === 401) return json({ error: 'non connecté' }, 401);
+      if (!r.ok) return json({ error: 'sortie introuvable' }, 404);
+      const a = await r.json();
+      const sp = (a.splits_metric || []).map(x => ({ m: Math.round(x.distance), s: x.moving_time, hr: x.average_heartrate || null, up: x.elevation_difference || 0 }));
+      const laps = (a.laps || []).slice(0, 60).map(x => ({ m: Math.round(x.distance), s: x.moving_time, hr: x.average_heartrate || null, w: x.average_watts || null }));
+      return json({ splits: sp, laps, cal: a.calories || null, up: a.total_elevation_gain || 0, hrmax: a.max_heartrate || null });
+    } catch (e) { return json({ error: 'strava indisponible' }, 502); }
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+/* ---------- Garmin (Training API + Activity API officielles) ----------
+   Désactivé tant que GARMIN_CLIENT_ID / GARMIN_CLIENT_SECRET ne sont pas définis.
+   Ces identifiants ne sont délivrés qu'après acceptation dans le Garmin Connect Developer Program.
+   Les adresses ci-dessous sont modifiables par variables d'environnement : à vérifier avec la
+   documentation officielle reçue de Garmin avant la mise en service. */
+const GARMIN = env => ({
+  auth: env.GARMIN_AUTH_URL || 'https://connect.garmin.com/oauth2Confirm',
+  token: env.GARMIN_TOKEN_URL || 'https://diauth.garmin.com/di-oauth2-service/oauth/token',
+  workout: env.GARMIN_WORKOUT_URL || 'https://apis.garmin.com/workoutportal/workout/v2',
+  schedule: env.GARMIN_SCHEDULE_URL || 'https://apis.garmin.com/training-api/schedule/',
+  dereg: env.GARMIN_DEREG_URL || 'https://apis.garmin.com/wellness-api/rest/user/registration'
+});
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function garminToken(env, body) {
+  const r = await fetch(GARMIN(env).token, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(Object.assign({ client_id: env.GARMIN_CLIENT_ID, client_secret: env.GARMIN_CLIENT_SECRET }, body)) });
+  if (!r.ok) throw new Error('token ' + r.status);
+  return r.json();
+}
+async function garminRoutes(request, env, url) {
+  const p = url.pathname, on = !!(env.GARMIN_CLIENT_ID && env.GARMIN_CLIENT_SECRET), G = GARMIN(env);
+  if (p === '/garmin/status') return json({ enabled: on });
+  if (!on) {
+    if (p === '/garmin/connect' || p === '/garmin/callback') return Response.redirect(APP_URL + '?garmin=err', 302);
+    return json({ error: 'Garmin pas encore activé' }, 503);
+  }
+  if (p === '/garmin/connect') {
+    const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+    if (!email) return json({ error: 'email manquant' }, 400);
+    const lic = await env.LICENSES.get('lic:' + email, { type: 'json' });
+    if (!lic || !lic.active || lic.plan !== 'coach') return Response.redirect(APP_URL + '?garmin=err', 302);
+    const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
+    const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+    const state = crypto.randomUUID();
+    await env.LICENSES.put('gst:' + state, JSON.stringify({ email, verifier }), { expirationTtl: 900 });
+    const a = new URL(G.auth);
+    a.searchParams.set('response_type', 'code');
+    a.searchParams.set('client_id', env.GARMIN_CLIENT_ID);
+    a.searchParams.set('code_challenge', challenge);
+    a.searchParams.set('code_challenge_method', 'S256');
+    a.searchParams.set('redirect_uri', url.origin + '/garmin/callback');
+    a.searchParams.set('state', state);
+    return Response.redirect(a.toString(), 302);
+  }
+  if (p === '/garmin/callback') {
+    const code = url.searchParams.get('code'), state = url.searchParams.get('state') || '';
+    const st = state && await env.LICENSES.get('gst:' + state, { type: 'json' });
+    if (!code || !st) return Response.redirect(APP_URL + '?garmin=err', 302);
+    try {
+      const d = await garminToken(env, { grant_type: 'authorization_code', code, code_verifier: st.verifier, redirect_uri: url.origin + '/garmin/callback' });
+      const gk = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+      await env.LICENSES.put('garmin:' + gk, JSON.stringify({ email: st.email, access: d.access_token, refresh: d.refresh_token, exp: Math.floor(Date.now() / 1000) + (d.expires_in || 3600), sent: {} }));
+      await env.LICENSES.delete('gst:' + state);
+      return Response.redirect(APP_URL + '?garmin=ok&gk=' + gk, 302);
+    } catch (e) { return Response.redirect(APP_URL + '?garmin=err', 302); }
+  }
+  const gk = url.searchParams.get('gk') || (request.method === 'POST' ? null : '');
+  let body = null;
+  if (request.method === 'POST') { try { body = await request.json(); } catch (e) { return json({ error: 'requête invalide' }, 400); } }
+  const key = gk || (body && body.gk) || '';
+  const rec = key && await env.LICENSES.get('garmin:' + key, { type: 'json' });
+  if (!rec) return json({ error: 'non connecté' }, 401);
+  const save = () => env.LICENSES.put('garmin:' + key, JSON.stringify(rec));
+  const fresh = async () => {
+    if (rec.exp > Date.now() / 1000 + 120) return;
+    const d = await garminToken(env, { grant_type: 'refresh_token', refresh_token: rec.refresh });
+    Object.assign(rec, { access: d.access_token, refresh: d.refresh_token || rec.refresh, exp: Math.floor(Date.now() / 1000) + (d.expires_in || 3600) });
+    await save();
+  };
+  const api = async (u, opt) => { await fresh(); return fetch(u, Object.assign({}, opt, { headers: Object.assign({ Authorization: 'Bearer ' + rec.access, 'content-type': 'application/json' }, (opt || {}).headers || {}) })); };
+  if (p === '/garmin/disconnect') {
+    try { await api(G.dereg, { method: 'DELETE' }); } catch (e) {}
+    await env.LICENSES.delete('garmin:' + key);
+    return json({ ok: true });
+  }
+  if (p === '/garmin/push' && request.method === 'POST') {
+    const lic = await env.LICENSES.get('lic:' + rec.email, { type: 'json' });
+    if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
+    const items = Array.isArray(body.items) ? body.items.slice(0, 20) : [], keep = new Set(Array.isArray(body.keep) ? body.keep : []);
+    let sent = 0, same = 0; const errors = [];
+    rec.sent = rec.sent || {};
+    for (const it of items) {
+      // Évite les doublons : une empreinte par séance, renvoi seulement si la séance a changé
+      const hash = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify([it.date, it.w]))));
+      const prev = rec.sent[it.id];
+      if (prev && prev.hash === hash) { same++; continue; }
+      try {
+        if (prev && prev.wid) await api(G.workout + '/' + prev.wid, { method: 'DELETE' });
+        const r = await api(G.workout, { method: 'POST', body: JSON.stringify(it.w) });
+        if (r.status === 401) return json({ error: 'non connecté' }, 401);
+        if (!r.ok) { errors.push(it.id + ' : ' + r.status); continue; }
+        const w = await r.json(); const wid = w.workoutId || w.id;
+        const sr = await api(G.schedule, { method: 'POST', body: JSON.stringify({ workoutId: wid, date: it.date }) });
+        if (!sr.ok) { errors.push(it.id + ' : planification ' + sr.status); rec.sent[it.id] = { wid, hash: null }; continue; }
+        rec.sent[it.id] = { wid, hash }; sent++;
+      } catch (e) { errors.push(it.id + ' : réseau'); }
+    }
+    // Séances retirées du programme : on les supprime aussi de Garmin Connect
+    for (const id of Object.keys(rec.sent)) if (keep.size && !keep.has(id) && !items.some(x => x.id === id)) {
+      try { await api(G.workout + '/' + rec.sent[id].wid, { method: 'DELETE' }); } catch (e) {}
+      delete rec.sent[id];
+    }
+    await save();
+    return json(errors.length ? { sent, same, error: errors.slice(0, 3).join(' · ') } : { sent, same });
   }
   return json({ error: 'not found' }, 404);
 }
@@ -292,6 +421,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
     if (url.pathname.startsWith('/strava/')) return stravaRoutes(request, env, url);
+    if (url.pathname.startsWith('/garmin/')) return garminRoutes(request, env, url);
 
     // POST /icu/activities {key, email} : relaie la lecture des activités Intervals.icu (clé jamais enregistrée)
     if (url.pathname === '/icu/activities' && request.method === 'POST') {
@@ -309,7 +439,7 @@ export default {
         const acts = (Array.isArray(list) ? list : []).filter(a => SKIND(a.type || '')).map(a => ({
           t: a.type, d: a.start_date_local, km: Math.round((a.distance || 0) / 10) / 100, min: Math.round((a.moving_time || a.elapsed_time || 0) / 60),
           hr: a.average_heartrate ? Math.round(a.average_heartrate) : null, w: a.icu_average_watts ? Math.round(a.icu_average_watts) : null,
-          up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60)
+          up: Math.round(a.total_elevation_gain || 0), n: String(a.name || '').slice(0, 60), id: a.id
         })).filter(a => a.d && a.min > 0);
         return json({ acts });
       } catch (e) { return json({ error: 'intervals indisponible' }, 502); }
