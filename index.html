@@ -1436,7 +1436,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 84';
+const APP_VERSION='2026.11.10 · 85';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1568,10 +1568,14 @@ function celebDone(){
 /* ---------- Tutoriel de découverte ---------- */
 const TUTO_VER=2;
 const TUTO_C=[
-  {k:'c_prog',t:'Ton programme',x:'Réponds à quelques questions : le coach construit 12 semaines selon ton objectif, ton niveau, ton matériel et ton sport à côté. « Mon programme », tout en haut, permet de tout modifier.'},
-  {k:'c_week',t:'Ta semaine',x:'La barre des jours montre ta semaine et la séance du jour. Touche « Semaine X sur 12 » pour parcourir le plan et ajouter toute la semaine à ton agenda.'},
-  {k:'c_sess',t:'Séance guidée',x:'Minuteur de repos, animations, vidéos. Les charges sont pré-remplies grâce à tes records (1 RM). Fais glisser ⠿ pour changer l\'ordre des exercices.'},
-  {k:'c_more',t:'D\'autres cours',x:'En bas de la page : étirements et plus de 40 cours (callisthénie, yoga, boxe…) classés par niveau, avec vidéo et suivi.'}
+  {k:'c_prog',t:'Ton programme',x:'Le coach construit 12 semaines selon ton objectif, ton niveau, ton matériel et ton sport à côté. « Mon programme », tout en haut, permet de tout changer à tout moment.'},
+  {k:'c_event',t:'Échéance et sorties',x:'Course, triathlon, natation : indique ta compétition, le coach adapte les phases jusqu\'au jour J. Note tes sorties (à la main, GPX, Garmin) pour ajuster la charge.'},
+  {k:'c_week',t:'Ta semaine',x:'La barre des jours montre tes séances et tes repos. Touche « Semaine X sur 12 » pour voir le plan complet et ajouter la semaine à ton agenda.'},
+  {k:'c_shift',t:'La séance du jour',x:'Commencer la lance, Agenda la planifie, Décaler la déplace sans casser le programme. Un jour de repos, 12 minutes d\'étirements te sont proposées.'},
+  {k:'c_sess',t:'Séance guidée',x:'Minuteur de repos, animations et vidéos. Les charges sont pré-remplies grâce à tes records. Glisse ⠿ pour changer l\'ordre des exercices.'},
+  {k:'c_cours',t:'D\'autres cours',x:'En bas de la page : 41 cours (callisthénie, yoga, souplesse, boxe, méditation…). Vert débutant, orange intermédiaire, rouge avancé. Démarre, ajoute à l\'agenda ou regarde la vidéo.'},
+  {k:'c_csuivi',t:'Ton suivi des cours',x:'L\'onglet « Mon suivi des cours » compte tes cours, ton temps, tes jours d\'affilée et tes catégories préférées, à part du reste de l\'app.'},
+  {k:'c_more',t:'Tes réglages',x:'Tu préfères tes propres séances ? Coche la case dans « Réglages du coach » : la page reste, mais rien n\'est proposé dans Séances. Ce tutoriel s\'y revoit aussi.'}
 ];
 const TUTO=[
   {k:'welcome',t:'Bienvenue dans Cadence',x:'Ton agenda, ton sport et ton alimentation au même endroit. Voici un tour rapide de tout ce que tu peux faire.'},
@@ -1588,6 +1592,25 @@ const TUTO=[
 const PIN=(n,l,t)=>'<span class="pin" style="left:'+l+'px;top:'+t+'px;animation-delay:'+(n*.25)+'s">'+n+'</span>';
 const LEG=(top,arr)=>'<div class="lg" style="top:'+top+'px">'+arr.map((t,i)=>'<span style="animation-delay:'+(.5+i*.25)+'s"><i>'+(i+1)+'</i>'+t+'</span>').join('')+'</div>';
 function coachScene(k){
+  if(k==='c_event')return '<div class="csc">'
+    +'<div class="a box hl" style="left:14px;right:14px;top:14px;height:58px;padding:9px 12px;display:flex;align-items:center;gap:12px"><span style="font-size:24px">🏁</span><span><b>Semi-marathon</b><br><span class="lb">J-42 · phase spécifique</span></span></div>'+PIN(1,310,8)
+    +'<div class="a box" style="left:14px;right:14px;top:84px;height:52px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between"><span><b>Mes sorties</b><br><span class="lb">2 h 10 sur 7 jours · 3 sorties</span></span><span class="lb">⌄</span></div>'+PIN(2,310,78)
+    +'<div class="a" style="left:18px;top:150px;display:flex;gap:6px;align-items:flex-end;height:40px">'+[.4,.6,.5,.8,.7,1,.45].map((h,i)=>'<i class="bar" style="height:'+Math.round(h*38)+'px;animation-delay:'+(i*.14)+'s"></i>').join('')+'</div>'
+    +LEG(206,['Ta compétition','Tes sorties'])+'</div>';
+  if(k==='c_shift')return '<div class="csc">'
+    +'<div class="a box hl" style="left:14px;right:14px;top:14px;height:120px;padding:10px 12px"><span class="lb" style="color:var(--accent)">AUJOURD\'HUI</span><div style="margin:3px 0 26px"><b style="font-size:16px">Haut du corps</b> <span class="lb">· 45 min</span></div>'
+    +'<div style="display:flex;gap:6px"><span class="btn p" style="flex:1.3">Commencer</span><span class="btn g" style="flex:1">Agenda</span><span class="btn g" style="flex:1">Décaler</span></div></div>'
+    +PIN(1,84,64)+PIN(2,190,64)+PIN(3,290,64)
+    +'<div class="a box" style="left:14px;right:14px;top:146px;height:44px;padding:0 12px;display:flex;align-items:center;justify-content:space-between"><span><b>Repos</b> <span class="lb">· étirements 12 min</span></span><span class="lb">›</span></div>'
+    +LEG(206,['Lancer','Planifier','Décaler'])+'</div>';
+  if(k==='c_cours')return '<div class="csc">'
+    +'<div class="a" style="left:12px;top:12px;display:flex;gap:6px">'+[['Toutes','var(--grad)','#fff'],['Callisthénie','',''],['Yoga','','']].map((c,i)=>'<span class="chip" style="padding:0 12px;height:28px;animation-delay:'+(i*1.5)+'s'+(c[1]?';background:'+c[1]+';color:'+c[2]+';border-color:transparent':'')+'">'+c[0]+'</span>').join('')+'</div>'
+    +[['Débutant','#34c759','Yoga du réveil · 15 min'],['Intermédiaire','#ff9f0a','Apprendre le poirier · 30 min'],['Avancé','#ff453a','Vers le muscle-up · 40 min']].map((l,i)=>'<div class="a box" style="left:14px;right:14px;top:'+(52+i*48)+'px;height:40px;padding:0 10px;display:flex;align-items:center;gap:8px;border-left:4px solid '+l[1]+';animation:cscTag .5s '+(.3+i*.25)+'s both"><span style="background:'+l[1]+';color:#fff;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:800">'+l[0].toUpperCase()+'</span><span style="font-weight:600;font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l[2]+'</span><span class="lb">▶</span></div>').join('')
+    +PIN(1,310,46)+LEG(206,['Une couleur par niveau'])+'</div>';
+  if(k==='c_csuivi')return '<div class="csc">'
+    +'<div class="a" style="left:14px;right:14px;top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+[['12','cours'],['6 h','au total'],['3','semaine'],['4','jours']].map((x,i)=>'<div class="box" style="padding:7px 4px;text-align:center;animation:cscTag .5s '+(i*.2)+'s both"><b style="font-size:17px">'+x[0]+'</b><br><span class="lb">'+x[1]+'</span></div>').join('')+'</div>'+PIN(1,310,8)
+    +[['Yoga',.9],['Callisthénie',.6],['Souplesse',.35]].map((c,i)=>'<div class="a" style="left:14px;right:14px;top:'+(88+i*30)+'px;display:flex;align-items:center;gap:8px"><span class="lb" style="width:84px">'+c[0]+'</span><i style="height:9px;border-radius:99px;background:var(--grad);width:'+Math.round(c[1]*180)+'px;transform-origin:left;animation:cscBar 2s '+(i*.2)+'s ease-in-out infinite"></i></div>').join('')
+    +PIN(2,310,84)+LEG(206,['Tes chiffres','Par catégorie'])+'</div>';
   if(k==='c_prog')return '<div class="csc">'
     +'<span class="a lb" style="left:16px;top:12px">TON NIVEAU</span>'
     +['Débutant','Inter.','Avancé'].map((t,i)=>'<span class="a chip" style="left:'+(14+i*106)+'px;top:32px;width:98px;animation-delay:'+(i*1.5)+'s">'+t+'</span>').join('')
@@ -1611,12 +1634,11 @@ function coachScene(k){
     +[['Pompes','4×12'],['Rowing','4×10'],['Gainage','3×40 s']].map((e,i)=>'<span class="ex"><span>'+e[0]+'</span><span class="lb">'+e[1]+'</span><i style="animation-delay:'+(i*1.2)+'s">✓</i></span>').join('')+'</div>'
     +PIN(2,310,26)+LEG(204,['Minuteur de repos','Charges notées'])+'</div>';
   return '<div class="csc">'
-    +'<span class="a lb" style="left:16px;top:10px">ÉTIREMENTS · 12 MIN</span>'
-    +'<div class="a" style="left:18px;top:30px;display:flex;gap:6px;align-items:flex-end;height:40px">'+[.9,.5,1,.6,.8,.45,.95,.55].map((h,i)=>'<i class="bar" style="height:'+Math.round(h*38)+'px;animation-delay:'+(i*.14)+'s"></i>').join('')+'</div>'
-    +'<span class="a lb" style="right:16px;top:38px;text-align:right;line-height:1.4">Après une séance<br>ou un jour de repos</span>'
-    +'<div class="a ckrow hl" style="left:14px;right:14px;top:84px"><span>D\'autres cours · 41 cours par niveau ›</span></div>'
-    +PIN(1,310,76)+LEG(146,['En bas de la page Coach','Vidéo et suivi des cours'])
-    +'<div class="a mtabs" style="left:0;right:0;bottom:0"><i></i><i></i><b></b><i></i><i></i></div>'+PIN(2,186,198)+'</div>';
+    +'<span class="a lb" style="left:16px;top:12px">RÉGLAGES DU COACH</span>'
+    +'<div class="a ckrow hl" style="left:14px;right:14px;top:34px"><i class="ckb"></i><span>Je fais mes propres séances : ne pas afficher les séances du coach dans Séances</span></div>'+PIN(1,310,26)
+    +'<span class="a btn g" style="left:14px;right:14px;top:128px">Revoir le tutoriel du coach</span>'+PIN(2,310,120)
+    +LEG(174,['Propres séances','Revoir ce tuto'])
+    +'<div class="a mtabs" style="left:0;right:0;bottom:0"><i></i><i></i><b></b><i></i><i></i></div></div>';
 }
 function tutoIcon(k){
   if(k==='records')return drSvg('trophy');
@@ -1658,7 +1680,7 @@ function renderTuto(first){
 }
 function finishTuto(){
   const T=V.tuto;$('#tuto').hidden=true;V.tuto=null;
-  if(T&&T.set==='coach'){S.tutoC=2;touch();V.tab='coach';render();window.scrollTo(0,0);setTimeout(maybeOnb,200);return}
+  if(T&&T.set==='coach'){S.tutoC=3;touch();V.tab='coach';render();window.scrollTo(0,0);setTimeout(maybeOnb,200);return}
   S.tuto=1;S.tutoVer=TUTO_VER;
   touch();
   render();window.scrollTo(0,0);setTimeout(()=>{maybeTuto();maybeOnb()},200);
@@ -4471,7 +4493,7 @@ function finishOnb(){
   $('#onb').hidden=true;V.tab='coach';render();window.scrollTo(0,0);
 }
 function maybeOnb(){if(!coachActive())return;if(!S.tuto||!S.setup||!$('#setup').hidden||!$('#tuto').hidden||!$('#psheet').hidden||!$('#celeb').hidden)return;
-  if((S.tutoC||0)<2){if(!V.coachTutoShown&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden&&$('#onb').hidden){V.coachTutoShown=true;openTuto(false,'coach')}return}
+  if((S.tutoC||0)<3){if(!V.coachTutoShown&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden&&$('#onb').hidden){V.coachTutoShown=true;openTuto(false,'coach')}return}
   if(!S.onb&&!V.onbShown&&$('#onb').hidden&&$('#gate').hidden&&$('#license').hidden&&$('#lock').hidden){V.onbShown=true;openOnb()}}
 const PRICE_BASE='5 €',PRICE_COACH='9 €';
 // Fiche de vente Cadence + Coach (ouverte par tout élément du coach quand il est verrouillé)
