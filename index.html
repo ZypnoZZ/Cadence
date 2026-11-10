@@ -1436,7 +1436,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 85';
+const APP_VERSION='2026.11.10 · 86';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2999,6 +2999,43 @@ function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else mo
   const end=()=>{if(!g)return;const p=g.p,ok=g.lock==='y'&&g.dy>110;g=null;p.style.transition='transform .22s ease';
     if(ok){p.style.transform='translateY(110%)';setTimeout(()=>{p.style.transition='';p.style.transform='';const sc=p.closest('.scrim');if(sc)sc.dispatchEvent(new MouseEvent('click',{bubbles:true}))},200)}
     else{p.style.transform='';setTimeout(()=>{p.style.transition=''},230)}};
+  document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
+})();
+// Glisser horizontalement pour changer d'onglet (sur la page ou sur la barre du bas)
+const TAB_ORDER=['agenda','seances','coach','journal','nutrition'];
+function goTab(t,dir){
+  if(t==='coach'||V.tab!==t)V.cours=false;V.recItem=null;V.tab=t;closeDrawer();render();window.scrollTo(0,0);
+  const v=$('#view');if(v&&dir){v.classList.remove('in-next','in-prev');void v.offsetWidth;v.classList.add(dir>0?'in-next':'in-prev');setTimeout(()=>v.classList.remove('in-next','in-prev'),300)}
+}
+(function(){
+  const NO='.grid,.jswipe,.isf,.isa,.swf,.swa,.sc,.eqs,.fbar,.unit,.weeks,.wkstrip,.modes,.recchips,input,textarea,select,.dgh,[data-noswipe],.pchips,.dur2';
+  let g=null;
+  document.addEventListener('touchstart',e=>{
+    g=null;if(e.touches.length!==1||DG)return;
+    const t=e.target,onBar=!!(t.closest&&t.closest('.tabs'));
+    if(!onBar){
+      if(!t.closest||!t.closest('#view')||t.closest(NO))return;
+      if(V.tab==='seances'&&V.wEdit)return;
+      if([...document.querySelectorAll('.scrim')].some(x=>!x.hidden&&getComputedStyle(x).display!=='none'))return;
+    }
+    if(!TAB_ORDER.includes(V.tab))return;
+    const p=e.touches[0];g={x:p.clientX,y:p.clientY,dx:0,lock:null,bar:onBar};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!g)return;const p=e.touches[0];g.dx=p.clientX-g.x;const dy=p.clientY-g.y;
+    if(g.lock===null&&(Math.abs(g.dx)>10||Math.abs(dy)>10))g.lock=Math.abs(g.dx)>Math.abs(dy)*1.4?'x':'y';
+    if(g.lock!=='x'||g.bar)return;
+    const i=TAB_ORDER.indexOf(V.tab),edge=(g.dx>0&&i===0)||(g.dx<0&&i===TAB_ORDER.length-1);
+    const v=$('#view');if(v){v.style.transition='none';v.style.transform='translateX('+(g.dx*(edge?.12:.35))+'px)';v.style.opacity=String(1-Math.min(.35,Math.abs(g.dx)/700))}
+  },{passive:true});
+  const end=()=>{
+    if(!g)return;const G=g;g=null;const v=$('#view');
+    if(v&&!G.bar){v.style.transition='transform .2s ease,opacity .2s ease';v.style.transform='';v.style.opacity='';setTimeout(()=>{v.style.transition=''},220)}
+    if(G.lock!=='x'||Math.abs(G.dx)<(G.bar?40:80))return;
+    const i=TAB_ORDER.indexOf(V.tab),dir=G.dx<0?1:-1,n=i+dir;
+    if(n<0||n>=TAB_ORDER.length)return;
+    V.swipedAt=Date.now();goTab(TAB_ORDER[n],dir);
+  };
   document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
 })();
 let DG=null;
@@ -4832,6 +4869,7 @@ document.addEventListener('click',e=>{
   const a=b.dataset.act;
   if(a==='cpsale'||a==='cpunlock'||(COACH_LOCKED_ACTS.includes(a)&&!coachUnlocked())){coachPaywallNudge();return}
   if(a==='tab'){
+    if(Date.now()-(V.swipedAt||0)<350)return;
     let t=b.dataset.tab;
     if(t==='macros'||t==='meals'){V.nseg=t==='meals'?'repas':'macros';t='nutrition'}
     if(t==='settings'){openDrawer();return}
