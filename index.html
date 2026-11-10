@@ -628,6 +628,7 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .isl{left:0;right:0;background:var(--soft);border-radius:8px;gap:6px;padding:6px;align-items:stretch}.isl button{border:0;border-radius:10px;font-weight:700;font-size:13px;width:86px;background:var(--surface);color:var(--accent);box-shadow:0 1px 0 var(--line)}.isl button:first-child{background:var(--grad,var(--accent));color:var(--on-accent)}.isl button:last-child{color:var(--ink);border:1px solid var(--line)}
 .isd{left:0;right:0;justify-content:flex-end;align-items:center;padding-right:20px;background:var(--danger);color:#fff;font-weight:700;font-size:14px}
 .isw.dr .isl,.isw.open-r .isl{visibility:visible}.isw.dl .isd{visibility:visible}
+.cstate{margin:6px 4px 0;color:var(--accent);font-weight:600;text-align:left}
 .cpoff{display:flex;gap:10px;align-items:center;border-style:dashed}.cpoff>div{flex:1;min-width:0}.cpoff .ghost{flex:none}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
@@ -1435,7 +1436,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 82';
+const APP_VERSION='2026.11.10 · 83';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -4551,7 +4552,7 @@ function renderCoach(){
   h+=wk.map((s,i)=>i===ti?'':sessCard(s,i,false,vw)).join('');
   if(sa&&(strength||cfg.style==='crossfit'))h+='<p class="note" style="margin:4px 2px 12px">'+esc(sportTip(cfg,sa))+'</p>';
   h+='<section class="card coach-s"><span class="cday">À tout moment</span><div class="cacts" style="margin-top:6px">'+(cfg.style!=='mobi'?'<button type="button" class="ghost" data-act="cstretch">Étirements</button>':'')+'<button type="button" class="primary" data-act="coursopen">D\'autres cours ›</button></div><p class="note" style="margin-top:8px">'+COURS.length+' cours : callisthénie, yoga, souplesse, boxe, méditation…</p></section>';
-  h+='<details class="more"><summary>Réglages du coach</summary><label class="ck"><input type="checkbox" id="coach-hide"'+(prefs().coach?'':' checked')+'><span>Je fais mes propres séances : ne pas afficher les séances du coach dans Séances</span></label><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button></details>';
+  h+='<details class="more"'+(V.moreOpen?' open':'')+'><summary>Réglages du coach</summary><label class="ck"><input type="checkbox" id="coach-hide"'+(prefs().coach?'':' checked')+'><span>Je fais mes propres séances : ne pas afficher les séances du coach dans Séances</span></label><p class="note cstate">'+(prefs().coach?'✓ Les séances du coach sont proposées dans l\'onglet Séances.':'✓ Activé : l\'onglet Séances n\'affiche plus les séances du coach. Le programme reste consultable ici.')+'</p><button type="button" class="linkbtn" data-act="tutocoach" style="display:block;margin:6px auto 0">Revoir le tutoriel du coach</button></details>';
   if(locked)h+='</div><div style="height:6px"></div>'+renderCoachLocked()+'<button type="button" class="linkbtn" data-act="pset" data-k="coach" data-v="false" style="display:block;margin:10px auto">Je fais mes propres séances</button>';
   return h;
 }
@@ -5314,6 +5315,7 @@ document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc
   document.querySelectorAll('.recgrp').forEach(g=>{g.hidden=!!q&&!g.querySelector('.recrow:not([hidden])')});
   const nb=$('.recnew');if(nb){const ex=[...document.querySelectorAll('.recrow')].some(r=>r.dataset.s===q);nb.hidden=!q||ex;nb.dataset.n=e.target.value.trim();nb.textContent='+ Ajouter « '+e.target.value.trim()+' »'}});
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
+document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details.more'))V.moreOpen=e.target.open},true);
 document.addEventListener('change',e=>{
   if(e.target.id==='coach-hide'){const off=e.target.checked;S.prefs=Object.assign(prefs(),{coach:!off});touch();pushSync(true);render();toast(off?'Séances du coach retirées de l\'onglet Séances':'Séances du coach de retour dans Séances')}
   if(e.target.id==='w-title'){const w=curW();if(w&&!w.ex.length&&hasPrev(w))render()}
