@@ -751,6 +751,16 @@ button.big{min-height:52px;font-size:17px;padding:0 22px}
 .rsteps{margin:8px 0 0;padding-left:22px}
 .rsteps li{margin-bottom:10px;line-height:1.5}
 .rbtn{margin-top:8px;font-size:14px}
+.daypeek{position:fixed;z-index:40;left:max(16px,env(safe-area-inset-left,0px));right:calc(max(16px,env(safe-area-inset-right,0px)) + 68px);bottom:calc(76px + env(safe-area-inset-bottom,0px));min-height:56px;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 10px 28px rgba(0,0,0,.16);color:var(--ink);font:inherit;text-align:left;transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);animation:pkin .3s cubic-bezier(.2,.9,.3,1.2)}
+.daypeek.off{opacity:0;transform:translateY(16px);pointer-events:none}
+@keyframes pkin{from{opacity:0;transform:translateY(16px)}}
+.daypeek .pk-d{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;flex:none;max-width:64px;line-height:1.15}
+.daypeek .pk-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.daypeek .pk-i{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.daypeek .pk-i i{width:7px;height:7px;border-radius:50%;flex:none}.daypeek .pk-i b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.daypeek .pk-i.done{text-decoration:line-through;opacity:.55}
+.daypeek .pk-more{font-size:12px;color:var(--muted)}
+.daypeek .pk-go{font-size:22px;color:var(--muted);flex:none}
 .fab{position:fixed;z-index:41;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--grad);color:#fff;font-size:32px;line-height:1;box-shadow:0 8px 22px var(--glow)}
 
 /* Feuille d'édition */
@@ -1084,6 +1094,7 @@ label.ghost{color:var(--ink);font-weight:600}
 
 <div id="alerts" aria-live="polite"></div>
 <button id="fab" class="fab" data-act="add" aria-label="Ajouter un élément">+</button>
+<button id="daypeek" class="daypeek" type="button" data-act="peek" hidden></button>
 
 <nav class="tabs" aria-label="Sections">
   <i class="tabind" aria-hidden="true"></i>
@@ -1514,7 +1525,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 101';
+const APP_VERSION='2026.11.10 · 102';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -3857,9 +3868,22 @@ function render(){
   if(V.tab==='macros'||(V.tab==='nutrition'&&(V.nseg||'macros')==='macros'))updateRateBox();
   updateGate();
   if(V.dsheet&&!$('#dsheet').hidden)openDay(V.dsheet);
+  dayPeek();
   setTimeout(()=>{maybeTuto();maybeOnb()},0);
 }
 
+let peekObs=null,peekSeen=false;
+function dayPeek(){
+  const pk=$('#daypeek');if(!pk)return;if(peekObs){peekObs.disconnect();peekObs=null}
+  const its=V.tab==='agenda'&&!licenseExpired()?(groupBy()[V.sel]||[]):[];
+  const t=$('#view .day-title');
+  if(!its.length||!t){pk.hidden=true;return}
+  const col=it=>'<i style="background:'+itemColor(it)+'"></i>';
+  pk.innerHTML='<span class="pk-d">'+esc(cap(FMT.short.format(parseISO(V.sel))))+'</span><span class="pk-l">'+its.slice(0,3).map(i=>'<span class="pk-i'+(i.done?' done':'')+'">'+col(i)+(i.time?'<b>'+esc(i.time)+'</b> ':'')+esc(i.title)+'</span>').join('')+(its.length>3?'<span class="pk-more">+ '+(its.length-3)+' autre'+(its.length>4?'s':'')+'</span>':'')+'</span><span class="pk-go" aria-hidden="true">›</span>';
+  pk.setAttribute('aria-label',its.length+' élément'+(its.length>1?'s':'')+' le '+FMT.long.format(parseISO(V.sel))+', ouvrir');
+  peekSeen=false;pk.hidden=false;pk.classList.remove('off');
+  if('IntersectionObserver' in window){peekObs=new IntersectionObserver(es=>{const vis=es.some(e=>e.isIntersecting);pk.classList.toggle('off',vis)},{rootMargin:'0px 0px -140px 0px'});peekObs.observe(t)}
+}
 /* ---------- Feuille d'édition ---------- */
 function fillSelects(){
   $('#f-sport').innerHTML=SPORTS.map(s=>'<option>'+esc(s)+'</option>').join('');
@@ -5134,6 +5158,7 @@ document.addEventListener('click',e=>{
   else if(a==='today'){V.month=new Date(today.getFullYear(),today.getMonth(),1);V.sel=todayISO;render()}
   else if(a==='pick'){if(Date.now()-(V.swipedAt||0)<400)return;{const now=Date.now();if(V.lastPick&&V.lastPick.d===b.dataset.date&&now-V.lastPick.t<380){V.lastPick=null;if(!S.dayHint){S.dayHint=1;touch()}openSheet(null,{type:V.lastType||'todo',date:b.dataset.date});return}V.lastPick={d:b.dataset.date,t:now}}V.sel=b.dataset.date;const d=parseISO(V.sel);V.month=new Date(d.getFullYear(),d.getMonth(),1);render()}
   else if(a==='dayclose'){closeDay()}
+  else if(a==='peek'){openDay(V.sel)}
   else if(a==='recipe'){openRecipe(+b.dataset.i)}
   else if(a==='rclose'){$('#rsheet').hidden=true}
   else if(a==='cstyletxt'){const v=($('#c-styletxt').value||'').trim().slice(0,40);S.coach=Object.assign(coachCfg(),{start:progStart(),styleTxt:v});V.coachOpen=true;touch();render()}
