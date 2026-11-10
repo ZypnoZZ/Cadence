@@ -690,7 +690,9 @@ body.haswp .card,body.haswp .acc,body.haswp .needs,body.haswp .wcard,body.haswp 
 .wpt span{font-size:12px;font-weight:600;line-height:1.15;text-align:center}.wpt small{font-size:11px;color:var(--muted)}
 .wppack{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,transparent),rgba(245,138,106,.1)),var(--surface)}.wppack>div{flex:1;min-width:0}.wppack .primary{flex:none}
 .wpprev{border-color:var(--accent)}
-#wpbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;flex-direction:column;gap:10px;padding:12px 12px 12px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 10px 30px rgba(0,0,0,.2);animation:tdown .3s cubic-bezier(.2,1.3,.4,1)}
+#glbar,#wpbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;flex-direction:column;gap:10px;padding:12px 12px 12px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 10px 30px rgba(0,0,0,.2);animation:tdown .3s cubic-bezier(.2,1.3,.4,1)}
+#glbar .wpb-r{display:flex;align-items:center;gap:8px}#glbar .wpb-r .ghost,#glbar .wpb-r .primary{flex:1;min-height:42px;font-size:14.5px;padding:0 10px}#glbar .wpb-t{flex:1;min-width:0;display:flex;flex-direction:column}#glbar .wpb-t b{font-size:14.5px}#glbar .wpb-t span{font-size:12px;color:var(--muted)}
+.glb-sl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}.glb-sl input{flex:1;accent-color:var(--accent)}.glb-sl.off{opacity:.45}
 #wpbar .wpb-t{flex:1;min-width:0;display:flex;flex-direction:column}#wpbar .wpb-t b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#wpbar .wpb-t span{font-size:12px;color:var(--muted)}
 #wpbar .wpb-r{display:flex;align-items:center;gap:8px}#wpbar .wpb-r .ghost,#wpbar .wpb-r .primary{flex:1;min-height:42px;font-size:14.5px;padding:0 10px}
 #wpbar .wpb-x{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;padding:0}
@@ -1499,7 +1501,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 95';
+const APP_VERSION='2026.11.10 · 96';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2225,14 +2227,31 @@ function wpOwned(){try{return JSON.parse(localStorage.getItem(LS_WP_OWN)||'[]')}
 function wpOwns(id){const w=WALLS.find(x=>x.id===id);if(!w)return false;if(!w.p)return true;const o=wpOwned();return o.includes('wp-'+id)||o.includes('wp-pack')}
 function wpCurrent(){return V.wpPreview||wpGet(LS_WP,'none')}
 const LS_GLASS='cadence-glass',LS_GLASS_A='cadence-glass-a';
-function glassOn(){return wpGet(LS_GLASS,'0')==='1'}
-function glassA(){const v=+wpGet(LS_GLASS_A,55);return isFinite(v)?Math.max(15,Math.min(95,v)):55}
+function glassOn(){return V.glassPrev?V.glassPrev.on:wpGet(LS_GLASS,'0')==='1'}
+function glassA(){const v=V.glassPrev?V.glassPrev.a:+wpGet(LS_GLASS_A,55);return isFinite(v)?Math.max(15,Math.min(95,v)):55}
 function applyGlass(){const b=document.body;if(!b)return;b.classList.toggle('glass',glassOn());b.style.setProperty('--ga',(glassA()/100).toFixed(2));document.documentElement.style.setProperty('--ga',(glassA()/100).toFixed(2))}
+const LS_GLASS_ASK='cadence-glass-asked';
+function glassBar(){
+  let bar=$('#glbar');const P=V.glassPrev;
+  if(!P){if(bar)bar.remove();return}
+  if(!bar){bar=document.createElement('div');bar.id='glbar';bar.className='floatbar';document.body.appendChild(bar)}
+  bar.innerHTML='<div class="wpb-r"><div class="wpb-t"><b>'+(P.first?'Choisis ton style':'Effet verre')+'</b><span>Regarde l\'agenda derrière et règle comme tu veux</span></div><label class="sw2"><input type="checkbox" id="glb-on"'+(P.on?' checked':'')+' aria-label="Mode verre"><i></i></label></div>'
+   +'<div class="glb-sl'+(P.on?'':' off')+'"><span>Transparent</span><input type="range" id="glb-a" min="15" max="95" step="5" value="'+P.a+'"'+(P.on?'':' disabled')+' aria-label="Opacité"><span>Opaque</span></div>'
+   +'<div class="wpb-r"><button type="button" class="ghost" data-act="glcancel">'+(P.first?'Plus tard':'Annuler')+'</button><button type="button" class="primary" data-act="glok">Valider</button></div>';
+}
+function glassPreview(first){V.glassPrev={on:first?true:glassOn(),a:glassA(),first:!!first};applyGlass();closeDrawer();V.tab='agenda';render();window.scrollTo(0,0);pageAnim('pg-in');glassBar()}
+function glassEnd(save){const P=V.glassPrev;V.glassPrev=null;if(save&&P){wpSet(LS_GLASS,P.on?'1':'0');wpSet(LS_GLASS_A,String(P.a))}wpSet(LS_GLASS_ASK,'1');applyGlass();glassBar();if(save)toast(P&&P.on?'Mode verre enregistré':'Style classique enregistré',null,1800)}
+function glassAskAtStart(n){
+  if(!IS_PWA||wpGet(LS_GLASS_ASK,'')||V.glassPrev)return;
+  const busy=[...document.querySelectorAll('.scrim')].some(x=>!x.hidden&&getComputedStyle(x).display!=='none')||(V.tuto)||!$('#updsheet').hidden;
+  if(busy){if((n||0)<40)setTimeout(()=>glassAskAtStart((n||0)+1),3000);return}
+  glassPreview(true);
+}
 function glassSection(){
   const on=glassOn(),a=glassA();
   return '<h3 class="group-h">Effet verre</h3><section class="card"><div class="glopt"><div><b>Mode verre</b><p class="note">Surfaces translucides et floutées, comme sur iPhone.</p></div><label class="sw2"><input type="checkbox" id="glass-on"'+(on?' checked':'')+'><i></i></label></div>'
    +'<label style="margin-top:12px;display:block"><span class="lab" style="display:flex;justify-content:space-between"><span>Transparent</span><span id="glass-v">'+a+' %</span><span>Opaque</span></span><input type="range" id="glass-a" min="15" max="95" step="5" value="'+a+'"'+(on?'':' disabled')+'></label>'
-   +'<div class="glprev"><i>Aperçu du verre</i></div><p class="note" style="margin-top:8px">L\'effet est encore plus beau avec un fond d\'écran.</p></section>';
+   +'<div class="glprev"><i>Aperçu du verre</i></div><button type="button" class="ghost" data-act="glpreview" style="width:100%;margin-top:10px">Régler en direct sur l\'agenda</button><p class="note" style="margin-top:8px">L\'effet est encore plus beau avec un fond d\'écran.</p></section>';
 }
 function applyWall(){
   let el=$('#wpbg');if(!el){el=document.createElement('div');el.id='wpbg';el.setAttribute('aria-hidden','true');document.body.prepend(el)}
@@ -5085,6 +5104,9 @@ document.addEventListener('click',e=>{
   else if(a==='wpick'){const id=b.dataset.id;if(wpOwns(id)){V.wpPreview=null;if(id==='perso'&&!wpGet(LS_WP_IMG,'')){wpSet(LS_WP,'perso');render();const f=$('#wp-file');if(f)f.click();return}wpSet(LS_WP,id);applyWall();render()}else{V.wpPreview=id;applyWall();closeDrawer();V.tab='agenda';render();window.scrollTo(0,0);pageAnim('pg-in')}}
   else if(a==='wprevoff'){V.wpPreview=null;applyWall();render()}
   else if(a==='wbuy'){wpBuy(b.dataset.id)}
+  else if(a==='glpreview'){glassPreview(false)}
+  else if(a==='glok'){glassEnd(true)}
+  else if(a==='glcancel'){glassEnd(false)}
   else if(a==='wpback'){V.tab='settings';V.sec='theme';render();pageAnim('pg-in');setTimeout(()=>{const g=$('.wpgrid');if(g)g.scrollIntoView({block:'center'})},60)}
   else if(a==='wrestore'){wpSync(false).then(()=>{applyWall();render()})}
   else if(a==='wpphoto'){const f=$('#wp-file');if(f)f.click()}
@@ -5536,8 +5558,10 @@ document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{if(e.target.id==='wp-file'&&e.target.files&&e.target.files[0])wpPhoto(e.target.files[0])});
 document.addEventListener('input',e=>{if(e.target.id==='wp-dim'){wpSet(LS_WP_DIM,e.target.value);applyWall()}
+  if(e.target.id==='glb-a'&&V.glassPrev){V.glassPrev.a=+e.target.value;applyGlass()}
   if(e.target.id==='glass-a'){wpSet(LS_GLASS_A,e.target.value);applyGlass();const v=$('#glass-v');if(v)v.textContent=e.target.value+' %'}});
-document.addEventListener('change',e=>{if(e.target.id==='glass-on'){wpSet(LS_GLASS,e.target.checked?'1':'0');applyGlass();const r=$('#glass-a');if(r)r.disabled=!e.target.checked;toast(e.target.checked?'Mode verre activé':'Mode verre désactivé',null,1600)}});
+document.addEventListener('change',e=>{if(e.target.id==='glb-on'&&V.glassPrev){V.glassPrev.on=e.target.checked;applyGlass();glassBar();return}
+  if(e.target.id==='glass-on'){wpSet(LS_GLASS,e.target.checked?'1':'0');applyGlass();const r=$('#glass-a');if(r)r.disabled=!e.target.checked;toast(e.target.checked?'Mode verre activé':'Mode verre désactivé',null,1600)}});
 document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details.more'))V.moreOpen=e.target.open},true);
 document.addEventListener('change',e=>{
   if(e.target.id==='coach-hide'){const off=e.target.checked;S.prefs=Object.assign(prefs(),{coach:!off});touch();pushSync(true);render();toast(off?'Séances du coach retirées de l\'onglet Séances':'Séances du coach de retour dans Séances')}
@@ -5627,6 +5651,7 @@ if(IS_PWA){
 }
 render();
 if(IS_PWA)setTimeout(()=>wpSync(true).then(()=>applyWall()),2500);
+if(IS_PWA)setTimeout(()=>glassAskAtStart(0),2200);
 if(IS_PWA){
   if(!lockCfg())runSplash();
   showLock();
