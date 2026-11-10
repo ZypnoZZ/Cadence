@@ -619,7 +619,7 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 .isw{position:relative;border-radius:8px;overflow:hidden}
 .isw .isf{position:relative;z-index:1;transition:transform .2s ease;touch-action:pan-y}
 .isa{position:absolute;top:0;bottom:0;display:flex;visibility:hidden}
-.isl{left:0}.isl button{border:0;color:#fff;font-weight:700;font-size:13px;width:95px}.isl button:first-child{background:#0a84ff}.isl button:last-child{background:#8e8e93}
+.isl{left:0;right:0;background:var(--soft);border-radius:8px;gap:6px;padding:6px;align-items:stretch}.isl button{border:0;border-radius:10px;font-weight:700;font-size:13px;width:86px;background:var(--surface);color:var(--accent);box-shadow:0 1px 0 var(--line)}.isl button:first-child{background:var(--grad,var(--accent));color:var(--on-accent)}.isl button:last-child{color:var(--ink);border:1px solid var(--line)}
 .isd{left:0;right:0;justify-content:flex-end;align-items:center;padding-right:20px;background:var(--danger);color:#fff;font-weight:700;font-size:14px}
 .isw.dr .isl,.isw.open-r .isl{visibility:visible}.isw.dl .isd{visibility:visible}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
@@ -1427,7 +1427,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 77';
+const APP_VERSION='2026.11.10 · 78';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -1992,7 +1992,7 @@ function updateRepeat(){
   }
   if(!once&&!$('#f-until').value)$('#f-until').value=iso(addDays(parseISO($('#f-date').value||todayISO),m==='month'?182:30));
   const n=once?1:repDates($('#f-date').value||todayISO,m,$('#f-until').value,V.repDays).length;
-  $('#f-repnote').textContent=once?'':n+' occurrence'+(n>1?'s':'')+' seront créées.';
+  $('#f-repnote').textContent=once?(V.editId&&(S.items.find(x=>x.id===V.editId)||{}).rid?'Les dates suivantes de la série seront retirées.':''):n+' date'+(n>1?'s':'')+(V.editId?' dans la série à partir de ce jour.':' seront créées.');
 }
 function renderColors(){
   const t=(document.querySelector('input[name=ftype]:checked')||{}).value||'todo';
@@ -2915,7 +2915,7 @@ function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else mo
 })();
 // Glisser un élément de l'agenda : à gauche pour supprimer, à droite pour Demain / Modifier
 (function(){
-  let row=null,front=null,x0=0,y0=0,dx=0,lock=null,base=0;const W=190;
+  let row=null,front=null,x0=0,y0=0,dx=0,lock=null,base=0;const W=184;
   const close=ex=>document.querySelectorAll('.isw.open-r').forEach(r=>{if(r!==ex){r.classList.remove('open-r','dr','dl');r.querySelector('.isf').style.transform=''}});
   document.addEventListener('touchstart',e=>{
     const f=e.target.closest&&e.target.closest('.isf');
@@ -3598,8 +3598,12 @@ function openSheet(it,defaults){
   $('#f-title').value=d.title||'';$('#f-date').value=d.date;$('#f-time').value=d.time||'';
   $('#f-sport').value=d.sport||SPORTS[0];{const du=d.dur||60;$('#f-dh').value=Math.floor(du/60);$('#f-dm').value=du%60}$('#f-notes').value=d.notes||'';
   $('#f-remind').value=String(it?it.remind:DEF_REMIND[d.type]);
-  $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=!!(it&&it.rid);
-  {const ri=$('#f-repinfo');if(it&&it.rid){ri.hidden=false;ri.textContent='Répétition : '+(REP_L[it.rep]||'série')+' · '+S.items.filter(x=>x.rid===it.rid&&x.date>=it.date).length+' à venir'}else ri.hidden=true}
+  $('#f-repeat').value='none';$('#f-until').value='';V.repDays=null;$('#f-repwrap').hidden=false;V.rep0=null;
+  {const ri=$('#f-repinfo');if(it&&it.rid){const ser=S.items.filter(x=>x.rid===it.rid&&x.date>=it.date).sort((a,b)=>a.date<b.date?-1:1);
+    ri.hidden=false;ri.textContent='↻ '+(REP_L[it.rep]||'Série')+' · '+ser.length+' à venir. Change la répétition ci-dessous : elle s\'applique à cette date et aux suivantes.';
+    $('#f-repeat').value=it.rep&&[...$('#f-repeat').options].some(o=>o.value===it.rep)?it.rep:'week';$('#f-until').value=ser.length?ser[ser.length-1].date:it.date;
+    if(it.rep==='days')V.repDays=[...new Set(ser.map(x=>(parseISO(x.date).getDay()+6)%7))];
+    V.rep0=$('#f-repeat').value+'|'+$('#f-until').value+'|'+(V.repDays||[]).join(',');updateRepeat()}else ri.hidden=true}
   V.fColor=it&&okHex(it.color)?it.color:'';
   const ds=$('#f-delser');ds.hidden=!(it&&it.rid&&S.items.filter(x=>x.rid===it.rid).length>1);ds.textContent='Toute la série';V.delSerArmed=false;
   const del=$('#f-del');del.hidden=!it;del.textContent='Supprimer';
@@ -3620,6 +3624,15 @@ function submitForm(e){
     const i=S.items.findIndex(x=>x.id===V.editId);
     if(i>=0){
       const old=S.items[i];const it=Object.assign({},old,base,{done:old.done});delete it.ex;if(!okHex(V.fColor))delete it.color;if(type!=='sport'){delete it.sport;delete it.dur}S.items[i]=it;markSilent(it);
+      const rep1=mode+'|'+$('#f-until').value+'|'+(V.repDays||[]).join(',');
+      if(old.rid&&V.rep0!==null&&rep1!==V.rep0){
+        S.items=S.items.filter(x=>!(x.rid===old.rid&&x.date>old.date&&!x.done));
+        const it2=S.items.find(x=>x.id===old.id);
+        if(mode==='none'){delete it2.rid;delete it2.rep}
+        else{it2.rep=mode;const dates=repDates(base.date,mode,$('#f-until').value,V.repDays).filter(d=>d>base.date);const b2=Object.assign({},it2);delete b2.id;delete b2.done;
+          for(const dt of dates){const n=Object.assign({id:uid()},b2,{date:dt,done:false});S.items.push(n);markSilent(n)}}
+        toast(mode==='none'?'Répétition arrêtée':'Répétition mise à jour')
+      }
       if(!old.rid&&mode!=='none'){
         const dates=repDates(base.date,mode,$('#f-until').value,V.repDays).filter(d=>d!==base.date);
         if(dates.length){const rid=uid();it.rid=rid;it.rep=mode;const b2=Object.assign({},it);delete b2.id;delete b2.done;
@@ -4495,11 +4508,10 @@ function renderCoach(){
    +(W.prog?'':'<div class="cycles">'+CYCLES.map((c,i)=>'<span class="c'+i+'"><i></i>'+c[0]+'</span>').join('')+'<span class="dl"><i></i>Allégée</span></div>')
    +'<p class="cyc-why"><b>'+(W.prog?'':'Cycle '+(W.c+1)+' · ')+W.name+(W.deload?' · semaine allégée':'')+'</b><br>'+esc(W.deload?'Récupère : une série de moins, charges un peu plus légères. C\'est là que tu progresses.':W.why)+'</p>'
    +(evPh?'<p class="cyc-why"><b style="color:var(--accent)">'+esc(evPh.name)+'</b><br>'+esc(evPh.why)+'</p>':'')
-   +(isCur?'':'<button type="button" class="linkbtn" data-act="cweek" data-n="'+Math.min(cw,12)+'">‹ Revenir à cette semaine</button>')+'</div>';
+   +(isCur?'':'<button type="button" class="linkbtn" data-act="cweek" data-n="'+Math.min(cw,12)+'">‹ Revenir à cette semaine</button>')+(isCur?'<button type="button" class="ghost" data-act="cplanall" style="width:100%;margin-top:10px">Ajouter la semaine à l\'agenda</button>':'')+'</div>';
   h+=acc('plan12','sport','Semaine '+Math.min(vw,12)+' sur 12',esc(cap(FMT.short.format(addDays(start,(vw-1)*7)))+' → '+FMT.short.format(addDays(start,(vw-1)*7+6))+(W.prog?'':' · '+W.name)),p12,false);
   // Semaine : bandeau des jours puis séances
   h+='<div class="wkstrip">'+WD.map((d,i)=>{const s=wk.find(x=>x.wd===i);return '<div'+(s?' data-act="sopen" data-i="'+wk.indexOf(s)+'"':'')+' class="'+(s?'on':'')+(isCur&&i===tw?' today':'')+'"><span>'+d.slice(0,1)+'</span><b>'+(s?esc(s.title.replace('Callisthénie · ','').split(' ')[0]):'Repos')+'</b></div>'}).join('')+'</div>';
-  if(isCur)h+='<button type="button" class="linkbtn wkadd" data-act="cplanall">📅 Ajouter toute la semaine à l\'agenda</button>';
   if(isCur&&ti<0)h+='<section class="card coach-s today"><span class="cday">Aujourd\'hui</span><h3>Repos</h3><p class="note">Récupère. Si tu veux bouger : 12 minutes d\'étirements.</p><div class="row" style="justify-content:flex-start;margin-top:10px"><button type="button" class="primary" data-act="cstretch">Étirements · 12 min</button></div></section>';
   if(ti>=0)h+=sessCard(wk[ti],ti,true,vw);
   h+=wk.map((s,i)=>i===ti?'':sessCard(s,i,false,vw)).join('');
