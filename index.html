@@ -675,8 +675,9 @@ button.big{min-height:52px;font-size:17px;padding:0 22px}
 .fab{position:fixed;z-index:41;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--grad);color:#fff;font-size:32px;line-height:1;box-shadow:0 8px 22px var(--glow)}
 
 /* Feuille d'édition */
-.scrim{position:fixed;inset:0;z-index:70;background:rgba(10,16,22,.55);display:flex;align-items:flex-end;justify-content:center}
-.panel{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:14px 14px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.scrim{overscroll-behavior:contain;position:fixed;inset:0;z-index:70;background:rgba(10,16,22,.55);display:flex;align-items:flex-end;justify-content:center}
+.scrim .panel::before{content:'';display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:-6px auto 10px}
+.panel{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:14px 14px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .panel-head h2{font-size:26px}
 .x{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:transparent;font-size:22px;line-height:1}
@@ -1433,7 +1434,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 80';
+const APP_VERSION='2026.11.10 · 81';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2943,6 +2944,31 @@ function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else mo
     if(x>60){r.classList.add('open-r');f.style.transform='translateX('+W+'px)';return}
     r.classList.remove('open-r','dr','dl');f.style.transform='';
   };
+  document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
+})();
+// Fenêtres : bloque le défilement de la page derrière, et glisser vers le bas pour fermer
+(function(){
+  let locked=false,y0=0;const bs=document.body.style;
+  const sync=()=>{const open=[...document.querySelectorAll('.scrim')].some(x=>!x.hidden&&getComputedStyle(x).display!=='none');
+    if(open&&!locked){y0=window.scrollY;bs.position='fixed';bs.top=(-y0)+'px';bs.left='0';bs.right='0';bs.width='100%';locked=true}
+    else if(!open&&locked){bs.position='';bs.top='';bs.left='';bs.right='';bs.width='';locked=false;window.scrollTo(0,y0)}};
+  const mo=new MutationObserver(sync);document.querySelectorAll('.scrim').forEach(x=>mo.observe(x,{attributes:true,attributeFilter:['hidden']}));
+  let g=null;
+  document.addEventListener('touchstart',e=>{
+    const p=e.target.closest&&e.target.closest('.scrim .panel');if(!p||e.touches.length!==1){g=null;return}
+    if(p.scrollTop>2||e.target.closest('input,textarea,select,.isf,.dgh,[type=range]')){g=null;return}
+    g={p,y:e.touches[0].clientY,x:e.touches[0].clientX,dy:0,lock:null};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!g)return;const t=e.touches[0],dx=t.clientX-g.x;g.dy=t.clientY-g.y;
+    if(g.lock===null&&(Math.abs(dx)>8||Math.abs(g.dy)>8))g.lock=Math.abs(g.dy)>Math.abs(dx)&&g.dy>0&&g.p.scrollTop<=0?'y':'n';
+    if(g.lock!=='y')return;
+    if(e.cancelable)e.preventDefault();
+    g.p.style.transition='none';g.p.style.transform='translateY('+Math.max(0,g.dy)+'px)';
+  },{passive:false});
+  const end=()=>{if(!g)return;const p=g.p,ok=g.lock==='y'&&g.dy>110;g=null;p.style.transition='transform .22s ease';
+    if(ok){p.style.transform='translateY(110%)';setTimeout(()=>{p.style.transition='';p.style.transform='';const sc=p.closest('.scrim');if(sc)sc.dispatchEvent(new MouseEvent('click',{bubbles:true}))},200)}
+    else{p.style.transform='';setTimeout(()=>{p.style.transition=''},230)}};
   document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
 })();
 let DG=null;
