@@ -1457,7 +1457,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 89';
+const APP_VERSION='2026.11.10 · 90';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2817,9 +2817,9 @@ function openMoveSheet(id){
   $('#mv-new').value='';$('#mvsheet').hidden=false;
 }
 let undoT=null;
-function toast(msg,undo){
+function toast(msg,undo,ms){
   const t=$('#toast');t.innerHTML='<span>'+esc(msg)+'</span>'+(undo?'<button type="button" data-act="undo">Annuler</button>':'');t.hidden=false;V.undo=undo||null;
-  clearTimeout(undoT);undoT=setTimeout(()=>{t.hidden=true;V.undo=null},5000);
+  clearTimeout(undoT);undoT=setTimeout(()=>{t.hidden=true;V.undo=null},ms||5000);
 }
 function delWorkout(id){
   const i=S.workouts.findIndex(x=>x.id===id);if(i<0)return;
@@ -5441,9 +5441,11 @@ async function checkUpdate(manual,opening){
   if(!manual&&V.updBusy)return;
   if(!manual&&!opening&&V.updLastAt&&Date.now()-V.updLastAt<15000)return;
   V.updBusy=true;V.updLastAt=Date.now();
-  let j;try{j=await (await fetch('version.json?t='+Date.now(),{cache:'no-store'})).json()}catch(e){V.updBusy=false;if(manual)toast('Impossible de vérifier : pas de connexion.');return}
+  const cold=opening&&!V.updColdDone&&!(V.justUpdAt&&Date.now()-V.justUpdAt<45000);if(opening)V.updColdDone=true;
+  if(cold&&$('#toast').hidden)toast('Recherche de mises à jour…',null,4000);
+  let j;try{j=await (await fetch('version.json?t='+Date.now(),{cache:'no-store'})).json()}catch(e){V.updBusy=false;if(manual)toast('Impossible de vérifier : pas de connexion.');else if(cold)toast('Hors connexion : vérification plus tard',null,2200);return}
   V.updBusy=false;
-  if(!j||!j.v||j.v===APP_VERSION){if(manual)toast('Cadence est à jour (version '+APP_VERSION+').');return}
+  if(!j||!j.v||j.v===APP_VERSION){if(manual)toast('Cadence est à jour (version '+APP_VERSION+').');else if(cold&&/^Recherche/.test($('#toast').textContent||''))toast('✓ Cadence est à jour · v'+APP_VERSION.split('·').pop().trim(),null,1800);return}
   if(manual){showUpdate(j);return}
   // Juste après une mise à jour, le serveur peut encore servir l'ancienne page quelques secondes : on n'insiste pas.
   if(V.justUpdAt&&Date.now()-V.justUpdAt<45000)return;
