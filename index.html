@@ -657,6 +657,26 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 @keyframes swPrev{from{opacity:.3;transform:translateX(-28%)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view.pg-in>*,#view.sw-next,#view.sw-prev{animation:pgIn .25s ease both}}
 #wpbg{position:fixed;inset:0;z-index:-1;pointer-events:none}
+/* Mode verre : --ga = opacité des surfaces (0,2 = très transparent, 0,95 = presque opaque) */
+body.glass{--gsurf:color-mix(in srgb,var(--surface) calc(var(--ga,.6)*100%),transparent);--gsheet:color-mix(in srgb,var(--surface) calc(max(var(--ga,.6),.78)*100%),transparent);--gline:rgba(255,255,255,.55);--ghi:rgba(255,255,255,.75)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.glass{--gline:rgba(255,255,255,.14);--ghi:rgba(255,255,255,.16)}}
+:root[data-theme="dark"] body.glass{--gline:rgba(255,255,255,.14);--ghi:rgba(255,255,255,.16)}
+body.glass:not(.haswp){background:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 38%,transparent),transparent 70%) no-repeat,radial-gradient(70% 40% at 100% 45%,rgba(245,138,106,.30),transparent 70%) no-repeat,radial-gradient(80% 45% at 10% 100%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 70%) no-repeat,var(--bg);background-attachment:fixed}
+body.glass .card,body.glass .acc,body.glass .needs,body.glass .wcard,body.glass .item,body.glass .day,body.glass .gear,body.glass .modes,body.glass .progcard,body.glass .kpis div,body.glass .ibtn,body.glass .fbar button,body.glass .eqs button:not([aria-pressed="true"]),body.glass .tabs,body.glass .day-title+.list .item{
+  background:var(--gsurf)!important;-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
+  border-color:var(--gline)!important;box-shadow:inset 0 1px 0 var(--ghi),0 6px 20px rgba(0,0,0,.07)}
+body.glass .item{border-left-color:var(--c)!important}
+body.glass .panel{background:var(--gsheet)!important;-webkit-backdrop-filter:blur(28px) saturate(1.8);backdrop-filter:blur(28px) saturate(1.8);border-top:1px solid var(--gline);box-shadow:inset 0 1px 0 var(--ghi)}
+body.glass .tabs{border-top-color:var(--gline)!important;box-shadow:inset 0 1px 0 var(--ghi),0 -6px 24px rgba(0,0,0,.06)}
+body.glass .day.sel{background:var(--grad)!important}
+body.glass .modes button[aria-pressed="true"]{background:var(--accent)}
+.sw2{position:relative;flex:none;width:52px;height:32px}.sw2 input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;z-index:1}
+.sw2 i{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:background .2s}.sw2 i::after{content:'';position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+.sw2 input:checked+i{background:var(--accent)}.sw2 input:checked+i::after{transform:translateX(20px)}.sw2 input:focus-visible+i{outline:2px solid var(--accent);outline-offset:2px}
+#glass-a,#wp-dim{width:100%;accent-color:var(--accent)}
+.glopt{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.glprev{margin-top:12px;height:70px;border-radius:14px;position:relative;overflow:hidden;background:radial-gradient(60% 90% at 15% 30%,var(--accent),transparent 70%),radial-gradient(60% 90% at 85% 70%,#F58A6A,transparent 70%),var(--bg)}
+.glprev i{position:absolute;inset:14px 24px;border-radius:12px;background:color-mix(in srgb,var(--surface) calc(var(--ga,.6)*100%),transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.5);display:grid;place-items:center;font-weight:700;font-size:13px}
 #wpbg::after{content:'';position:absolute;inset:0;background:rgba(246,245,251,var(--wpdim,.35))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #wpbg::after{background:rgba(11,10,17,var(--wpdim,.35))}}
 :root[data-theme="dark"] #wpbg::after{background:rgba(11,10,17,var(--wpdim,.35))}
@@ -1479,7 +1499,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 94';
+const APP_VERSION='2026.11.10 · 95';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2204,6 +2224,16 @@ function wpSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.
 function wpOwned(){try{return JSON.parse(localStorage.getItem(LS_WP_OWN)||'[]')}catch(e){return []}}
 function wpOwns(id){const w=WALLS.find(x=>x.id===id);if(!w)return false;if(!w.p)return true;const o=wpOwned();return o.includes('wp-'+id)||o.includes('wp-pack')}
 function wpCurrent(){return V.wpPreview||wpGet(LS_WP,'none')}
+const LS_GLASS='cadence-glass',LS_GLASS_A='cadence-glass-a';
+function glassOn(){return wpGet(LS_GLASS,'0')==='1'}
+function glassA(){const v=+wpGet(LS_GLASS_A,55);return isFinite(v)?Math.max(15,Math.min(95,v)):55}
+function applyGlass(){const b=document.body;if(!b)return;b.classList.toggle('glass',glassOn());b.style.setProperty('--ga',(glassA()/100).toFixed(2));document.documentElement.style.setProperty('--ga',(glassA()/100).toFixed(2))}
+function glassSection(){
+  const on=glassOn(),a=glassA();
+  return '<h3 class="group-h">Effet verre</h3><section class="card"><div class="glopt"><div><b>Mode verre</b><p class="note">Surfaces translucides et floutées, comme sur iPhone.</p></div><label class="sw2"><input type="checkbox" id="glass-on"'+(on?' checked':'')+'><i></i></label></div>'
+   +'<label style="margin-top:12px;display:block"><span class="lab" style="display:flex;justify-content:space-between"><span>Transparent</span><span id="glass-v">'+a+' %</span><span>Opaque</span></span><input type="range" id="glass-a" min="15" max="95" step="5" value="'+a+'"'+(on?'':' disabled')+'></label>'
+   +'<div class="glprev"><i>Aperçu du verre</i></div><p class="note" style="margin-top:8px">L\'effet est encore plus beau avec un fond d\'écran.</p></section>';
+}
 function applyWall(){
   let el=$('#wpbg');if(!el){el=document.createElement('div');el.id='wpbg';el.setAttribute('aria-hidden','true');document.body.prepend(el)}
   const id=wpCurrent(),w=WALLS.find(x=>x.id===id);let css=w&&w.css||'';
@@ -2250,7 +2280,7 @@ function applyTheme(){
   const p=themePref(),r=document.documentElement,eff=effTheme();
   if(p==='auto')delete r.dataset.theme;else r.dataset.theme=p;
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{const md=m.getAttribute('media')||'';m.setAttribute('content',p==='auto'?(md.indexOf('dark')>=0?'#0B0A11':'#F6F5FB'):(eff==='dark'?'#0B0A11':'#F6F5FB'))});
-  applyAccent();try{applyWall()}catch(e){}
+  applyAccent();try{applyWall();applyGlass()}catch(e){}
   const b=document.getElementById('themebtn');
   if(b){b.innerHTML=eff==='dark'?ICON_SUN:ICON_MOON;b.setAttribute('aria-label',eff==='dark'?'Passer en thème clair':'Passer en thème sombre')}
 }
@@ -2609,7 +2639,7 @@ function renderSettings(){
   if(sec==='theme'){
     const p=themePref(),opt=[['auto','Auto',ICON_AUTO],['light','Clair',ICON_SUN],['dark','Sombre',ICON_MOON]];
     return head+'<h2 class="pg-t">Apparence</h2><section class="card"><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>'
-     +'<h3 class="group-h">Couleur</h3><section class="card"><div class="acc-sw">'+ACCENTS.map(a=>'<button type="button" data-act="setaccent" data-v="'+a[0]+'" aria-pressed="'+(accentPref()===a[0])+'" aria-label="'+a[1]+'"><i style="background:'+(a[2]?'linear-gradient(135deg,'+a[4]+','+a[6]+')':'linear-gradient(135deg,#7366FF,#F58A6A)')+'"></i><span>'+a[1]+'</span></button>').join('')+'</div></section>'+wallsSection();
+     +'<h3 class="group-h">Couleur</h3><section class="card"><div class="acc-sw">'+ACCENTS.map(a=>'<button type="button" data-act="setaccent" data-v="'+a[0]+'" aria-pressed="'+(accentPref()===a[0])+'" aria-label="'+a[1]+'"><i style="background:'+(a[2]?'linear-gradient(135deg,'+a[4]+','+a[6]+')':'linear-gradient(135deg,#7366FF,#F58A6A)')+'"></i><span>'+a[1]+'</span></button>').join('')+'</div></section>'+glassSection()+wallsSection();
   }
   if(sec==='notif'){
     const hasN='Notification' in window,perm=hasN?Notification.permission:'none',pi=pushInfo(),pr=prefs();
@@ -5505,7 +5535,9 @@ document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc
   const nb=$('.recnew');if(nb){const ex=[...document.querySelectorAll('.recrow')].some(r=>r.dataset.s===q);nb.hidden=!q||ex;nb.dataset.n=e.target.value.trim();nb.textContent='+ Ajouter « '+e.target.value.trim()+' »'}});
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
 document.addEventListener('change',e=>{if(e.target.id==='wp-file'&&e.target.files&&e.target.files[0])wpPhoto(e.target.files[0])});
-document.addEventListener('input',e=>{if(e.target.id==='wp-dim'){wpSet(LS_WP_DIM,e.target.value);applyWall()}});
+document.addEventListener('input',e=>{if(e.target.id==='wp-dim'){wpSet(LS_WP_DIM,e.target.value);applyWall()}
+  if(e.target.id==='glass-a'){wpSet(LS_GLASS_A,e.target.value);applyGlass();const v=$('#glass-v');if(v)v.textContent=e.target.value+' %'}});
+document.addEventListener('change',e=>{if(e.target.id==='glass-on'){wpSet(LS_GLASS,e.target.checked?'1':'0');applyGlass();const r=$('#glass-a');if(r)r.disabled=!e.target.checked;toast(e.target.checked?'Mode verre activé':'Mode verre désactivé',null,1600)}});
 document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details.more'))V.moreOpen=e.target.open},true);
 document.addEventListener('change',e=>{
   if(e.target.id==='coach-hide'){const off=e.target.checked;S.prefs=Object.assign(prefs(),{coach:!off});touch();pushSync(true);render();toast(off?'Séances du coach retirées de l\'onglet Séances':'Séances du coach de retour dans Séances')}
