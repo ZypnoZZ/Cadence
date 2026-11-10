@@ -555,6 +555,7 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .dur2{display:flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;min-height:44px;padding:0 12px}
 .dur2 input{min-width:0;width:100%;border:0!important;background:transparent!important;padding:8px 2px!important;min-height:42px!important;text-align:center;border-radius:0!important}
 .dur2 b{font-weight:600;color:var(--muted);font-size:14px;padding-right:6px}.dur2 b:last-child{padding-right:0}
+.wsw{font-size:13px}
 .wtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;min-height:44px}
 .wdone{display:block;width:100%;margin-top:6px;min-height:52px;font-size:17px}
 .rmsug{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--soft);font-size:13.5px}.rmsug .ghost{flex:none;padding:6px 12px;min-height:0}
@@ -1412,7 +1413,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 74';
+const APP_VERSION='2026.11.10 · 75';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2877,6 +2878,26 @@ function moveWEx(from,to){const w=curW();if(!w||to<0||to>=w.ex.length||from===to
 function moveCEx(si,from,to){const s=(V.coachWeek||[])[si];if(!s||to<0||to>=s.ex.length||from===to)return;const names=s.ex.map(e=>e.name),x=names.splice(from,1)[0];names.splice(to,0,x);
   S.coach=Object.assign(coachCfg(),{start:progStart()});S.coach.ord=Object.assign({},S.coach.ord,{[s.key]:names});touch();render();openSess(si)}
 function dgMove(item,from,to){if(item.dataset.dgt==='w')moveWEx(from,to);else moveCEx(+item.dataset.dgs,from,to)}
+// Glisser horizontalement dans l'éditeur de séance pour revenir à la liste
+(function(){
+  let g=null;const view=()=>$('#view');
+  document.addEventListener('touchstart',e=>{
+    if(V.tab!=='seances'||!V.wEdit||DG||e.touches.length!==1)return;
+    const t=e.target;if(t.closest('input,textarea,select,.dgh,.unit,.fbar,.eqs,[contenteditable]'))return;
+    const p=e.touches[0];g={x:p.clientX,y:p.clientY,dx:0,on:false};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!g)return;const p=e.touches[0];g.dx=p.clientX-g.x;const dy=p.clientY-g.y;
+    if(!g.on){if(Math.abs(dy)>14&&Math.abs(dy)>Math.abs(g.dx)){g=null;return}if(Math.abs(g.dx)>14)g.on=true;else return}
+    const v=view();if(v){v.style.transition='none';v.style.transform='translateX('+g.dx*0.6+'px)';v.style.opacity=String(1-Math.min(.5,Math.abs(g.dx)/600))}
+  },{passive:true});
+  const end=()=>{if(!g)return;const ok=g.on&&Math.abs(g.dx)>90,dir=g.dx<0?-1:1;g=null;const v=view();if(!v)return;
+    v.style.transition='transform .22s ease,opacity .22s ease';
+    if(ok){v.style.transform='translateX('+dir*window.innerWidth+'px)';v.style.opacity='0';
+      setTimeout(()=>{closeWorkout();render();window.scrollTo(0,0);v.style.transition='none';v.style.transform='';v.style.opacity=''},200)}
+    else{v.style.transform='';v.style.opacity=''}};
+  document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
+})();
 let DG=null;
 function dgScroller(el){while(el&&el!==document.body){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight)return el;el=el.parentElement}return document.scrollingElement||document.documentElement}
 function dgUpdate(){
@@ -3018,7 +3039,7 @@ function renderImport(){
 }
 function renderWorkout(w){
   const titles=[...new Set([...SPORTS.filter(x=>x!=='Autre'),...S.workouts.map(x=>x.title).filter(Boolean)])];
-  let h='<div class="wtop"><button type="button" class="linkbtn" data-act="wclose">‹ Séances</button>'+(w.ex.length?'<button type="button" class="primary" data-act="pguide">▶ Séance guidée</button>':'')+'</div>';
+  let h='<div class="wtop"><span class="note wsw">‹ Glisse pour revenir</span>'+(w.ex.length?'<button type="button" class="primary" data-act="pguide">▶ Séance guidée</button>':'')+'</div>';
   h+='<section class="card"><div class="r2"><label><span class="lab">Date</span><input type="date" id="w-date" value="'+w.date+'"></label><label><span class="lab">Durée</span><span class="dur2"><input type="number" id="w-dh" min="0" max="12" inputmode="numeric" aria-label="Heures" value="'+(+w.dur>=60?Math.floor(+w.dur/60):'')+'"><b>h</b><input type="number" id="w-dm" min="0" max="59" inputmode="numeric" aria-label="Minutes" value="'+(+w.dur?(+w.dur%60):'')+'"><b>min</b></span></label></div>'
    +'<label><span class="lab">Nom de la séance</span><input type="text" id="w-title" list="dl-titles" maxlength="60" value="'+esc(w.title)+'" placeholder="Ex. Push, Haut du corps, Course"></label><datalist id="dl-titles">'+titles.map(t=>'<option value="'+esc(t)+'">').join('')+'</datalist>';
   if(!w.ex.length)h+=acc('imp','perso','Importer depuis Notes','Colle ta séance, Cadence crée les exercices','<p class="note" style="margin-bottom:8px">Dans Notes, copie ta séance puis colle-la : une ligne par exercice (par exemple « Développé couché 4x10 60kg »).</p><button type="button" class="primary" data-act="wimp" style="width:100%">Coller ma séance</button>',false);
