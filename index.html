@@ -656,6 +656,20 @@ details.more{margin:14px 0 4px;color:var(--muted);font-size:14px}details.more su
 @keyframes swNext{from{opacity:.3;transform:translateX(28%)}to{opacity:1;transform:none}}
 @keyframes swPrev{from{opacity:.3;transform:translateX(-28%)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view.pg-in>*,#view.sw-next,#view.sw-prev{animation:pgIn .25s ease both}}
+#wpbg{position:fixed;inset:0;z-index:-1;pointer-events:none}
+#wpbg::after{content:'';position:absolute;inset:0;background:rgba(246,245,251,var(--wpdim,.35))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #wpbg::after{background:rgba(11,10,17,var(--wpdim,.35))}}
+:root[data-theme="dark"] #wpbg::after{background:rgba(11,10,17,var(--wpdim,.35))}
+body.haswp{background:transparent!important}
+body.haswp .card,body.haswp .acc,body.haswp .needs,body.haswp .wcard,body.haswp .item,body.haswp .tabs,body.haswp .day{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3)}
+.wpgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.wpt{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);font:inherit}
+.wpt i{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:9/16;border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.wpt.cur i{outline:2.5px solid var(--accent);outline-offset:2px}
+.wpt i b{font-size:20px}.wpt i em{position:absolute;right:5px;bottom:5px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-style:normal;font-size:12px;display:grid;place-items:center}
+.wpt span{font-size:12px;font-weight:600;line-height:1.15;text-align:center}.wpt small{font-size:11px;color:var(--muted)}
+.wppack{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,transparent),rgba(245,138,106,.1)),var(--surface)}.wppack>div{flex:1;min-width:0}.wppack .primary{flex:none}
+.wpprev{border-color:var(--accent)}
 .wkadd{display:block;margin:-4px auto 12px;font-size:14px}
 .vidlink{display:inline-flex;align-items:center;text-decoration:none}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}.kpis b{display:block;font-family:var(--font-display);font-size:26px}.kpis span{font-size:12.5px;color:var(--muted)}
@@ -1461,7 +1475,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 92';
+const APP_VERSION='2026.11.10 · 93';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2160,11 +2174,75 @@ function applyAccent(){
   r.style.setProperty('--accent',c);r.style.setProperty('--grad','linear-gradient(135deg,'+a[4]+' 0%,'+a[5]+' 55%,'+a[6]+' 100%)');
   r.style.setProperty('--glow','rgba('+rgb+',.3)');r.style.setProperty('--wash1','rgba('+rgb+',.07)');
 }
+/* ---------- Fonds d'écran (boutique) ---------- */
+const STAR=(x,y,r,t)=>'radial-gradient(circle at '+x+'px '+y+'px,rgba(255,255,255,.95) 0 '+r+'px,transparent '+(r+.8)+'px) 0 0/'+(t||137)+'px '+(t||137)+'px';
+const WALLS=[
+  {id:'none',n:'Aucun',p:0,css:''},
+  {id:'brume',n:'Brume',p:0,css:'radial-gradient(120% 70% at 0% 0%,var(--accent),transparent 60%),radial-gradient(110% 70% at 100% 100%,#F58A6A,transparent 60%),var(--bg)'},
+  {id:'aurore',n:'Aurore',p:99,css:'radial-gradient(120% 80% at 10% 0%,#7c3aed 0,transparent 60%),radial-gradient(100% 70% at 100% 30%,#06b6d4 0,transparent 60%),radial-gradient(120% 80% at 30% 100%,#22c55e 0,transparent 55%),#0b1020'},
+  {id:'couchant',n:'Coucher de soleil',p:99,css:'linear-gradient(170deg,#ff7e5f,#feb47b 38%,#ff5e98 72%,#6a2ff7)'},
+  {id:'ocean',n:'Océan',p:99,css:'radial-gradient(140% 70% at 50% -10%,#3fc1ff,transparent 62%),radial-gradient(90% 50% at 100% 100%,#1de9b6,transparent 60%),linear-gradient(180deg,#0a4b8f,#04203f)'},
+  {id:'foret',n:'Forêt',p:99,css:'radial-gradient(120% 80% at 0% 0%,#7bd389,transparent 58%),radial-gradient(90% 60% at 100% 100%,#c6e66b,transparent 60%),linear-gradient(160deg,#1f5f3b,#0c2a1c)'},
+  {id:'neon',n:'Néon',p:99,css:'linear-gradient(transparent 94%,rgba(255,47,208,.35) 0) 0 0/100% 34px,linear-gradient(90deg,transparent 94%,rgba(0,220,255,.32) 0) 0 0/34px 100%,radial-gradient(100% 55% at 50% 0%,#ff2fd0,transparent 62%),radial-gradient(100% 50% at 50% 100%,#2f6bff,transparent 62%),#0a0418'},
+  {id:'etoiles',n:'Nuit étoilée',p:99,css:[STAR(20,30,1.3,97),STAR(70,80,.8,97),STAR(40,110,1.6,151),STAR(120,20,1,151),STAR(90,170,1.2,211),STAR(180,60,.9,211),STAR(10,140,.7,113),STAR(60,40,1.1,173)].join(',')+',radial-gradient(120% 70% at 50% 100%,#3b2a7a,transparent 70%),#070816'},
+  {id:'sable',n:'Sable',p:99,css:'radial-gradient(100% 60% at 100% 0%,#fff3df,transparent 60%),linear-gradient(160deg,#f6e7cf,#e9c9a0 60%,#d9a774)'},
+  {id:'pastel',n:'Pastel',p:99,css:'linear-gradient(135deg,#ffd1dc,#c3e8ff 50%,#d9ffd1)'},
+  {id:'graphite',n:'Graphite',p:99,css:'repeating-linear-gradient(45deg,rgba(255,255,255,.045) 0 2px,transparent 2px 12px),radial-gradient(100% 60% at 0% 0%,#4b5563,transparent 60%),linear-gradient(160deg,#2b2f36,#121418)'},
+  {id:'piste',n:'Piste d\'athlé',p:99,css:'repeating-linear-gradient(90deg,transparent 0 70px,rgba(255,255,255,.75) 70px 73px),radial-gradient(100% 60% at 50% 0%,rgba(255,255,255,.18),transparent 60%),linear-gradient(180deg,#c8513a,#9e3a27)'},
+  {id:'terrain',n:'Terrain',p:99,css:'radial-gradient(circle at 50% 50%,transparent 58px,rgba(255,255,255,.55) 59px 61px,transparent 62px),linear-gradient(90deg,transparent calc(50% - 1px),rgba(255,255,255,.55) 0 calc(50% + 1px),transparent 0),repeating-linear-gradient(0deg,#2e8b3e 0 60px,#2a7f39 60px 120px)'},
+  {id:'perso',n:'Ta photo',p:149,css:'perso'}
+];
+const WALL_PACK={id:'pack',n:'Pack complet',p:299};
+const LS_WP='cadence-wp',LS_WP_OWN='cadence-wp-own',LS_WP_IMG='cadence-wp-img',LS_WP_DIM='cadence-wp-dim';
+const euro=c=>(c/100).toFixed(2).replace('.',',')+' €';
+function wpGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}}
+function wpSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){toast('Image trop lourde pour être enregistrée')}}
+function wpOwned(){try{return JSON.parse(localStorage.getItem(LS_WP_OWN)||'[]')}catch(e){return []}}
+function wpOwns(id){const w=WALLS.find(x=>x.id===id);if(!w)return false;if(!w.p)return true;const o=wpOwned();return o.includes('wp-'+id)||o.includes('wp-pack')}
+function wpCurrent(){return V.wpPreview||wpGet(LS_WP,'none')}
+function applyWall(){
+  let el=$('#wpbg');if(!el){el=document.createElement('div');el.id='wpbg';el.setAttribute('aria-hidden','true');document.body.prepend(el)}
+  const id=wpCurrent(),w=WALLS.find(x=>x.id===id);let css=w&&w.css||'';
+  if(css==='perso'){const img=wpGet(LS_WP_IMG,'');css=img?'url("'+img+'") center/cover no-repeat,#000':''}
+  if(!css||(!V.wpPreview&&!wpOwns(id))){el.style.background='';document.body.classList.remove('haswp');return}
+  el.style.background=css;el.style.setProperty('--wpdim',(+wpGet(LS_WP_DIM,35))/100);document.body.classList.add('haswp');
+}
+function wallTile(w){
+  const own=wpOwns(w.id),cur=wpCurrent()===w.id;
+  let bg=w.css==='perso'?(wpGet(LS_WP_IMG,'')?'url("'+wpGet(LS_WP_IMG,'')+'") center/cover':'repeating-linear-gradient(45deg,var(--soft) 0 8px,var(--surface) 8px 16px)'):(w.css||'var(--bg)');
+  return '<button type="button" class="wpt'+(cur?' cur':'')+'" data-act="wpick" data-id="'+w.id+'" aria-pressed="'+cur+'"><i style="background:'+esc(bg)+'">'+(w.id==='perso'?'<b>📷</b>':'')+(cur?'<em>✓</em>':'')+'</i><span>'+esc(w.n)+'</span><small>'+(own?(w.p?'Acheté':'Gratuit'):euro(w.p))+'</small></button>';
+}
+function wallsSection(){
+  const pv=V.wpPreview,pw=pv&&WALLS.find(x=>x.id===pv),allOwned=WALLS.every(w=>wpOwns(w.id));
+  let h='<h3 class="group-h">Fonds d\'écran</h3>';
+  if(!allOwned)h+='<section class="card wppack"><div><b>Pack complet · '+euro(WALL_PACK.p)+'</b><p class="note">Tous les fonds, ceux à venir et ta propre photo. Paiement unique.</p></div><button type="button" class="primary" data-act="wbuy" data-id="pack">Acheter</button></section>';
+  if(pw)h+='<section class="card wpprev"><b>Aperçu : '+esc(pw.n)+'</b><p class="note">Regarde ce que ça donne, puis achète-le ou reviens en arrière.</p><div class="row" style="gap:8px;margin-top:8px"><button type="button" class="primary" data-act="wbuy" data-id="'+pw.id+'" style="flex:1">Acheter · '+euro(pw.p)+'</button><button type="button" class="ghost" data-act="wprevoff">Annuler</button></div></section>';
+  h+='<section class="card"><div class="wpgrid">'+WALLS.map(wallTile).join('')+'</div>';
+  if(wpGet(LS_WP,'none')!=='none'&&!pv)h+='<label style="margin-top:12px"><span class="lab">Assombrir le fond pour mieux lire</span><input type="range" id="wp-dim" min="0" max="80" step="5" value="'+esc(wpGet(LS_WP_DIM,35))+'"></label>';
+  if(wpOwns('perso'))h+='<button type="button" class="ghost" data-act="wpphoto" style="width:100%;margin-top:10px">📷 '+(wpGet(LS_WP_IMG,'')?'Changer ma photo':'Choisir ma photo')+'</button><input type="file" id="wp-file" accept="image/*" hidden>';
+  h+='<p class="note" style="margin-top:10px">Achat unique lié à ton adresse e-mail, valable sur tous tes appareils. <button type="button" class="linkbtn" data-act="wrestore">Restaurer mes achats</button></p></section>';
+  return h;
+}
+async function wpSync(silent){
+  const l=licenseGet(),email=l&&l.email;if(!IS_PWA||!email)return;
+  try{const r=await fetch(WORKER_URL+'/purchases?email='+encodeURIComponent(email)+'&t='+Date.now());const j=await r.json();
+    if(j&&Array.isArray(j.items)){wpSet(LS_WP_OWN,JSON.stringify(j.items));if(!silent)toast(j.items.length?'Achats restaurés':'Aucun achat trouvé pour '+email)}
+  }catch(e){if(!silent)toast('Impossible de vérifier : pas de connexion.')}
+}
+function wpBuy(id){
+  if(!IS_PWA){toast('L\'achat se fait dans l\'application installée');return}
+  const l=licenseGet(),email=l&&l.email;if(!email){toast('Connecte d\'abord ton compte Cadence (Menu › Mon compte)');return}
+  location.href=WORKER_URL+'/buy?email='+encodeURIComponent(email)+'&item=wp-'+id+'&return='+encodeURIComponent(location.origin+location.pathname);
+}
+function wpPhoto(file){
+  const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1200/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    wpSet(LS_WP_IMG,c.toDataURL('image/jpeg',.78));wpSet(LS_WP,'perso');applyWall();render();toast('Ta photo est ton fond d\'écran')};im.src=fr.result};fr.readAsDataURL(file);
+}
 function applyTheme(){
   const p=themePref(),r=document.documentElement,eff=effTheme();
   if(p==='auto')delete r.dataset.theme;else r.dataset.theme=p;
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{const md=m.getAttribute('media')||'';m.setAttribute('content',p==='auto'?(md.indexOf('dark')>=0?'#0B0A11':'#F6F5FB'):(eff==='dark'?'#0B0A11':'#F6F5FB'))});
-  applyAccent();
+  applyAccent();try{applyWall()}catch(e){}
   const b=document.getElementById('themebtn');
   if(b){b.innerHTML=eff==='dark'?ICON_SUN:ICON_MOON;b.setAttribute('aria-label',eff==='dark'?'Passer en thème clair':'Passer en thème sombre')}
 }
@@ -2523,7 +2601,7 @@ function renderSettings(){
   if(sec==='theme'){
     const p=themePref(),opt=[['auto','Auto',ICON_AUTO],['light','Clair',ICON_SUN],['dark','Sombre',ICON_MOON]];
     return head+'<h2 class="pg-t">Apparence</h2><section class="card"><p class="note" style="margin-bottom:12px">Auto suit le réglage de l\'iPhone. Le bouton en haut à droite bascule aussi entre clair et sombre.</p><div class="tchoice">'+opt.map(o=>'<button type="button" data-act="settheme" data-t="'+o[0]+'" aria-pressed="'+(p===o[0])+'">'+o[2]+o[1]+'</button>').join('')+'</div></section>'
-     +'<h3 class="group-h">Couleur</h3><section class="card"><div class="acc-sw">'+ACCENTS.map(a=>'<button type="button" data-act="setaccent" data-v="'+a[0]+'" aria-pressed="'+(accentPref()===a[0])+'" aria-label="'+a[1]+'"><i style="background:'+(a[2]?'linear-gradient(135deg,'+a[4]+','+a[6]+')':'linear-gradient(135deg,#7366FF,#F58A6A)')+'"></i><span>'+a[1]+'</span></button>').join('')+'</div></section>';
+     +'<h3 class="group-h">Couleur</h3><section class="card"><div class="acc-sw">'+ACCENTS.map(a=>'<button type="button" data-act="setaccent" data-v="'+a[0]+'" aria-pressed="'+(accentPref()===a[0])+'" aria-label="'+a[1]+'"><i style="background:'+(a[2]?'linear-gradient(135deg,'+a[4]+','+a[6]+')':'linear-gradient(135deg,#7366FF,#F58A6A)')+'"></i><span>'+a[1]+'</span></button>').join('')+'</div></section>'+wallsSection();
   }
   if(sec==='notif'){
     const hasN='Notification' in window,perm=hasN?Notification.permission:'none',pi=pushInfo(),pr=prefs();
@@ -3544,7 +3622,7 @@ const LEGAL={
   cgv:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Conditions générales de vente</h2><p class="note">Version du ${MAJ}</p>
 <h3>1. Vendeur</h3><p>${LIVE?n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':n+'.'} Contact : ${m}.</p>
 <h3>2. Offres et prix</h3><p>Deux formules d'abonnement mensuel : <b>Cadence</b> (${PRICE_BASE} par mois) et <b>Cadence + Coach</b> (${PRICE_COACH} par mois), avec le coach personnel : programme de 12 semaines, séances guidées, adaptation à tes sorties et à tes échéances. Les prix sont indiqués en euros, toutes taxes comprises.${LIVE?' TVA non applicable, article 293 B du CGI.':''}</p>
-<h3>3. Commande et paiement</h3><p>Tu t'abonnes en indiquant ton adresse e-mail, puis tu paies par carte sur la page sécurisée de Stripe. L'abonnement se renouvelle automatiquement chaque mois jusqu'à sa résiliation. Quand tu passes de Cadence à Cadence + Coach, tu paies la différence au prorata de la période en cours. Quand tu repasses à Cadence, l'écart est crédité sur ta prochaine facture.</p>
+<h3>2 bis. Achats à l'unité</h3><p>Des fonds d'écran sont aussi vendus à l'unité (paiement unique, sans abonnement), ainsi qu'un pack qui les regroupe. Le prix est affiché avant l'achat. L'achat est lié à ton adresse e-mail et reste valable tant que l'application est proposée, sur tous tes appareils, via « Restaurer mes achats ». En validant le paiement, tu demandes l'accès immédiat à ce contenu numérique et tu reconnais perdre ton droit de rétractation dès qu'il est débloqué.</p><h3>3. Commande et paiement</h3><p>Tu t'abonnes en indiquant ton adresse e-mail, puis tu paies par carte sur la page sécurisée de Stripe. L'abonnement se renouvelle automatiquement chaque mois jusqu'à sa résiliation. Quand tu passes de Cadence à Cadence + Coach, tu paies la différence au prorata de la période en cours. Quand tu repasses à Cadence, l'écart est crédité sur ta prochaine facture.</p>
 <h3>4. Durée et résiliation</h3><p>Sans engagement : tu résilies quand tu veux, depuis Menu, Mon compte, ou depuis le portail de facturation. La résiliation prend effet à la fin de la période déjà payée : tu gardes ton accès jusqu'à cette date, puis l'application se verrouille et ne garde qu'un aperçu. Tu peux annuler ta résiliation tant que la période n'est pas terminée.</p>
 <h3>5. Droit de rétractation</h3><p>Tu disposes en principe de 14 jours pour te rétracter. Cadence est un service numérique fourni immédiatement : en t'abonnant, tu demandes l'exécution du service dès la souscription et tu reconnais que tu perds ton droit de rétractation une fois le service pleinement exécuté ou commencé avec ton accord exprès (article L221-28 du Code de la consommation). Cet accord est recueilli avant le paiement.</p>
 <h3>6. Remboursement</h3><p>Chaque mois commencé est dû. Aucun remboursement au prorata n'est fait en cas de résiliation en cours de période, sauf obligation légale ou geste commercial de l'éditeur.</p>
@@ -4905,6 +4983,7 @@ document.addEventListener('click',e=>{
     if(t==='todos')t='agenda';
     const chg=V.tab!==t||(t==='coach'&&V.cours);
     if(t==='coach'||V.tab!==t)V.cours=false;
+    if(V.wpPreview){V.wpPreview=null;applyWall()}
     if(V.tab!==t||t==='records')V.recItem=null;
     V.tab=t;closeDrawer();render();window.scrollTo(0,0);if(chg)pageAnim('pg-in');
   }
@@ -4966,6 +5045,11 @@ document.addEventListener('click',e=>{
   else if(a==='recback'){V.recItem=null;render();window.scrollTo(0,0);pageAnim('sw-prev')}
   else if(a==='recadd'){recAdd()}
   else if(a==='recdel'){S.records=recList().filter(x=>x.id!==b.dataset.id);touch();render()}
+  else if(a==='wpick'){const id=b.dataset.id;if(wpOwns(id)){V.wpPreview=null;if(id==='perso'&&!wpGet(LS_WP_IMG,'')){wpSet(LS_WP,'perso');render();const f=$('#wp-file');if(f)f.click();return}wpSet(LS_WP,id);applyWall();render()}else{V.wpPreview=id;applyWall();render()}}
+  else if(a==='wprevoff'){V.wpPreview=null;applyWall();render()}
+  else if(a==='wbuy'){wpBuy(b.dataset.id)}
+  else if(a==='wrestore'){wpSync(false).then(()=>{applyWall();render()})}
+  else if(a==='wpphoto'){const f=$('#wp-file');if(f)f.click()}
   else if(a==='coursopen'){V.cours=true;render();window.scrollTo(0,0);pageAnim('sw-next')}
   else if(a==='coursback'){V.cours=false;render();window.scrollTo(0,0);pageAnim('sw-prev')}
   else if(a==='courscat'){V.coursCat=b.dataset.v;render()}
@@ -5412,6 +5496,8 @@ document.addEventListener('input',e=>{if(e.target.id!=='rec-q')return;const q=lc
   document.querySelectorAll('.recgrp').forEach(g=>{g.hidden=!!q&&!g.querySelector('.recrow:not([hidden])')});
   const nb=$('.recnew');if(nb){const ex=[...document.querySelectorAll('.recrow')].some(r=>r.dataset.s===q);nb.hidden=!q||ex;nb.dataset.n=e.target.value.trim();nb.textContent='+ Ajouter « '+e.target.value.trim()+' »'}});
 document.addEventListener('input',e=>{if(e.target.id==='imp-text'){V.impText=e.target.value;const pv=$('#imp-prev');if(pv)pv.innerHTML=importPreview()}});
+document.addEventListener('change',e=>{if(e.target.id==='wp-file'&&e.target.files&&e.target.files[0])wpPhoto(e.target.files[0])});
+document.addEventListener('input',e=>{if(e.target.id==='wp-dim'){wpSet(LS_WP_DIM,e.target.value);applyWall()}});
 document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details.more'))V.moreOpen=e.target.open},true);
 document.addEventListener('change',e=>{
   if(e.target.id==='coach-hide'){const off=e.target.checked;S.prefs=Object.assign(prefs(),{coach:!off});touch();pushSync(true);render();toast(off?'Séances du coach retirées de l\'onglet Séances':'Séances du coach de retour dans Séances')}
@@ -5487,6 +5573,10 @@ fillSelects();
 if(IS_PWA){
   try{
     const qs=new URLSearchParams(location.search);
+    if(qs.get('buy')){const ok=qs.get('buy')==='ok',it=(qs.get('item')||'').replace(/^wp-/,'');history.replaceState(null,'',location.pathname);
+      if(ok)setTimeout(async()=>{toast('Vérification de l\'achat…');for(let i=0;i<4;i++){await wpSync(true);if(wpOwned().includes('wp-'+it)||wpOwned().includes('wp-pack'))break;await new Promise(r=>setTimeout(r,2500))}
+        if(it&&it!=='pack'&&wpOwns(it)){wpSet(LS_WP,it);applyWall()}render();toast(wpOwns(it==='pack'?'aurore':it)?'Merci ! Fond d\'écran débloqué ✨':'Paiement reçu, déblocage en cours : réessaie « Restaurer mes achats » dans un instant.')},400);
+      else setTimeout(()=>toast('Achat annulé'),300)}
     if(qs.get('lic')==='changed'){V.licChanged=true;history.replaceState(null,'',location.pathname)}
     else if(qs.get('lic')==='ok'){V.licReturn=true;history.replaceState(null,'',location.pathname)}
     else if(qs.get('lic')==='cancel'){const l=licenseGet();if(l&&l.pending){delete l.pending;delete l.want;licenseSet(l)}history.replaceState(null,'',location.pathname);setTimeout(()=>toast('Paiement annulé'),300)}
@@ -5496,6 +5586,7 @@ if(IS_PWA){
   else licenseRecheckIfStale().then(()=>render());
 }
 render();
+if(IS_PWA)setTimeout(()=>wpSync(true).then(()=>applyWall()),2500);
 if(IS_PWA){
   if(!lockCfg())runSplash();
   showLock();

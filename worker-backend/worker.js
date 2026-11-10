@@ -12,6 +12,7 @@
 //   STRIPE_TERMS           (facultatif) mettre 1 une fois l'adresse des conditions saisie dans Stripe (Paramètres > Informations publiques)
 //   STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET  (facultatif) identifiants de l'application créée sur strava.com/settings/api
 //     (domaine de rappel : le domaine de ce worker, sans https://)
+// Boutique (fonds d'écran) : paiements uniques, rien à créer dans Stripe (prix définis ci-dessous).
 // Changement de formule : dans Stripe, portail client > autoriser le changement d'abonnement entre les deux prix.
 
 const CORS = {
@@ -19,6 +20,20 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
 };
+
+// Articles vendus à l'unité : identifiant -> [prix en centimes, nom affiché sur Stripe]
+const SHOP = {
+  'wp-aurore': [99, 'Fond d\'écran Aurore'], 'wp-couchant': [99, 'Fond d\'écran Coucher de soleil'], 'wp-ocean': [99, 'Fond d\'écran Océan'],
+  'wp-foret': [99, 'Fond d\'écran Forêt'], 'wp-neon': [99, 'Fond d\'écran Néon'], 'wp-etoiles': [99, 'Fond d\'écran Nuit étoilée'],
+  'wp-sable': [99, 'Fond d\'écran Sable'], 'wp-pastel': [99, 'Fond d\'écran Pastel'], 'wp-graphite': [99, 'Fond d\'écran Graphite'],
+  'wp-piste': [99, 'Fond d\'écran Piste d\'athlé'], 'wp-terrain': [99, 'Fond d\'écran Terrain'],
+  'wp-perso': [149, 'Fond d\'écran personnalisé (ta photo)'], 'wp-pack': [299, 'Pack complet de fonds d\'écran']
+};
+async function addPurchase(env, email, item) {
+  const k = 'buy:' + email, cur = JSON.parse((await env.LICENSES.get(k)) || '[]');
+  if (!cur.includes(item)) { cur.push(item); await env.LICENSES.put(k, JSON.stringify(cur)); }
+  return cur;
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -330,6 +345,50 @@ export default {
       return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base', cancelAt: (data && data.cancelAt) || null });
     }
 
+    // GET /buy?email=...&item=wp-xxx -> paiement unique d'un article de la boutique
+    if (url.pathname === '/buy') {
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase(), item = url.searchParams.get('item') || '';
+      if (!email || !SHOP[item]) return json({ error: 'article inconnu' }, 400);
+      const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      try {
+        const session = await stripe(env, 'checkout/sessions', {
+          mode: 'payment',
+          customer_email: email,
+          customer_creation: 'always',
+          'metadata[kind]': 'item', 'metadata[item]': item,
+          'payment_intent_data[metadata][item]': item,
+          'line_items[0][price_data][currency]': 'eur',
+          'line_items[0][price_data][unit_amount]': String(SHOP[item][0]),
+          'line_items[0][price_data][product_data][name]': SHOP[item][1],
+          'line_items[0][quantity]': '1',
+          'custom_text[submit][message]': 'En validant, tu demandes l\'accès immédiat à ce contenu numérique et tu reconnais perdre ton droit de rétractation dès qu\'il est débloqué (conditions de vente de l\'application).',
+          ...(env.STRIPE_TERMS ? { 'consent_collection[terms_of_service]': 'required' } : {}),
+          success_url: appUrl + '?buy=ok&item=' + item,
+          cancel_url: appUrl + '?buy=cancel'
+        });
+        return Response.redirect(session.url, 302);
+      } catch (e) { return json({ error: e.message }, 500); }
+    }
+
+    // GET /purchases?email=... -> { items: [...] } ; relit Stripe si besoin (webhook en retard)
+    if (url.pathname === '/purchases') {
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      if (!email) return json({ error: 'email manquant' }, 400);
+      let items = JSON.parse((await env.LICENSES.get('buy:' + email)) || '[]');
+      try {
+        const custs = await stripeGet(env, 'customers?email=' + encodeURIComponent(email) + '&limit=10');
+        for (const c of (custs && custs.data) || []) {
+          const ss = await stripeGet(env, 'checkout/sessions?customer=' + c.id + '&status=complete&limit=100');
+          for (const x of (ss && ss.data) || []) {
+            const it = x.metadata && x.metadata.kind === 'item' && x.metadata.item;
+            if (it && SHOP[it] && x.payment_status === 'paid' && !items.includes(it)) items.push(it);
+          }
+        }
+        await env.LICENSES.put('buy:' + email, JSON.stringify(items));
+      } catch (e) {}
+      return json({ items });
+    }
+
     // GET /checkout?email=... -> redirige vers Stripe Checkout
     if (url.pathname === '/checkout') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
@@ -480,7 +539,12 @@ export default {
       const event = JSON.parse(raw);
       const obj = event.data && event.data.object;
 
-      if (event.type === 'checkout.session.completed' && obj.customer_email) {
+      if (event.type === 'checkout.session.completed' && obj.metadata && obj.metadata.kind === 'item') {
+        const em = (obj.customer_email || (obj.customer_details && obj.customer_details.email) || '').toLowerCase();
+        if (em && obj.payment_status === 'paid' && SHOP[obj.metadata.item]) await addPurchase(env, em, obj.metadata.item);
+        return new Response('ok');
+      }
+      if (event.type === 'checkout.session.completed' && obj.customer_email && obj.mode === 'subscription') {
         const key = 'lic:' + obj.customer_email.toLowerCase();
         const prev = JSON.parse((await env.LICENSES.get(key)) || '{}');
         await env.LICENSES.put(key, JSON.stringify(Object.assign(prev, {
