@@ -552,7 +552,12 @@ input::-webkit-date-and-time-value{text-align:left;min-width:0}
 .wkstrip .today{outline:2px solid var(--accent);outline-offset:1px}
 .cs-top{display:flex;justify-content:space-between;align-items:center}
 .cdone{font-size:12px;font-weight:700;color:var(--d-today)}
-.dur2{display:flex;align-items:center;gap:6px}.dur2 input{min-width:0;width:100%}.dur2 b{font-weight:600;opacity:.7}
+.dur2{display:flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;min-height:44px;padding:0 12px}
+.dur2 input{min-width:0;width:100%;border:0!important;background:transparent!important;padding:8px 2px!important;min-height:42px!important;text-align:center;border-radius:0!important}
+.dur2 b{font-weight:600;color:var(--muted);font-size:14px;padding-right:6px}.dur2 b:last-child{padding-right:0}
+.wtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;min-height:44px}
+.wdone{display:block;width:100%;margin-top:6px;min-height:52px;font-size:17px}
+.rmsug{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--soft);font-size:13.5px}.rmsug .ghost{flex:none;padding:6px 12px;min-height:0}
 .strv{margin-bottom:12px}.actf input[type=password]{width:100%}.actf{display:grid;gap:8px;margin-top:6px}.strv-l a{color:var(--accent)}.strv-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.strv-l li{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}.strv-l li small{grid-column:2;opacity:.7}.strv-l b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acc-sw{display:flex;gap:10px;flex-wrap:wrap}.acc-sw button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;min-width:56px;border-radius:14px;border:2px solid transparent;background:none;font-size:12px}.acc-sw i{width:36px;height:36px;border-radius:50%;display:block;transition:transform .25s}.acc-sw button[aria-pressed=true]{border-color:var(--accent)}.acc-sw button[aria-pressed=true] i{transform:scale(1.12)}
 .xbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;margin-left:8px}
@@ -1402,7 +1407,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 72';
+const APP_VERSION='2026.11.10 · 73';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2686,7 +2691,7 @@ function renderSeances(){
   if(uiSimple()&&!V.wfull)return renderSeancesSimple();
   const sg=V.wseg||'hist';
   return '<div class="cal-head"><h2>Séances</h2><button type="button" class="primary" data-act="wnew">Nouvelle séance</button></div>'+(coachActive()?levelBanner()+todayCoachCard(false):'')
-      +'<div class="modes">'+[['hist','Historique'],['suivi','Suivi'],['prog','Par exercice']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'<button type="button" data-act="tab" data-tab="records">🏆 Records</button></div>'
+      +'<div class="modes">'+[['hist','Historique'],['suivi','Suivi'],['prog','Par exercice']].map(x=>'<button type="button" data-act="wseg" data-seg="'+x[0]+'" aria-pressed="'+(sg===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
    +(sg==='hist'?seancesHist():sg==='suivi'?perChips()+suiviSport():seancesProg())
    +(uiSimple()?'<button type="button" class="linkbtn" data-act="wsimple" style="display:block;margin:16px auto">Revenir à l\'affichage simple</button>':'');
 }
@@ -2778,7 +2783,7 @@ function renderSeancesSimple(){
   if(plan.length)h+='<section class="card"><b>Prévu dans ton agenda</b>'+plan.map(i=>'<div class="row" style="padding:8px 0;border-top:1px solid var(--line);margin-top:6px"><span>'+esc(i.title)+'</span><span style="display:flex;gap:6px"><button type="button" class="ghost" data-act="ishift" data-id="'+i.id+'">Décaler</button><button type="button" class="ghost" data-act="wnew" data-from="'+i.id+'">Noter</button></span></div>').join('')+'</section>';
   h+='<section class="card"><b>Tu as fait une autre activité ?</b><p class="note" style="margin:4px 0 10px">Course, foot, piscine… note-la en deux secondes.</p><div class="eqs sc">'+['Course à pied','Vélo','Natation','Football','Marche','Autre sport'].map(x=>'<button type="button" data-act="wquick" data-n="'+x+'">'+x+'</button>').join('')+'</div></section>';
   h+=S.workouts.length?'<h3 class="group-h">Mes séances</h3>'+wListHTML(S.workouts,true):'<p class="note" style="margin:6px 2px 14px">Tes séances apparaîtront ici.</p>';
-  h+='<div class="qlinks"><button type="button" class="ghost" data-act="suivi" data-seg="sport">📈 Mon suivi</button><button type="button" class="ghost" data-act="tab" data-tab="records">🏆 Mes records</button></div>';
+  h+='<button type="button" class="ghost" data-act="suivi" data-seg="sport" style="width:100%;margin-top:4px">📈 Voir mon suivi</button>';
   h+='<button type="button" class="linkbtn" data-act="wfull" style="display:block;margin:16px auto">Affichage complet (historique, progrès, import)</button>';
   return h;
 }
@@ -2920,6 +2925,7 @@ function exoCardHTML(w,e,i){
      +e.sets.map((st,j)=>'<div class="sr"><span class="sn">'+(j+1)+'</span><input type="number" inputmode="numeric" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="r" value="'+esc(st.r)+'" aria-label="Répétitions, série '+(j+1)+'">'+(e.bw?'':'<input type="number" inputmode="decimal" step="0.5" min="0" data-wi="'+i+'" data-j="'+j+'" data-k="'+(e.pl?'p':'kg')+'" value="'+esc(e.pl?st.p:st.kg)+'" aria-label="'+(e.pl?'Plaques':'Charge')+', série '+(j+1)+'">')+'<button type="button" class="jdel" data-act="wdelset" data-i="'+i+'" data-j="'+j+'" aria-label="Supprimer la série '+(j+1)+'">×</button></div>').join('')+'</div>'
      +(e.pl?'<div class="r2" style="margin-top:8px"><label><span class="lab">kg par plaque</span><input type="number" inputmode="decimal" step="0.5" min="0" data-wi="'+i+'" data-k="pl" value="'+esc(e.pl)+'"></label><p class="note" id="wp-'+i+'" style="align-self:end">'+platesNote(e)+'</p></div>':'')
      +'<div class="row" style="margin-top:8px"><button type="button" class="ghost" data-act="waddset" data-i="'+i+'">+ Série</button><span class="note" id="wx-'+i+'" style="min-width:0">'+exoSummary(e)+'</span></div>';
+    if(!e.bw){const rm=oneRM(e.name);if(rm){const rr=parseInt((e.sets[0]||{}).r,10)||parseInt((e.plan||{}).r,10)||8,sk=sugKg(e.name,rr);h+='<div class="rmsug"><span>1 RM ≈ <b>'+num(rm,0)+' kg</b> · '+rr+' rép. ≈ <b>'+nf.format(sk)+' kg</b></span><button type="button" class="ghost" data-act="wrm" data-i="'+i+'">Ajuster</button></div>'}}
   }
   return h+'</section>';
 }
@@ -3006,7 +3012,7 @@ function renderImport(){
 }
 function renderWorkout(w){
   const titles=[...new Set([...SPORTS.filter(x=>x!=='Autre'),...S.workouts.map(x=>x.title).filter(Boolean)])];
-  let h='<div class="row" style="margin-bottom:12px"><button type="button" class="ghost" data-act="wclose">‹ Terminer</button>'+(w.ex.length?'<button type="button" class="primary" data-act="pguide">▶ Séance guidée</button>':'<span class="note">Enregistré automatiquement</span>')+'</div>';
+  let h='<div class="wtop"><button type="button" class="linkbtn" data-act="wclose">‹ Séances</button>'+(w.ex.length?'<button type="button" class="primary" data-act="pguide">▶ Séance guidée</button>':'')+'</div>';
   h+='<section class="card"><div class="r2"><label><span class="lab">Date</span><input type="date" id="w-date" value="'+w.date+'"></label><label><span class="lab">Durée</span><span class="dur2"><input type="number" id="w-dh" min="0" max="12" inputmode="numeric" aria-label="Heures" value="'+(+w.dur>=60?Math.floor(+w.dur/60):'')+'"><b>h</b><input type="number" id="w-dm" min="0" max="59" inputmode="numeric" aria-label="Minutes" value="'+(+w.dur?(+w.dur%60):'')+'"><b>min</b></span></label></div>'
    +'<label><span class="lab">Nom de la séance</span><input type="text" id="w-title" list="dl-titles" maxlength="60" value="'+esc(w.title)+'" placeholder="Ex. Push, Haut du corps, Course"></label><datalist id="dl-titles">'+titles.map(t=>'<option value="'+esc(t)+'">').join('')+'</datalist>';
   if(!w.ex.length)h+=acc('imp','perso','Importer depuis Notes','Colle ta séance, Cadence crée les exercices','<p class="note" style="margin-bottom:8px">Dans Notes, copie ta séance puis colle-la : une ligne par exercice (par exemple « Développé couché 4x10 60kg »).</p><button type="button" class="primary" data-act="wimp" style="width:100%">Coller ma séance</button>',false);
@@ -3014,6 +3020,11 @@ function renderWorkout(w){
   h+='</section>'+w.ex.map((e,i)=>exoCardHTML(w,e,i)).join('');
   h+='<section class="card"><label><span class="lab">Ajouter un exercice</span><input type="text" id="w-newex" list="dl-exos" maxlength="60" placeholder="Ex. Développé couché"></label><datalist id="dl-exos">'+allExos().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist><button type="button" class="primary" data-act="waddex" style="width:100%">Ajouter l\'exercice</button></section>';
   h+='<section class="card"><label><span class="lab">Notes</span><textarea id="w-note" rows="2" maxlength="400">'+esc(w.note)+'</textarea></label><button type="button" class="danger" data-act="wdel">Supprimer la séance</button></section>';
+  const pl=S.items.filter(x=>x.wtpl===w.id&&x.date>=todayISO).sort((a,b)=>a.date<b.date?-1:1);
+  h+='<section class="card"><b>Planifier dans l\'agenda</b><p class="note" style="margin:2px 0 8px">Ajoute cette séance au calendrier : le jour venu, elle s\'ouvrira avec les mêmes exercices.</p>'
+   +(pl.length?'<p class="note" style="margin-bottom:8px">Déjà prévue : '+pl.map(x=>esc(FMT.short.format(parseISO(x.date)))+' à '+esc(x.time||'')).join(', ')+'</p>':'')
+   +'<div class="r2"><label><span class="lab">Jour</span><input type="date" id="wp-date" value="'+iso(addDays(today,1))+'"></label><label><span class="lab">Heure</span><input type="time" id="wp-time" value="18:00"></label></div><button type="button" class="ghost" data-act="wplan" style="width:100%">📅 Ajouter à l\'agenda</button></section>';
+  h+='<button type="button" class="primary wdone" data-act="wclose">Terminer</button><p class="note" style="text-align:center;margin:6px 0 4px">Tout est enregistré automatiquement.</p>';
   return h;
 }
 
@@ -3939,6 +3950,8 @@ function autoReps(name){
 }
 // Meilleures valeurs
 function liftBest(name){const o={};for(const r of recList())if(r.cat==='force'&&lc(r.name)===lc(name)&&(!o[r.n]||r.kg>o[r.n].kg))o[r.n]={kg:r.kg,date:r.date,id:r.id};const a=autoBest(name);for(const n of REC_RM)if(a[n]&&(!o[n]||a[n].kg>o[n].kg))o[n]={kg:a[n].kg,date:a[n].date,auto:1};return o}
+function oneRM(name){const t=liftTop(liftBest(name));return t?t.v:0}
+function sugKg(name,r){const rm=oneRM(name),n=parseInt(r,10);if(!rm||!(n>0)||n>30)return 0;return Math.floor(rm/(1+(Math.min(n,12)+2)/30)/2.5)*2.5}
 function liftTop(o){let b=null;for(const n of REC_RM)if(o[n]){const v=e1rm(o[n].kg,n);if(!b||v>b.v)b={v,n,kg:o[n].kg}}return b}
 function gymKind(name){return REC_FAM.gym[1][3].some(x=>lc(x)===lc(name))?'hold':(recList().find(r=>r.cat==='gym'&&lc(r.name)===lc(name))||{}).k||'reps'}
 function gymBest(name){const k=gymKind(name);let v=0;for(const r of recList())if(r.cat==='gym'&&lc(r.name)===lc(name)&&r.k===k&&r.v>v)v=r.v;if(k==='reps')v=Math.max(v,autoReps(name));return {k,v}}
@@ -4014,7 +4027,7 @@ function recDetail(){
 function renderRecords(){
   if(V.recItem)return recDetail();
   const top=V.recSeg&&REC_FAM[V.recSeg]?V.recSeg:'lift';
-  return '<div class="cal-head"><button type="button" class="linkbtn" data-act="tab" data-tab="seances">‹ Séances</button><h2>Records</h2><span></span></div>'
+  return '<div class="cal-head"><span></span><h2>Records</h2><span></span></div>'
    +recLevelCard()
    +'<div class="modes" style="margin-bottom:10px">'+REC_TOP.map(x=>'<button type="button" data-act="recseg" data-v="'+x[0]+'" aria-pressed="'+(top===x[0])+'">'+x[1]+'</button>').join('')+'</div>'
    +recListHTML();
@@ -4278,7 +4291,7 @@ function openSess(i){
   $('#ss-sub').textContent=cap(FMT.long.format(date))+' · semaine '+Math.min(wn,12)+' · ≈ '+s.dur+' min';
   const p=prefs();
   $('#ss-body').innerHTML='<p class="note" style="margin-bottom:10px">'+esc(s.focus)+'</p>'+s.ex.map((e,k)=>{const a=p.anim!=='never'?animFor(e.name):null;
-    return '<div class="ssx'+(e.ss?' sup':'')+'" data-dg="1" data-dgt="c" data-dgs="'+i+'" data-di="'+k+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+'</span></div>'+vidA(e.name)+''+DGH+'</div>'}).join('')
+    return '<div class="ssx'+(e.ss?' sup':'')+'" data-dg="1" data-dgt="c" data-dgs="'+i+'" data-di="'+k+'">'+(a?'<img src="'+ANIM_BASE+a+'-0.jpg" alt="" loading="lazy">':'<span class="ssn">'+(k+1)+'</span>')+'<div class="ssi"><b>'+esc(e.name)+'</b><span>'+esc(exLine(e))+(e.kind!=='cardio'&&!e.hold&&sugKg(e.name,e.r)?' · ≈ '+nf.format(sugKg(e.name,e.r))+' kg':'')+'</span></div>'+vidA(e.name)+''+DGH+'</div>'}).join('')
    +(cur?'<div class="row" style="margin-top:14px"><button type="button" class="primary" data-act="cstart" data-i="'+i+'" style="flex:1">Commencer</button><button type="button" class="ghost" data-act="cplan" data-i="'+i+'">Agenda</button><button type="button" class="ghost" data-act="cshift" data-i="'+i+'">Décaler</button></div>':'<p class="note" style="margin-top:12px">Cette séance sera disponible à partir du '+esc(FMT.long.format(date))+'.</p><button type="button" class="ghost" data-act="cshift" data-i="'+i+'" style="width:100%;margin-top:8px">Décaler cette séance</button>');
   $('#ssheet').hidden=false;
 }
@@ -4431,7 +4444,7 @@ function renderCoach(){
 function coachToWorkout(s,agendaId){
   return {id:uid(),date:todayISO,title:s.title,dur:s.dur,agendaId:agendaId||null,note:'Programme du coach',
     ex:s.ex.map(e=>{const plan={r:e.r,restS:e.restS,hold:e.hold,iv:e.iv,tm:e.tm,min:e.min,txt:e.txt,s:e.s,ss:e.ss};
-      return e.kind==='cardio'?{name:e.name,kind:'cardio',sets:[],min:e.min||'',km:'',plan}:{name:e.name,kind:'force',sets:Array.from({length:e.s},()=>({r:e.hold?'':(parseInt(e.r,10)||''),kg:''})),min:'',km:'',plan}})};
+      return e.kind==='cardio'?{name:e.name,kind:'cardio',sets:[],min:e.min||'',km:'',plan}:{name:e.name,kind:'force',sets:Array.from({length:e.s},()=>({r:e.hold?'':(parseInt(e.r,10)||''),kg:e.hold?'':(sugKg(e.name,e.r)||'')})),min:'',km:'',plan}})};
 }
 function nextDateFor(wd){const tw=(today.getDay()+6)%7;return iso(addDays(today,(wd-tw+7)%7))}
 function coachPlan(s){
@@ -5044,6 +5057,8 @@ document.addEventListener('click',e=>{
   }
   else if(a==='wnew'){
     const it=b.dataset.from?S.items.find(x=>x.id===b.dataset.from):null;
+    const src=it&&it.wtpl&&S.workouts.find(x=>x.id===it.wtpl);
+    if(src){const w={id:uid(),date:todayISO,title:src.title,dur:src.dur||it.dur||'',agendaId:it.id,note:'',ex:src.ex.map(e=>{const c=JSON.parse(JSON.stringify(e));delete c.done;return c})};S.workouts.push(w);V.tab='seances';V.wEdit=w.id;touch();render();window.scrollTo(0,0);return}
     const cs=it&&coachSessFor(it);
     if(cs){const w=coachToWorkout(cs,it.id);S.workouts.push(w);touch();askGuided(w);return}
     const w={id:uid(),date:todayISO,title:it?(it.sport&&it.sport!=='Autre'?it.sport:it.title):'',dur:it&&it.dur?it.dur:'',ex:[],note:'',agendaId:it?it.id:null};
@@ -5062,6 +5077,13 @@ document.addEventListener('click',e=>{
   else if(a==='wopen'&&Date.now()-(V.swipedAt||0)<400){return}
   else if(a==='wopen'){V.wEdit=b.dataset.id;V.wdelArmed=false;render();window.scrollTo(0,0)}
   else if(a==='wclose'){closeWorkout();render();window.scrollTo(0,0)}
+  else if(a==='wrm'){const e=(curW()||{ex:[]}).ex[+b.dataset.i];if(!e)return;let n=0;
+    for(const st of e.sets){const r=parseInt(st.r,10)||parseInt((e.plan||{}).r,10)||8,kg=sugKg(e.name,r);if(!kg)continue;if(!st.r)st.r=r;if(e.pl){st.p=Math.round(kg/e.pl*2)/2}else st.kg=kg;n++}
+    if(e.pl)platesCalc(e);touch();render();toast(n?'Charges ajustées selon ton 1 RM':'Aucun record pour cet exercice')}
+  else if(a==='wplan'){const w=curW();if(!w)return;const date=$('#wp-date').value,time=$('#wp-time').value||'18:00';if(!date){toast('Choisis un jour');return}
+    if(S.items.some(x=>x.wtpl===w.id&&x.date===date)){toast('Déjà prévue ce jour-là');return}
+    const t=w.title||'Séance',it={id:uid(),type:'sport',title:t,date,time,sport:SPORTS.includes(t)?t:'Autre',dur:+w.dur||60,remind:60,notes:w.ex.map(e=>e.name+(perfText(e)?' : '+perfText(e):'')).join('\n'),done:false,wtpl:w.id};
+    S.items.push(it);if(typeof markSilent==='function')markSilent(it);touch();render();toast('Ajoutée à l\'agenda le '+FMT.short.format(parseISO(date)))}
   else if(a==='wcopy'){const w=curW(),src=S.workouts.find(x=>x.id===b.dataset.id);if(w&&src){w.ex=src.ex.map(e=>({name:e.name,kind:e.kind,sets:(e.sets||[]).map(x=>({r:x.r,kg:x.kg})),min:e.min,km:e.km}));touch();render()}}
   else if(a==='waddex'){
     const w=curW(),n=$('#w-newex').value.trim().slice(0,60);if(!w||!n)return;
