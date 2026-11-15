@@ -1626,7 +1626,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.10 · 106';
+const APP_VERSION='2026.11.10 · 107';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2778,7 +2778,7 @@ function renderSettings(){
      +acc('t-pend','seance','Pendant la séance',esc('Animations : '+({ask:'demander',always:'toujours',never:'jamais'}[p.anim]||'demander')),
         row('anim',p.anim,[['ask','Demander'],['always','Toujours'],['never','Jamais']],'Animations des exercices','« Demander » pose la question au lancement de chaque séance.')
         +row('video',p.video,[[true,'Afficher'],[false,'Masquer']],'Vidéos explicatives','')
-        +row('lock',p.lock,[['cadence','Cadence'],['apple','Minuteur d\'Apple']],'Minuteur sur l\'écran verrouillé',p.lock==='apple'?'':'Cadence affiche le repos dans le lecteur de l\'écran verrouillé (pause, ±10 s).')+(p.lock==='apple'?'<div class="lockhelp"><b>Utilise le vrai minuteur de l\'iPhone</b> (Live Activity avec Pause et Arrêter), via l\'app Raccourcis d\'Apple, gratuite et déjà installée. À faire une seule fois :<ol><li>Ouvre <b>Raccourcis</b>, touche <b>+</b>.</li><li>Ajoute l\'action <b>Démarrer le minuteur</b> (app Horloge).</li><li>Touche la durée, choisis la variable <b>Entrée du raccourci</b> et l\'unité <b>secondes</b>.</li><li>Nomme le raccourci exactement <b>Cadence Repos</b>.</li></ol>Au lancement du repos, Raccourcis s\'ouvre une seconde puis tu reviens dans Cadence (◀ en haut à gauche).<button type="button" class="ghost" data-act="locktest" style="display:block;margin-top:8px">Tester avec 10 secondes</button></div>':'')
+        +row('lock',p.lock,[['none','Aucun'],['apple','Minuteur d\'Apple'],['cadence','Lecteur']],'Minuteur sur l\'écran verrouillé',p.lock==='none'?'Aucun : le minuteur reste dans Cadence et ne coupe jamais ta musique (Spotify, Deezer…).':p.lock==='cadence'?'Lecteur : le repos s\'affiche dans le lecteur de l\'écran verrouillé, mais l\'iPhone met alors ta musique en pause. À éviter si tu écoutes de la musique.':'Ne coupe pas ta musique.')+(p.lock==='apple'?'<div class="lockhelp"><b>Utilise le vrai minuteur de l\'iPhone</b> (Live Activity avec Pause et Arrêter), via l\'app Raccourcis d\'Apple, gratuite et déjà installée. À faire une seule fois :<ol><li>Ouvre <b>Raccourcis</b>, touche <b>+</b>.</li><li>Ajoute l\'action <b>Démarrer le minuteur</b> (app Horloge).</li><li>Touche la durée, choisis la variable <b>Entrée du raccourci</b> et l\'unité <b>secondes</b>.</li><li>Nomme le raccourci exactement <b>Cadence Repos</b>.</li></ol>Au lancement du repos, Raccourcis s\'ouvre une seconde puis tu reviens dans Cadence (◀ en haut à gauche).<button type="button" class="ghost" data-act="locktest" style="display:block;margin-top:8px">Tester avec 10 secondes</button></div>':'')
         )
      +acc('t-aff','seance','Affichage de l\'onglet Séances',esc({auto:'Selon mon niveau',simple:'Simple',full:'Complet'}[p.ui]||'Selon mon niveau'),
         row('ui',p.ui,[['auto','Selon mon niveau'],['simple','Simple'],['full','Complet']],'','Simple : la séance du jour et ta progression. Complet : historique, progrès et import.'));
@@ -5203,7 +5203,10 @@ function wavURL(fn,sec,rate){rate=rate||8000;const n=Math.round(sec*rate),b=new 
   W(0,'RIFF');v.setUint32(4,36+n*2,true);W(8,'WAVE');W(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);W(36,'data');v.setUint32(40,n*2,true);
   for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,fn(i/rate)))*32767),true);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
 function msURLs(){if(!MSX.urls)MSX.urls={sil:wavURL(()=>0,2),beep:wavURL(t=>{const k=Math.floor(t/.32);return k<3&&t%.32<.2?Math.sin(2*Math.PI*(k===2?1175:880)*t)*.7:0},1.1)};return MSX.urls}
+function msAmbient(on){try{if(navigator.audioSession)navigator.audioSession.type=on?'ambient':'playback'}catch(e){}}
 function msStart(o){
+  if(prefs().lock!=='cadence'){msAmbient(true);MSX.o=null;return}
+  msAmbient(false);
   MSX.o=o;const u=msURLs();if(!MSX.a){MSX.a=new Audio();MSX.a.setAttribute('playsinline','')}
   const a=MSX.a;a.loop=true;a.src=u.sil;a.play().catch(()=>{});
   const ms=navigator.mediaSession;
@@ -5215,7 +5218,7 @@ function msUpd(){const o=MSX.o,ms=navigator.mediaSession;if(!o)return;const left
   if(MSX.a){if(p&&!MSX.a.paused)MSX.a.pause();else if(!p&&MSX.a.paused)MSX.a.play().catch(()=>{})}
   if(!ms)return;try{const art=msArtwork(left,dur,p);ms.metadata=new MediaMetadata({title:o.label,artist:p?'En pause':'Cadence · minuteur de repos',album:'Cadence',artwork:[art?{src:art,sizes:'300x300',type:'image/png'}:{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});ms.playbackState=p?'paused':'playing';if(ms.setPositionState)ms.setPositionState({duration:dur,position:Math.min(dur,dur-left),playbackRate:1})}catch(e){}}
 function msClear(){const ms=navigator.mediaSession;if(!ms)return;try{ms.metadata=null;ms.playbackState='none'}catch(e){}['play','pause','seekforward','seekbackward','stop'].forEach(k=>{try{ms.setActionHandler(k,null)}catch(e){}})}
-function msDone(label){clearInterval(MSX.iv);MSX.o=null;const a=MSX.a;
+function msDone(label){clearInterval(MSX.iv);MSX.o=null;const a=prefs().lock==='cadence'?MSX.a:null;
   if(a){if(document.hidden){a.loop=false;a.src=msURLs().beep;a.play().catch(()=>{})}else{try{a.pause()}catch(e){}}}
   try{if(document.hidden&&'Notification' in window&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification('Repos terminé',{body:label||'C\'est reparti !',tag:'cadence-rest',icon:'icon-192.png'})).catch(()=>{})}catch(e){}
   msClear()}
@@ -5685,7 +5688,7 @@ const VIDEOS=[
 ];
 function vidURL(n){const v=VIDEOS.find(x=>x[0].test(n));return v&&v[1]?'https://www.youtube.com/watch?v='+v[1]:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
 const VID_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
-function prefs(){const p=S.prefs||{};return {anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto',coach:p.coach!==false,coachH:/^(off|\d\d:\d\d)$/.test(p.coachH)?p.coachH:'08:00',lock:p.lock==='apple'?'apple':'cadence',sports:p.sports!==false}}
+function prefs(){const p=S.prefs||{};return {anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto',coach:p.coach!==false,coachH:/^(off|\d\d:\d\d)$/.test(p.coachH)?p.coachH:'08:00',lock:p.lock==='apple'?'apple':p.lock==='cadence'?'cadence':'none',sports:p.sports!==false}}
 function vidA(n,cls){return prefs().video?'<a class="'+(cls||'vid')+'" href="'+vidURL(n)+'" target="_blank" rel="noopener" aria-label="Vidéo : '+esc(n)+'">'+VID_ICON+(cls?' Voir la vidéo explicative':'')+'</a>':''}
 function uiSimple(){const u=prefs().ui;return u==='simple'||(u==='auto'&&coachActive()&&coachCfg().level==='deb')}
 function doneCount(){return S.workouts.filter(w=>w.ex.length&&w.date<=todayISO).length}
@@ -6656,6 +6659,7 @@ document.addEventListener('change',e=>{
 });
 setTimeout(stravaBoot,1800);
 garminBoot();
+try{if(prefs().lock!=='cadence')msAmbient(true)}catch(e){}
 document.addEventListener('change',async e=>{
   if(!e.target||e.target.id!=='act-file')return;
   let ok=0,ko=0;
