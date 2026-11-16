@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F6F5FB" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0A11" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v108.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>
 html{background:var(--bg,#F4F4F4);-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px)}
@@ -1268,6 +1268,7 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
 .offbtn{width:100%;margin:2px 0 8px;font-size:14px}
 .privl{margin:8px 0 6px;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4}
 .danger-zone{border-color:color-mix(in srgb,var(--danger) 35%,var(--line))}
+.xfer{margin-top:10px;padding:12px;border-radius:14px;background:var(--soft);text-align:center;display:flex;flex-direction:column;gap:4px}.xfer b{font-size:28px;letter-spacing:.12em;font-variant-numeric:tabular-nums}.xfer span{font-size:12.5px;color:var(--muted)}
 
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
@@ -1476,6 +1477,7 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
     <details style="margin-top:16px"><summary class="note">J'ai un code</summary>
       <label style="margin-top:8px"><span class="lab">Code</span><input type="text" id="lic-code" autocomplete="off" spellcheck="false"></label>
       <button type="button" style="margin-top:8px" data-act="licadmin">Valider le code</button>
+      <p class="note" style="margin-top:8px">Code de transfert (8 caractères) : il se crée sur ton autre appareil, dans Réglages › Mon abonnement.</p>
     </details>
     <p class="note" id="lic-msg" style="margin-top:10px" aria-live="polite"></p>
   </div>
@@ -1734,12 +1736,20 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.16 · 108';
+const APP_VERSION='2026.11.16 · 109';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
 const LIC_RECHECK_MS=12*3600*1000;
 function licenseGet(){try{return JSON.parse(localStorage.getItem(LS_LICENSE)||'null')}catch(e){return null}}
+const LS_TOKS='cadence-toks';
+function tokMap(){try{return JSON.parse(localStorage.getItem(LS_TOKS)||'{}')}catch(e){return {}}}
+function tokFor(email){return tokMap()[String(email||'').toLowerCase()]||''}
+function tokSave(email,tok){if(!email||!tok)return;const m=tokMap();m[String(email).toLowerCase()]=tok;try{localStorage.setItem(LS_TOKS,JSON.stringify(m))}catch(e){}}
+function tq(email){return '&tok='+encodeURIComponent(tokFor(email))}
+// Réponse de /status : garde le jeton délivré, signale si l'appareil doit être confirmé
+function stRead(email,d){if(d&&d.tok)tokSave(email,d.tok);return d}
+async function licClaim(sid){try{const d=await (await fetch(WORKER_URL+'/claim?sid='+encodeURIComponent(sid))).json();if(d&&d.email&&d.tok){tokSave(d.email,d.tok);return d.email}}catch(e){}return null}
 function licenseSet(v){try{localStorage.setItem(LS_LICENSE,JSON.stringify(v))}catch(e){}}
 function licLive(l){return !!(l&&l.active&&!(l.cancelAt&&Date.now()>l.cancelAt))}
 function licensePlan(){const l=licenseGet();if(!l)return null;if(l.type==='admin')return 'coach';if(l.type==='sub'&&licLive(l))return l.plan==='coach'?'coach':'base';return null}
@@ -1764,7 +1774,7 @@ async function licenseSync(){
   pSheet({loading:true,title:'Mise à jour de ton abonnement…',sub:'Stripe confirme ta modification, ça ne prend que quelques secondes.'});
   let d=null,changed=false;
   for(let i=0;i<10;i++){
-    try{d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json()}catch(e){}
+    try{d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+tq(l.email)+'&t='+Date.now(),{cache:'no-store'})).json();stRead(l.email,d)}catch(e){}
     if(d&&key(d)!==before){changed=true;break}
     await sleep(1500);
   }
@@ -1776,6 +1786,7 @@ async function licenseSync(){
 }
 // Après le paiement Stripe : on vérifie l'abonnement tout seul (le webhook peut mettre quelques secondes).
 async function licenseActivate(){
+  if(V.licSid){const sid=V.licSid;V.licSid=null;const em0=await licClaim(sid);const l0=licenseGet();if(em0&&(!l0||l0.email!==em0))licenseSet(Object.assign({},l0||{},{type:'sub',email:em0,active:false,plan:'base',checked:0}))}
   const l=licenseGet(),msg=$('#lic-msg'),em=$('#lic-email');
   if(!l||l.type!=='sub'||!l.email){V.lic=true;updateGate();if(msg)msg.textContent='Paiement reçu ! Entre l\'email utilisé pour le paiement, puis « J\'ai déjà un abonnement ».';return}
   const want=l.want||'base',was=!!l.active;
@@ -1784,7 +1795,7 @@ async function licenseActivate(){
   if(msg)msg.innerHTML='<span class="spinner" aria-hidden="true"></span> Paiement reçu, activation de ton abonnement…';
   for(let i=0;i<15;i++){
     try{
-      const d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'})).json();
+      const d=stRead(l.email,await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+tq(l.email)+'&t='+Date.now(),{cache:'no-store'})).json());
       if(d.active&&(want!=='coach'||d.plan==='coach')){
         licenseSet({type:'sub',email:l.email,active:true,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
         $('#license').classList.remove('busy');if(msg)msg.textContent='';V.lic=false;
@@ -2062,8 +2073,9 @@ async function licenseRecheckIfStale(){
   if(!l||l.type!=='sub'||!l.email)return;
   if(licLive(l)&&l.checked&&Date.now()-l.checked<LIC_RECHECK_MS)return;
   try{
-    const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email));
-    const d=await r.json();
+    const r=await fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+tq(l.email));
+    const d=stRead(l.email,await r.json());
+    if(d.auth==='required'&&licLive(l))return true; // ne coupe pas un abonné légitime : il confirmera avec un code de transfert
     licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
     updateGate();
   }catch(e){}
@@ -2524,7 +2536,7 @@ function wallsSection(){
 }
 async function wpSync(silent){
   const l=licenseGet(),email=l&&l.email;if(!IS_PWA||!email)return;
-  try{const r=await fetch(WORKER_URL+'/purchases?email='+encodeURIComponent(email)+'&t='+Date.now());const j=await r.json();
+  try{const r=await fetch(WORKER_URL+'/purchases?email='+encodeURIComponent(email)+tq(email)+'&t='+Date.now());const j=await r.json();
     if(j&&Array.isArray(j.items)){wpSet(LS_WP_OWN,JSON.stringify(j.items));if(!silent)toast(j.items.length?'Achats restaurés':'Aucun achat trouvé pour '+email)}
   }catch(e){if(!silent)toast('Impossible de vérifier : pas de connexion.')}
 }
@@ -2870,6 +2882,7 @@ function renderSettings(){
         +'<p class="note" style="text-align:center;margin-bottom:6px">Ensuite, il faudra te réabonner ('+(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois) pour retrouver l\'accès complet.</p>'}
       else body='<div class="abo-st'+(live?'':' off')+'"><b>'+(live?pl:'Abonnement terminé')+'</b><span>'+(live?(l.cancelAt?'Résilié · accès complet jusqu\'au '+fmtEnd(l.cancelAt):(l.plan==='coach'?PRICE_COACH:PRICE_BASE)+' / mois · renouvellement automatique'):'Tes données restent sur ce téléphone.')+'</span><small>'+esc(l.email||'')+'</small></div>';
       const btn=(act,lbl,cls,extra)=>'<button type="button" class="'+(cls||'ghost')+'" data-act="'+act+'"'+(extra||'')+' style="width:100%;margin-top:8px">'+lbl+'</button>';
+      body+=btn('xfernew','Utiliser mon abonnement sur un autre appareil')+(V.xfer?'<div class="xfer"><b>'+esc(V.xfer.code.slice(0,4)+' '+V.xfer.code.slice(4))+'</b><span>Sur l\'autre appareil : écran d\'abonnement › « J\'ai un code ». Valable 10 minutes, une seule fois.</span></div>':'');
       if(!live)body+=btn('expsub','Me réabonner','primary',' data-plan="base"');
       else{
         if(l.cancelAt){}
@@ -4266,7 +4279,7 @@ async function icuSync(force){
   const c=S.icu,l=licenseGet();if(!icuOn()||!coachUnlocked())return false;
   if(!force&&c.at&&Date.now()-c.at<30*6e4)return false;
   try{
-    const r=await fetch(WORKER_URL+'/icu/activities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:c.key,email:l&&l.email||''})});
+    const r=await fetch(WORKER_URL+'/icu/activities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:c.key,email:l&&l.email||'',tok:l&&l.email?tokFor(l.email):''})});
     if(r.status===401){c.bad=true;touch();return false}
     if(!r.ok)return false;
     const d=await r.json();if(!Array.isArray(d.acts))return false;
@@ -5252,7 +5265,7 @@ function enAct(a,b){
     case 'e-fit':{const p=enPlan(),s=p.all.find(x=>x.id===id);try{const n=fitDownload(s,p.e,p.r);toast('Fichier '+n+' prêt',null,3000)}catch(err){toast('Export impossible : '+err.message)}return}
     case 'e-splits':{const p=enPlan(),s=p.all.find(x=>x.id===id),d=s&&s.done;if(!d||!d.id)return;V.enSplits={id:d.id,loading:1};render();
       fetch(WORKER_URL+'/strava/activity?sk='+encodeURIComponent(S.strava.sk)+'&id='+encodeURIComponent(d.id)).then(r=>r.json().then(j=>({ok:r.ok,j}))).then(({ok,j})=>{V.enSplits=ok?Object.assign({id:d.id},j):{id:d.id,err:j.error||'Détail indisponible'};render()}).catch(()=>{V.enSplits={id:d.id,err:'Pas de réseau'};render()});return}
-    case 'e-gconnect':{const l=licenseGet();if(!l||!l.email){toast('Connecte-toi d\'abord avec ton abonnement.');return}location.href=WORKER_URL+'/garmin/connect?email='+encodeURIComponent(l.email);return}
+    case 'e-gconnect':{const l=licenseGet();if(!l||!l.email){toast('Connecte-toi d\'abord avec ton abonnement.');return}location.href=WORKER_URL+'/garmin/connect?email='+encodeURIComponent(l.email)+tq(l.email);return}
     case 'e-gsync':garminPush(null,true);return;
     case 'e-gsend':garminPush([id],true);return;
     case 'e-gauto':S.garmin.auto=!S.garmin.auto;touch();render();return;
@@ -5302,7 +5315,7 @@ function msStop(){clearInterval(MSX.iv);MSX.o=null;if(MSX.a){try{MSX.a.pause()}c
 const RT={on:false,end:0,dur:0,pl:0,label:'',iv:null};
 function rtLeft(){return RT.pl?RT.pl:(RT.end-Date.now())/1000}
 function rtStart(sec,label){
-  try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
+  msAmbient(prefs().lock!=='cadence');try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
   Object.assign(RT,{on:true,dur:sec,end:Date.now()+sec*1000,pl:0,label:label||'Repos'});
   if(prefs().lock==='apple')appleTimer(sec);else msStart({label:RT.label,left:rtLeft,dur:()=>RT.dur,paused:()=>!!RT.pl,pause:rtPause,add:rtAdd,stop:rtStop});
   clearInterval(RT.iv);RT.iv=setInterval(rtTick,250);rtTick();rtSave()}
@@ -5763,7 +5776,7 @@ const VIDEOS=[
 ];
 function vidURL(n){const v=VIDEOS.find(x=>x[0].test(n));return v&&v[1]?'https://www.youtube.com/watch?v='+v[1]:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.replace(/\(.*?\)/g,'')+' exécution technique')}
 const VID_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
-function prefs(){const p=S.prefs||{};return {off:p.off!==false,cours:p.cours!==false,anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto',coach:p.coach!==false,coachH:/^(off|\d\d:\d\d)$/.test(p.coachH)?p.coachH:'08:00',lock:p.lock==='apple'?'apple':p.lock==='cadence'?'cadence':'none',sports:p.sports!==false}}
+function prefs(){const p=S.prefs||{};return {off:p.off!==false,cours:p.cours!==false,anim:['ask','always','never'].includes(p.anim)?p.anim:'ask',timer:p.timer!==false,video:p.video!==false,ui:['auto','simple','full'].includes(p.ui)?p.ui:'auto',coach:p.coach!==false,coachH:/^(off|\d\d:\d\d)$/.test(p.coachH)?p.coachH:'08:00',lockSet:!!p.lockSet,lock:p.lock==='apple'&&p.lockSet?'apple':p.lock==='cadence'&&p.lockSet?'cadence':'none',sports:p.sports!==false}}
 function vidA(n,cls){return prefs().video?'<a class="'+(cls||'vid')+'" href="'+vidURL(n)+'" target="_blank" rel="noopener" aria-label="Vidéo : '+esc(n)+'">'+VID_ICON+(cls?' Voir la vidéo explicative':'')+'</a>':''}
 function uiSimple(){const u=prefs().ui;return u==='simple'||(u==='auto'&&coachActive()&&coachCfg().level==='deb')}
 function doneCount(){return S.workouts.filter(wDone).length}
@@ -6003,7 +6016,7 @@ function animFor(n){const a=ANIM.find(x=>x[0].test(n));return a&&a[1]?a[1]:null}
 /* ---------- Séance guidée ---------- */
 const PL={w:null,i:0,set:0,anim:true,phase:'work',t:null,tick:null,rounds:0,lock:null,ac:null};
 function beep(n){
-  try{if(!PL.ac)return;for(let k=0;k<(n||1);k++){const o=PL.ac.createOscillator(),g=PL.ac.createGain();o.frequency.value=k===(n||1)-1?1175:880;o.connect(g);g.connect(PL.ac.destination);const t0=PL.ac.currentTime+k*0.22;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.4,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18);o.start(t0);o.stop(t0+0.2)}}catch(e){}
+  try{if(!PL.ac)return;if(prefs().lock!=='cadence')msAmbient(true);for(let k=0;k<(n||1);k++){const o=PL.ac.createOscillator(),g=PL.ac.createGain();o.frequency.value=k===(n||1)-1?1175:880;o.connect(g);g.connect(PL.ac.destination);const t0=PL.ac.currentTime+k*0.22;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.4,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18);o.start(t0);o.stop(t0+0.2)}}catch(e){}
   haptic(n||1);
 }
 function askGuided(w){
@@ -6016,7 +6029,7 @@ function askGuided(w){
 function openPlayer(wid,anim){
   rtStop();
   const w=S.workouts.find(x=>x.id===wid);if(!w||!w.ex.length)return;
-  try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
+  msAmbient(prefs().lock!=='cadence');try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
   Object.assign(PL,{w:wid,i:0,set:0,anim:!!anim,phase:'work',rounds:0,restNx:null});stopTimer();
   if(!w.st&&w.date===todayISO&&COACH_NOTE(w))w.st='live';
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>PL.lock=l).catch(()=>{})}catch(e){}
@@ -6673,10 +6686,12 @@ async function deleteAccount(){
   try{const sk=S.strava&&S.strava.sk;if(sk)await fetch(WORKER_URL+'/strava/disconnect?sk='+encodeURIComponent(sk))}catch(e){}
   try{const gk=S.garmin&&S.garmin.gk;if(gk)await fetch(WORKER_URL+'/garmin/disconnect?gk='+encodeURIComponent(gk))}catch(e){}
   try{localStorage.removeItem('cadence-live');localStorage.removeItem('cadence-rt');localStorage.removeItem('cadence-offcache')}catch(e){}
-  const mail=l&&l.email?'mailto:'+EDITEUR.email+'?subject='+encodeURIComponent('Suppression de mon compte Cadence')+'&body='+encodeURIComponent('Bonjour,\n\nJe demande la suppression de mon compte Cadence et des données associées à l\'adresse '+l.email+' (abonnement, achats, données serveur).\n\nMerci.'):'';
+  let srvOK=false;if(l&&l.email&&tokFor(l.email)){try{const d=await (await fetch(WORKER_URL+'/account/delete?email='+encodeURIComponent(l.email)+tq(l.email),{method:'POST'})).json();srvOK=!!d.ok;if(!d.ok&&d.error){toast(d.error);return}}catch(e){}}
+  const mail=!srvOK&&l&&l.email?'mailto:'+EDITEUR.email+'?subject='+encodeURIComponent('Suppression de mon compte Cadence')+'&body='+encodeURIComponent('Bonjour,\n\nJe demande la suppression de mon compte Cadence et des données associées à l\'adresse '+l.email+' (abonnement, achats, données serveur).\n\nMerci.'):'';
   wipeAll();
   if(mail){setTimeout(()=>{location.href=mail},400)}
-  toast('Données de ce profil supprimées');
+  try{const m=tokMap();if(l&&l.email){delete m[l.email.toLowerCase()];localStorage.setItem(LS_TOKS,JSON.stringify(m))}localStorage.removeItem(LS_LICENSE)}catch(e){}
+  toast(srvOK?'Compte supprimé, sur ce téléphone et sur le serveur':'Données de ce profil supprimées');
 }
 
 /* ---------- Recettes ---------- */
@@ -6761,7 +6776,7 @@ document.addEventListener('click',e=>{
   else if(a==='cstart'){$('#ssheet').hidden=true;const s=(V.coachWeek||[])[+b.dataset.i];if(!s)return;const w=startCoachWorkout(s,null,null,b.textContent.indexOf('Refaire')===0);if(w)askGuided(w)}
   else if(a==='pyes'||a==='pno'){if($('#pp-rem').checked){S.prefs=Object.assign(prefs(),{anim:a==='pyes'?'always':'never'});touch()}$('#pprompt').hidden=true;openPlayer(V.pendingW,a==='pyes')}
   else if(a==='pmanual'){$('#pprompt').hidden=true;V.tab='seances';V.wEdit=V.pendingW;render();window.scrollTo(0,0)}
-  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v});enInval();if(b.dataset.k==='sports'){if(v==='false'){S.items=S.items.filter(x=>!x.en||x.date<todayISO||x.done);V.endu=false}else{const e=EN();if(e&&e.agenda)enAgendaSync()}}touch();if(b.dataset.k==='coachH'||b.dataset.k==='coach')pushSync(true);if(b.dataset.k==='coach'){V.barTab=undefined;if(v==='false'&&V.tab==='coach')V.tab='seances'}render();if(b.dataset.k==='coach'&&v==='false'&&!V.sec)toast('Le coach ne proposera pas de séances. Tu peux le réactiver dans Réglages.')}
+  else if(a==='pset'){const v=b.dataset.v;S.prefs=Object.assign(prefs(),{[b.dataset.k]:v==='true'?true:v==='false'?false:v},b.dataset.k==='lock'?{lockSet:true}:{});enInval();if(b.dataset.k==='sports'){if(v==='false'){S.items=S.items.filter(x=>!x.en||x.date<todayISO||x.done);V.endu=false}else{const e=EN();if(e&&e.agenda)enAgendaSync()}}touch();if(b.dataset.k==='coachH'||b.dataset.k==='coach')pushSync(true);if(b.dataset.k==='coach'){V.barTab=undefined;if(v==='false'&&V.tab==='coach')V.tab='seances'}render();if(b.dataset.k==='coach'&&v==='false'&&!V.sec)toast('Le coach ne proposera pas de séances. Tu peux le réactiver dans Réglages.')}
   else if(a==='onbredo'){closeDrawer();V.onbShown=true;openOnb()}
   else if(a==='onbpick'){const x=onbSteps()[V.onb.step],v=b.dataset.v;
     if(x.multi){const l=V.onb[x.k];V.onb[x.k]=l.includes(v)?l.filter(y=>y!==v):l.concat(v);renderOnb();return}
@@ -6879,7 +6894,7 @@ document.addEventListener('click',e=>{
     const t=$('#act-t').value;if(t!=='Swim'&&!(km>0)){toast('Indique la distance.');return}
     actAdd({t,d:d+'T12:00:00',km,min,n:{Run:'Course à pied',Ride:'Vélo',Swim:'Natation'}[t]});V.actForm=false;touch();render();toast('Sortie ajoutée')}
   else if(a==='actdel'){e.preventDefault();S.acts.splice(+b.dataset.i,1);touch();render()}
-  else if(a==='stravaconnect'){const l=licenseGet();if(!l||!l.email){toast('Connecte-toi d\'abord avec ton abonnement.');return}location.href=WORKER_URL+'/strava/connect?email='+encodeURIComponent(l.email)}
+  else if(a==='stravaconnect'){const l=licenseGet();if(!l||!l.email){toast('Connecte-toi d\'abord avec ton abonnement.');return}location.href=WORKER_URL+'/strava/connect?email='+encodeURIComponent(l.email)+tq(l.email)}
   else if(a==='stravasync'){toast('Mise à jour…');stravaSync(true).then(ok=>{render();toast(ok?'Activités à jour':'Strava indisponible pour le moment')})}
   else if(a==='stravaoff'){const sk=S.strava&&S.strava.sk;delete S.strava;touch();render();toast('Strava déconnecté');if(sk)fetch(WORKER_URL+'/strava/disconnect?sk='+encodeURIComponent(sk)).catch(()=>{})}
   else if(a==='setaccent'){setAccent(b.dataset.v);render()}
@@ -6996,16 +7011,28 @@ document.addEventListener('click',e=>{
     const msg=$('#lic-msg');
     if(!code){msg.textContent='Entre un code.';return}
     sha256Hex(code).then(h=>{
-      if(h===ADMIN_HASH){licenseSet({type:'admin'});msg.textContent='';updateGate();render()}
-      else msg.textContent='Code incorrect.';
+      if(h===ADMIN_HASH){licenseSet({type:'admin'});msg.textContent='';updateGate();render();return}
+      const xc=code.toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if(xc.length!==8){msg.textContent='Code incorrect.';return}
+      msg.textContent='Vérification du code…';
+      fetch(WORKER_URL+'/transfer/use?code='+encodeURIComponent(xc)).then(r=>r.json()).then(async x=>{
+        if(!x.email||!x.tok){msg.textContent=x.error||'Code incorrect.';return}
+        tokSave(x.email,x.tok);
+        const d=await (await fetch(WORKER_URL+'/status?email='+encodeURIComponent(x.email)+tq(x.email)+'&t='+Date.now(),{cache:'no-store'})).json();
+        licenseSet({type:'sub',email:x.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
+        if(d.active){msg.textContent='';V.lic=false;updateGate();render();toast('Abonnement activé sur cet appareil ✓')}else msg.textContent='Code valide, mais l\'abonnement n\'est plus actif.';
+      }).catch(()=>{msg.textContent='Impossible de vérifier pour le moment.'});
     });
   }
+  else if(a==='xfernew'){const l=licenseGet();if(!l||!l.email)return;fetch(WORKER_URL+'/transfer/new?email='+encodeURIComponent(l.email)+tq(l.email)).then(r=>r.json()).then(d=>{if(d.code){V.xfer=d;render();setTimeout(()=>{V.xfer=null;if(V.sec==='abo')render()},600000)}else toast(d.auth?'Confirme d\'abord cet appareil avec un code de transfert':'Impossible de créer un code pour le moment')}).catch(()=>toast('Pas de connexion'))}
   else if(a==='liccheck'){
     const email=($('#lic-email').value||'').trim().toLowerCase();
     const msg=$('#lic-msg');
     if(!email){msg.textContent='Entre ton email.';return}
     msg.textContent='Vérification…';
-    fetch(WORKER_URL+'/status?email='+encodeURIComponent(email)).then(r=>r.json()).then(d=>{
+    fetch(WORKER_URL+'/status?email='+encodeURIComponent(email)+tq(email)).then(r=>r.json()).then(d=>{
+      stRead(email,d);
+      if(d.auth==='required'){msg.innerHTML='Cet abonnement est déjà utilisé sur un autre appareil. Sur cet appareil-là : Réglages › Mon abonnement › « Utiliser sur un autre appareil », puis entre le code ci-dessous dans « J\'ai un code ».';const det=$('#license details');if(det)det.open=true;return}
       licenseSet({type:'sub',email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       if(d.active){msg.textContent='';V.lic=false;updateGate();render()}
       else msg.textContent="Aucun abonnement actif pour cet email. Clique sur \"S'abonner\".";
@@ -7024,7 +7051,7 @@ document.addEventListener('click',e=>{
     const l=licenseGet();if(!l||!l.email)return;const fl=b.dataset.flow||(b.closest('.sale,.chero,.coachpay')||/Coach/.test(b.textContent)?'update':'');
     if(fl==='cancel'&&l.plan==='coach'&&!b.dataset.force){
       pSheet({tone:'warn',icon:'info',title:'Résilier Cadence + Coach ?',sub:'Tu peux garder Cadence normal à '+PRICE_BASE+' / mois et perdre seulement le coach. Sinon, tout s\'arrête à la fin de la période payée.',btn:'Garder Cadence · '+PRICE_BASE+' / mois',act:'planconfirm',attrs:' data-plan="base"',link:{label:'Tout résilier',act:'licportal',attrs:' data-flow="cancel" data-force="1"'}});return}
-    location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+(fl?'&flow='+fl:'')+'&return='+encodeURIComponent(location.origin+location.pathname);
+    location.href=WORKER_URL+'/portal?email='+encodeURIComponent(l.email)+tq(l.email)+(fl?'&flow='+fl:'')+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
   else if(a==='planchange'){
     const l=licenseGet();if(!l||!l.email||!licLive(l))return;
@@ -7036,7 +7063,7 @@ document.addEventListener('click',e=>{
   else if(a==='planresume'){
     const before=licenseGet();if(!before||!before.email)return;
     pSheet({loading:true,title:'Annulation de la résiliation…',sub:'Ça ne prend que quelques secondes.'});
-    fetch(WORKER_URL+'/resume?email='+encodeURIComponent(before.email),{method:'POST'}).then(r=>r.json()).then(d=>{
+    fetch(WORKER_URL+'/resume?email='+encodeURIComponent(before.email)+tq(before.email),{method:'POST'}).then(r=>r.json()).then(d=>{
       if(!d||!d.ok)throw new Error((d&&d.error)||'Erreur');
       licenseSet({type:'sub',email:before.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       V.lic=false;updateGate();render();planFeedback(before,licenseGet());
@@ -7044,7 +7071,7 @@ document.addEventListener('click',e=>{
   else if(a==='planconfirm'){
     const before=licenseGet(),to=b.dataset.plan==='coach'?'coach':'base';if(!before||!before.email)return;
     pSheet({loading:true,title:'Changement de formule…',sub:'Ça ne prend que quelques secondes.'});
-    fetch(WORKER_URL+'/change?email='+encodeURIComponent(before.email)+'&plan='+to,{method:'POST'}).then(r=>r.json()).then(d=>{
+    fetch(WORKER_URL+'/change?email='+encodeURIComponent(before.email)+tq(before.email)+'&plan='+to,{method:'POST'}).then(r=>r.json()).then(d=>{
       if(!d||!d.ok)throw new Error((d&&d.error)||'Erreur');
       licenseSet({type:'sub',email:before.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       V.lic=false;updateGate();render();planFeedback(before,licenseGet());
@@ -7052,7 +7079,7 @@ document.addEventListener('click',e=>{
   else if(a==='liclogout'){licenseLogout()}
   else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
-    fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+tq(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{stRead(l.email,d);
       licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       if(d.active){render();planFeedback(null,licenseGet())}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
     }).catch(()=>{const m2=$('#exp-msg');if(m2)m2.textContent='Impossible de vérifier pour le moment.'})}
@@ -7381,7 +7408,7 @@ if(IS_PWA){
         if(it&&it!=='pack'&&wpOwns(it)){wpSet(LS_WP,it);applyWall()}render();toast(wpOwns(it==='pack'?'aurore':it)?'Merci ! Fond d\'écran débloqué ✨':'Paiement reçu, déblocage en cours : réessaie « Restaurer mes achats » dans un instant.')},400);
       else setTimeout(()=>toast('Achat annulé'),300)}
     if(qs.get('lic')==='changed'){V.licChanged=true;history.replaceState(null,'',location.pathname)}
-    else if(qs.get('lic')==='ok'){V.licReturn=true;history.replaceState(null,'',location.pathname)}
+    else if(qs.get('lic')==='ok'){V.licReturn=true;const sid=qs.get('sid');if(sid)V.licSid=sid;history.replaceState(null,'',location.pathname)}
     else if(qs.get('lic')==='cancel'){const l=licenseGet();if(l&&l.pending){delete l.pending;delete l.want;licenseSet(l)}history.replaceState(null,'',location.pathname);setTimeout(()=>toast('Paiement annulé'),300)}
   }catch(e){}
   if(V.licReturn)setTimeout(licenseActivate,50);

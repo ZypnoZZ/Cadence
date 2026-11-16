@@ -9,6 +9,8 @@
 // Et une liaison KV (Settings > Bindings > KV Namespace) nommée : LICENSES
 // Notifications push : ajoute un déclencheur Cron (Settings > Triggers > Cron) : */5 * * * *
 //   (les clés VAPID sont créées automatiquement et gardées dans LICENSES ; VAPID_SUBJECT facultatif)
+//   LIC_SECRET             (facultatif, recommandé) texte secret long et aléatoire pour signer les jetons d'abonnement
+//                          (sinon dérivé de STRIPE_SECRET_KEY ; le changer déconnecte tous les appareils)
 //   STRIPE_TERMS           (facultatif) mettre 1 une fois l'adresse des conditions saisie dans Stripe (Paramètres > Informations publiques)
 //   STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET  (facultatif) identifiants de l'application créée sur strava.com/settings/api
 //     (domaine de rappel : le domaine de ce worker, sans https://)
@@ -105,6 +107,38 @@ function planOf(env, sub) {
 
 /* ---------- Notifications push (Web Push, VAPID, sans contenu chiffré) ---------- */
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+// ---- Jeton d'abonnement : prouve que l'appareil a le droit d'utiliser cet e-mail (v108) ----
+// Signé avec un secret du serveur (LIC_SECRET si défini, sinon dérivé de STRIPE_SECRET_KEY). Révocable : version tv:{email}.
+const LIC_CUTOFF = Date.UTC(2026, 10, 17); // abonnements créés avant : un seul appareil peut récupérer son jeton sans preuve
+async function licHmac(env) {
+  const raw = new TextEncoder().encode('cadence-lic|' + (env.LIC_SECRET || env.STRIPE_SECRET_KEY || ''));
+  return crypto.subtle.importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+}
+async function makeTok(env, email) {
+  const tv = (await env.LICENSES.get('tv:' + email)) || '1';
+  const p = b64u(new TextEncoder().encode(email + '|' + tv));
+  const sig = await crypto.subtle.sign('HMAC', await licHmac(env), new TextEncoder().encode(p));
+  return p + '.' + b64u(sig);
+}
+async function tokOK(env, email, tok) {
+  if (!email || !tok || tok.indexOf('.') < 0) return false;
+  const good = await makeTok(env, email);
+  if (good.length !== tok.length) return false;
+  let d = 0; for (let i = 0; i < good.length; i++) d |= good.charCodeAt(i) ^ tok.charCodeAt(i);
+  return d === 0;
+}
+// Lit e-mail + jeton (paramètres d'URL ou corps JSON) ; ok=false si le jeton ne correspond pas
+async function authOf(env, url, body) {
+  const email = String((body && body.email) || url.searchParams.get('email') || '').trim().toLowerCase();
+  const tok = String((body && body.tok) || url.searchParams.get('tok') || '');
+  return { email, ok: await tokOK(env, email, tok) };
+}
+const NEED_AUTH = { error: 'Cet abonnement doit être confirmé sur cet appareil : utilise un code de transfert depuis ton autre appareil.', auth: 'required' };
+async function rateOK(env, kind, request, max) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'x', k = 'rl:' + kind + ':' + ip + ':' + Math.floor(Date.now() / 3600000);
+  const n = +(await env.LICENSES.get(k) || 0); if (n >= max) return false;
+  await env.LICENSES.put(k, String(n + 1), { expirationTtl: 3700 }); return true;
+}
 async function vapid(env) {
   let v = await env.LICENSES.get('vapid', { type: 'json' });
   if (!v) {
@@ -232,6 +266,7 @@ async function stravaRoutes(request, env, url) {
   if (p === '/strava/connect') {
     const email = (url.searchParams.get('email') || '').trim().toLowerCase();
     if (!email) return json({ error: 'email manquant' }, 400);
+    if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return Response.redirect(APP_URL + '?strava=err', 302);
     const nonce = crypto.randomUUID();
     await env.LICENSES.put('stn:' + nonce, email, { expirationTtl: 900 });
     const a = new URL('https://www.strava.com/oauth/authorize');
@@ -338,6 +373,7 @@ async function garminRoutes(request, env, url) {
   if (p === '/garmin/connect') {
     const email = (url.searchParams.get('email') || '').trim().toLowerCase();
     if (!email) return json({ error: 'email manquant' }, 400);
+    if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return Response.redirect(APP_URL + '?garmin=err', 302);
     const lic = await env.LICENSES.get('lic:' + email, { type: 'json' });
     if (!lic || !lic.active || lic.plan !== 'coach') return Response.redirect(APP_URL + '?garmin=err', 302);
     const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
@@ -434,6 +470,7 @@ export default {
       let b = {}; try { b = await request.json(); } catch (e) {}
       const key = String(b.key || '').trim(), email = String(b.email || '').trim().toLowerCase();
       if (!key) return json({ error: 'clé manquante' }, 400);
+      if (!(await tokOK(env, email, String(b.tok || '')))) return json({ error: 'réservé à Cadence + Coach' }, 403);
       const lic = email && await env.LICENSES.get('lic:' + email, { type: 'json' });
       if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
       const day = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
@@ -462,6 +499,15 @@ export default {
       if (!email) return json({ error: 'email manquant' }, 400);
       const v = await env.LICENSES.get('lic:' + email);
       let data = v ? JSON.parse(v) : null;
+      let newTok = null;
+      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) {
+        // Sans jeton : on ne dit rien de l'abonnement, sauf récupération unique pour un abonnement antérieur à la v108
+        if (!data) return json({ active: false, plan: 'base', cancelAt: null });
+        const claimed = await env.LICENSES.get('claimed:' + email);
+        if (claimed || !(data.updated && data.updated < LIC_CUTOFF)) return json(Object.assign({ active: false, plan: 'base', cancelAt: null }, NEED_AUTH));
+        await env.LICENSES.put('claimed:' + email, String(Date.now()));
+        newTok = await makeTok(env, email);
+      }
       // Relit l'abonnement chez Stripe : l'état reste juste même si un webhook est en retard ou manquant
       if (data && data.customerId) {
         try {
@@ -478,7 +524,53 @@ export default {
           }
         } catch (e) {}
       }
-      return json({ active: !!(data && data.active), plan: (data && data.plan) || 'base', cancelAt: (data && data.cancelAt) || null });
+      return json(Object.assign({ active: !!(data && data.active), plan: (data && data.plan) || 'base', cancelAt: (data && data.cancelAt) || null }, newTok ? { tok: newTok } : {}));
+    }
+
+    // GET /claim?sid=... -> après un paiement Stripe : délivre le jeton de l'e-mail utilisé pour payer
+    if (url.pathname === '/claim') {
+      const sid = url.searchParams.get('sid') || '';
+      if (!/^cs_[A-Za-z0-9_]+$/.test(sid)) return json({ error: 'session invalide' }, 400);
+      if (!(await rateOK(env, 'claim', request, 30))) return json({ error: 'trop de tentatives' }, 429);
+      try {
+        const s = await stripeGet(env, 'checkout/sessions/' + sid);
+        const email = String((s && ((s.customer_details && s.customer_details.email) || s.customer_email)) || '').toLowerCase();
+        if (!s || s.status !== 'complete' || !email) return json({ error: 'paiement non terminé' }, 409);
+        if (Date.now() / 1000 - (s.created || 0) > 7 * 86400) return json({ error: 'session trop ancienne' }, 410);
+        await env.LICENSES.put('claimed:' + email, String(Date.now()));
+        return json({ email, tok: await makeTok(env, email) });
+      } catch (e) { return json({ error: 'Stripe indisponible' }, 502); }
+    }
+
+    // GET /transfer/new?email&tok -> code à 8 caractères, valable 10 min, pour un autre appareil
+    if (url.pathname === '/transfer/new') {
+      const a = await authOf(env, url);
+      if (!a.ok) return json(NEED_AUTH, 401);
+      const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', r = crypto.getRandomValues(new Uint8Array(8));
+      const code = [...r].map(x => abc[x % abc.length]).join('');
+      await env.LICENSES.put('xfer:' + code, a.email, { expirationTtl: 600 });
+      return json({ code, ttl: 600 });
+    }
+    // GET /transfer/use?code=... -> e-mail + jeton (une seule utilisation)
+    if (url.pathname === '/transfer/use') {
+      if (!(await rateOK(env, 'xfer', request, 10))) return json({ error: 'Trop d\'essais, réessaie dans une heure' }, 429);
+      const code = String(url.searchParams.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const email = code.length === 8 && await env.LICENSES.get('xfer:' + code);
+      if (!email) return json({ error: 'Code inconnu ou expiré' }, 404);
+      await env.LICENSES.delete('xfer:' + code);
+      return json({ email, tok: await makeTok(env, email) });
+    }
+
+    // POST /account/delete?email&tok -> supprime la licence, les achats et les jetons (abonnement déjà résilié)
+    if (url.pathname === '/account/delete' && request.method === 'POST') {
+      const a = await authOf(env, url);
+      if (!a.ok) return json(NEED_AUTH, 401);
+      const v = JSON.parse((await env.LICENSES.get('lic:' + a.email)) || 'null');
+      if (v && v.active && !v.cancelAt) return json({ error: 'Résilie d\'abord ton abonnement, puis supprime ton compte.' }, 409);
+      for (const k of ['lic:', 'buy:', 'claimed:']) await env.LICENSES.delete(k + a.email);
+      const tv = +((await env.LICENSES.get('tv:' + a.email)) || 1);
+      await env.LICENSES.put('tv:' + a.email, String(tv + 1)); // invalide tous les jetons existants
+      return json({ ok: true });
     }
 
     // GET /buy?email=...&item=wp-xxx -> paiement unique d'un article de la boutique
@@ -499,7 +591,7 @@ export default {
           'line_items[0][quantity]': '1',
           'custom_text[submit][message]': 'En validant, tu demandes l\'accès immédiat à ce contenu numérique et tu reconnais perdre ton droit de rétractation dès qu\'il est débloqué (conditions de vente de l\'application).',
           ...(env.STRIPE_TERMS ? { 'consent_collection[terms_of_service]': 'required' } : {}),
-          success_url: appUrl + '?buy=ok&item=' + item,
+          success_url: appUrl + '?buy=ok&item=' + item + '&sid={CHECKOUT_SESSION_ID}',
           cancel_url: appUrl + '?buy=cancel'
         });
         return Response.redirect(session.url, 302);
@@ -510,6 +602,7 @@ export default {
     if (url.pathname === '/purchases') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       if (!email) return json({ error: 'email manquant' }, 400);
+      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return json(Object.assign({ items: [] }, NEED_AUTH), 401);
       let items = JSON.parse((await env.LICENSES.get('buy:' + email)) || '[]');
       try {
         const custs = await stripeGet(env, 'customers?email=' + encodeURIComponent(email) + '&limit=10');
@@ -541,7 +634,7 @@ export default {
           'line_items[0][quantity]': '1',
           'custom_text[submit][message]': 'En validant, tu demandes l\'accès immédiat à Cadence et tu reconnais perdre ton droit de rétractation de 14 jours une fois le service commencé (conditions de vente de l\'application).',
           ...(env.STRIPE_TERMS ? { 'consent_collection[terms_of_service]': 'required' } : {}),
-          success_url: appUrl + '?lic=ok',
+          success_url: appUrl + '?lic=ok&sid={CHECKOUT_SESSION_ID}',
           cancel_url: appUrl + '?lic=cancel'
         });
         return Response.redirect(session.url, 302);
@@ -554,6 +647,7 @@ export default {
     if (url.pathname === '/change') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       const plan = url.searchParams.get('plan') === 'coach' ? 'coach' : 'base';
+      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return json(Object.assign({ ok: false }, NEED_AUTH), 401);
       const key = 'lic:' + email;
       const data = JSON.parse((await env.LICENSES.get(key)) || 'null');
       if (!data || !data.active) return json({ ok: false, error: 'Aucun abonnement actif' }, 404);
@@ -587,6 +681,7 @@ export default {
     // POST /resume?email=... -> annule une résiliation programmée, sans passer par Stripe
     if (url.pathname === '/resume') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return json(Object.assign({ ok: false }, NEED_AUTH), 401);
       const key = 'lic:' + email;
       const data = JSON.parse((await env.LICENSES.get(key)) || 'null');
       if (!data || !data.customerId) return json({ ok: false, error: 'Aucun abonnement trouvé' }, 404);
@@ -617,6 +712,7 @@ export default {
     if (url.pathname === '/portal') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return json(NEED_AUTH, 401);
       const v = await env.LICENSES.get('lic:' + email);
       const data = v ? JSON.parse(v) : null;
       if (!data || !data.customerId) return json({ error: 'Aucun abonnement trouvé pour cet email' }, 404);
