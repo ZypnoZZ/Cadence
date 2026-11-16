@@ -157,10 +157,12 @@ async function runSchedules(env) {
       const due = sc.events.filter(e => !e.sent && e.t <= now + 60000 && e.t > now - 30 * 60000);
       if (!due.length) continue;
       due.forEach(e => { e.sent = 1; });
+      // On enregistre « envoyé » AVANT l'envoi : un nouveau passage du déclencheur ne peut pas renvoyer le même rappel.
+      sc.events = sc.events.filter(e => e.t > now - 3600000);
+      sc.sentKeys = (sc.sentKeys || []).concat(due.map(e => e.t + '|' + e.tag)).slice(-100);
+      await env.LICENSES.put(k.name, JSON.stringify(sc));
       const st = await deliver(env, id, due.map(e => ({ title: e.title, body: e.body, tag: e.tag })));
       if (st === 'gone') continue;
-      sc.events = sc.events.filter(e => e.t > now - 3600000);
-      await env.LICENSES.put(k.name, JSON.stringify(sc));
     }
     cursor = page.list_complete ? null : page.cursor;
   } while (cursor);
@@ -187,7 +189,11 @@ async function pushRoutes(request, env, url) {
     const events = (Array.isArray(body.events) ? body.events : []).slice(0, 60)
       .filter(e => +e.t > now - 60000 && +e.t < now + 15 * 86400000)
       .map(e => ({ t: +e.t, title: clip(e.title, 80), body: clip(e.body, 160), tag: clip(e.tag, 40) }));
-    await env.LICENSES.put('sched:' + id, JSON.stringify({ events }));
+    // Garde l'indicateur « déjà envoyé » quand l'app renvoie son planning (sinon le rappel repart une seconde fois).
+    const old = (await env.LICENSES.get('sched:' + id, { type: 'json' })) || {};
+    const sent = new Set((old.events || []).filter(e => e.sent).map(e => e.t + '|' + e.tag).concat(old.sentKeys || []));
+    events.forEach(e => { if (sent.has(e.t + '|' + e.tag)) e.sent = 1; });
+    await env.LICENSES.put('sched:' + id, JSON.stringify({ events, sentKeys: [...sent].slice(-100) }));
     return json({ ok: true, n: events.length });
   }
   if (url.pathname === '/push/pending') {

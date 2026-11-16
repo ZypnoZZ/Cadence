@@ -1,0 +1,32 @@
+const {boot}=require('./lib');
+(async()=>{const T=await boot();const {p,ok,ctx}=T;
+let offCalls=0;
+await ctx.route('https://world.openfoodfacts.org/**',r=>{offCalls++;r.fulfill({contentType:'application/json',body:JSON.stringify({products:[{code:'3017620422003',product_name_fr:'Pâte à tartiner',brands:'Marque X',nutriments:{'energy-kcal_100g':539,proteins_100g:6.3,carbohydrates_100g:57.5,fat_100g:30.9},serving_quantity:15},{code:'1',product_name:'Sans valeurs',nutriments:{}}]})})});
+await p.evaluate(()=>{S.profile=Object.assign(S.profile||{},{sex:'h',age:22,h:180,w:75,act:1.55,goal:'maintien'});V.tab='journal';V.jseg='plats';V.jday=todayISO;touch();render()});
+await p.waitForTimeout(200);await p.screenshot({path:'n_cat.png'});
+const n=await p.evaluate(()=>({all:document.querySelectorAll('.pl-card').length,miss:PLATS.map((_,i)=>platInfo(i)).filter(x=>x.ing.length!==PLATS[x.i][5].length).map(x=>x.n)}));
+ok('catalogue : 80+ assiettes, tous les ingrédients reconnus',n.all>=80&&n.miss.length===0,n);
+await p.evaluate(()=>{document.querySelector('[data-act=plcat][data-c=bf]').click()});
+ok('filtre Petit-déjeuner',await p.evaluate(()=>[...document.querySelectorAll('.pl-card')].length===PLATS.filter(x=>x[1]==='bf').length));
+await p.evaluate(()=>{document.querySelector('[data-act=pltag][data-t=prot]').click()});
+ok('filtre protéiné calculé (≥ 30 g)',await p.evaluate(()=>[...document.querySelectorAll('.pl-card')].every(b=>platInfo(+b.dataset.i).t.p>=30)));
+await p.evaluate(()=>{V.plCat='all';V.plTag='';render();document.querySelector('[data-act=plopen][data-i="12"]').click()});await p.waitForTimeout(300);
+await p.screenshot({path:'n_sheet.png'});
+const sh=await p.evaluate(()=>({open:!$('#rsheet').hidden,ing:$('#r-ing').children.length,mac:$('#r-mac').textContent,steps:$('#r-steps').children.length}));
+ok('fiche : ingrédients, étapes, macros',sh.open&&sh.ing>=3&&sh.steps>=2&&/kcal/.test(sh.mac),sh);
+const k0=await p.evaluate(()=>(S.log[todayISO]||[]).length);
+await p.evaluate(()=>document.querySelector('[data-act=pladd][data-m=lunch]').click());
+ok('ajout au journal (déjeuner)',await p.evaluate(k=>(S.log[todayISO]||[]).length===k+1&&S.log[todayISO].slice(-1)[0].meal==='lunch',k0));
+// recette des menus : macros + éléments du catalogue masqués
+await p.evaluate(()=>{V.tab='nutrition';V.nseg='repas';render();openRecipe(0)});
+ok('recette des menus : macros visibles, pas de bouton d\'ajout',await p.evaluate(()=>!$('#r-mac').hidden&&$('#r-add').hidden&&$('#r-hero').hidden));
+await p.evaluate(()=>{$('#rsheet').hidden=true});
+// Open Food Facts : recherche + cache
+await p.evaluate(()=>{openFood('snack');F.mode='liste';F.list.q='nutella';renderFood()});
+await p.evaluate(()=>document.querySelector('[data-act=offgo]').click());await p.waitForTimeout(400);
+ok('Open Food Facts : produit avec valeurs, produit sans valeurs ignoré',await p.evaluate(()=>document.querySelectorAll('[data-act=offpick]').length===1));
+await p.evaluate(()=>document.querySelector('[data-act=offpick]').click());await p.waitForTimeout(200);
+ok('produit choisi → fiche quantité',await p.evaluate(()=>F.mode==='barcode'&&F.bc.prod&&F.bc.g===15));
+await p.evaluate(()=>{F.mode='liste';F.list.q='nutella';renderFood();document.querySelector('[data-act=offgo]').click()});await p.waitForTimeout(300);
+ok('2e recherche identique : servie par le cache (1 seul appel)',offCalls===1,offCalls);
+await T.done()})();

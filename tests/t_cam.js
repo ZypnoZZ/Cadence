@@ -1,0 +1,20 @@
+const {boot}=require('./lib');
+const init=()=>{window.__gum=0;window.__perm='prompt';
+  navigator.mediaDevices.getUserMedia=async()=>{window.__gum++;if(window.__perm==='denied'){const e=new Error('x');e.name='NotAllowedError';throw e}const c=document.createElement('canvas');c.width=320;c.height=240;c.getContext('2d').fillRect(0,0,10,10);return c.captureStream(5)};
+  const q=navigator.permissions.query.bind(navigator.permissions);navigator.permissions.query=async d=>d&&d.name==='camera'?{state:window.__perm,onchange:null}:q(d);
+  window.ZXing={DecodeHintType:{POSSIBLE_FORMATS:1},BarcodeFormat:{EAN_13:1,EAN_8:2,UPC_A:3,UPC_E:4},MultiFormatReader:function(){this.setHints=()=>{};this.decode=()=>{window.__dec=(window.__dec||0)+1;if(window.__hit)return {getText:()=>'3017620422003'};throw new Error('nf')}},
+    HTMLCanvasElementLuminanceSource:function(){},HybridBinarizer:function(){},BinaryBitmap:function(){}}};
+(async()=>{const T=await boot({init});const {p,ok}=T;
+const open=async()=>{await p.evaluate(()=>{openFood('lunch');F.mode='barcode';renderFood();startLive()});await p.waitForTimeout(700)};
+const close=async()=>{await p.evaluate(()=>closeFood());await p.waitForTimeout(100)};
+await open();ok('1re ouverture : une demande d\'accès',await p.evaluate(()=>__gum)===1);
+ok('le lecteur analyse les images',await p.evaluate(()=>(window.__dec||0)>0));
+await close();await open();await close();await open();
+ok('3 ouvertures : toujours une seule demande',await p.evaluate(()=>__gum)===1);
+ok('caméra mise en veille à la fermeture (piste désactivée)',await p.evaluate(()=>{closeFood();return CAM.stream&&CAM.stream.getVideoTracks().every(t=>!t.enabled)}));
+await p.evaluate(()=>{window.__hit=1});await open();await p.waitForTimeout(600);
+ok('code lu → recherche lancée',await p.evaluate(()=>F&&F.bc&&(F.bc.code==='3017620422003')));
+await close();
+await p.evaluate(()=>{camStop();window.__perm='denied';CAM.state='unknown';window.__gum=0});await open();
+ok('accès refusé : aucune nouvelle demande, explication affichée',await p.evaluate(()=>__gum===0&&F.bc.denied&&/Réglages/.test(F.bc.err)));
+await T.done()})();
