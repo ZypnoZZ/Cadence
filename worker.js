@@ -64,15 +64,16 @@ function toHex(buf) {
 
 async function verifyStripeSignature(rawBody, sigHeader, secret) {
   if (!sigHeader) return false;
-  const parts = Object.fromEntries(sigHeader.split(',').map(p => p.split('=')));
-  const t = parts.t, v1 = parts.v1;
-  if (!t || !v1) return false;
+  const items = sigHeader.split(',').map(p => p.split('='));
+  const t = (items.find(x => x[0] === 't') || [])[1], v1s = items.filter(x => x[0] === 'v1').map(x => x[1]);
+  if (!t || !v1s.length || Math.abs(Date.now() / 1000 - +t) > 300) return false;
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(t + '.' + rawBody));
-  return toHex(sig) === v1;
+  const hex = toHex(sig);
+  return v1s.some(v => sameStr(hex, v));
 }
 
 async function stripeGet(env, path) {
@@ -109,23 +110,39 @@ function planOf(env, sub) {
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 // ---- Jeton d'abonnement : prouve que l'appareil a le droit d'utiliser cet e-mail (v108) ----
 // Signé avec un secret du serveur (LIC_SECRET si défini, sinon dérivé de STRIPE_SECRET_KEY). Révocable : version tv:{email}.
-const LIC_CUTOFF = Date.UTC(2026, 10, 17); // abonnements créés avant : un seul appareil peut récupérer son jeton sans preuve
+const LIC_CUTOFF = Date.UTC(2026, 10, 16, 8, 0); // clients Stripe créés avant la v109 : un seul appareil peut récupérer son jeton sans preuve
 async function licHmac(env) {
   const raw = new TextEncoder().encode('cadence-lic|' + (env.LIC_SECRET || env.STRIPE_SECRET_KEY || ''));
   return crypto.subtle.importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
 }
+const TOK_DAYS = 180; // durée de vie d'un jeton ; renouvelé automatiquement par /status dans ses 30 derniers jours
+const sameStr = (a, b) => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+async function signPart(env, p) { return b64u(await crypto.subtle.sign('HMAC', await licHmac(env), new TextEncoder().encode(p))); }
 async function makeTok(env, email) {
-  const tv = (await env.LICENSES.get('tv:' + email)) || '1';
-  const p = b64u(new TextEncoder().encode(email + '|' + tv));
-  const sig = await crypto.subtle.sign('HMAC', await licHmac(env), new TextEncoder().encode(p));
-  return p + '.' + b64u(sig);
+  const tv = (await env.LICENSES.get('tv:' + email)) || '1', exp = Math.floor(Date.now() / 1000) + TOK_DAYS * 86400;
+  const p = b64u(new TextEncoder().encode(email + '|' + tv + '|' + exp));
+  return p + '.' + await signPart(env, p);
 }
-async function tokOK(env, email, tok) {
-  if (!email || !tok || tok.indexOf('.') < 0) return false;
-  const good = await makeTok(env, email);
-  if (good.length !== tok.length) return false;
-  let d = 0; for (let i = 0; i < good.length; i++) d |= good.charCodeAt(i) ^ tok.charCodeAt(i);
-  return d === 0;
+// Infos d'un jeton valide (signature, e-mail, version, date d'expiration), sinon null
+async function tokInfo(env, email, tok) {
+  if (!email || !tok || tok.length > 400 || tok.indexOf('.') < 0) return null;
+  const [p, sig] = tok.split('.');
+  if (!sameStr(await signPart(env, p), sig || '')) return null;
+  let parts; try { parts = atob(p.replace(/-/g, '+').replace(/_/g, '/')).split('|'); } catch (e) { return null; }
+  const [em, tv, exp] = parts;
+  if (em !== email || !exp || +exp * 1000 < Date.now()) return null;
+  if (tv !== ((await env.LICENSES.get('tv:' + email)) || '1')) return null; // jeton révoqué
+  return { exp: +exp * 1000 };
+}
+async function tokOK(env, email, tok) { return !!(await tokInfo(env, email, tok)); }
+// Une adresse de retour ne peut renvoyer que vers l'application (pas de redirection vers un autre site)
+const safeReturn = u => { try { const x = new URL(u); return x.origin === new URL(APP_URL).origin ? x.origin + x.pathname : APP_URL; } catch (e) { return APP_URL; } };
+// Un compte existe déjà pour cet e-mail (abonnement, achats ou appareil déjà confirmé)
+async function accountExists(env, email) {
+  const lic = await env.LICENSES.get('lic:' + email, { type: 'json' });
+  if (lic && lic.customerId) return true;
+  if (await env.LICENSES.get('claimed:' + email)) return true;
+  return JSON.parse((await env.LICENSES.get('buy:' + email)) || '[]').length > 0;
 }
 // Lit e-mail + jeton (paramètres d'URL ou corps JSON) ; ok=false si le jeton ne correspond pas
 async function authOf(env, url, body) {
@@ -267,6 +284,8 @@ async function stravaRoutes(request, env, url) {
     const email = (url.searchParams.get('email') || '').trim().toLowerCase();
     if (!email) return json({ error: 'email manquant' }, 400);
     if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return Response.redirect(APP_URL + '?strava=err', 302);
+    const slic = await env.LICENSES.get('lic:' + email, { type: 'json' });
+    if (!slic || !slic.active || slic.plan !== 'coach') return Response.redirect(APP_URL + '?strava=err', 302);
     const nonce = crypto.randomUUID();
     await env.LICENSES.put('stn:' + nonce, email, { expirationTtl: 900 });
     const a = new URL('https://www.strava.com/oauth/authorize');
@@ -293,6 +312,10 @@ async function stravaRoutes(request, env, url) {
   const sk = url.searchParams.get('sk') || '';
   const rec = sk && await env.LICENSES.get('strava:' + sk, { type: 'json' });
   if (!rec) return json({ error: 'non connecté' }, 401);
+  if (p !== '/strava/disconnect') {
+    const lic = rec.email && await env.LICENSES.get('lic:' + rec.email, { type: 'json' });
+    if (!lic || !lic.active || lic.plan !== 'coach') return json({ error: 'réservé à Cadence + Coach' }, 403);
+  }
   if (p === '/strava/disconnect') {
     try { await fetch('https://www.strava.com/oauth/deauthorize', { method: 'POST', headers: { Authorization: 'Bearer ' + rec.access } }); } catch (e) {}
     await env.LICENSES.delete('strava:' + sk);
@@ -500,14 +523,17 @@ export default {
       const v = await env.LICENSES.get('lic:' + email);
       let data = v ? JSON.parse(v) : null;
       let newTok = null;
-      if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) {
-        // Sans jeton : on ne dit rien de l'abonnement, sauf récupération unique pour un abonnement antérieur à la v108
+      const ti = await tokInfo(env, email, url.searchParams.get('tok') || '');
+      if (!ti) {
+        // Sans jeton valide : rien n'est révélé, sauf une récupération unique pour un client Stripe créé avant la v109
         if (!data) return json({ active: false, plan: 'base', cancelAt: null });
         const claimed = await env.LICENSES.get('claimed:' + email);
-        if (claimed || !(data.updated && data.updated < LIC_CUTOFF)) return json(Object.assign({ active: false, plan: 'base', cancelAt: null }, NEED_AUTH));
+        let old = false;
+        if (!claimed && data.customerId) { try { const c = await stripeGet(env, 'customers/' + data.customerId); old = !!(c && c.created && c.created * 1000 < LIC_CUTOFF && String(c.email || '').toLowerCase() === email); } catch (e) {} }
+        if (!old) return json(Object.assign({ active: false, plan: 'base', cancelAt: null }, NEED_AUTH));
         await env.LICENSES.put('claimed:' + email, String(Date.now()));
         newTok = await makeTok(env, email);
-      }
+      } else if (ti.exp - Date.now() < 30 * 86400000) newTok = await makeTok(env, email);
       // Relit l'abonnement chez Stripe : l'état reste juste même si un webhook est en retard ou manquant
       if (data && data.customerId) {
         try {
@@ -537,6 +563,10 @@ export default {
         const email = String((s && ((s.customer_details && s.customer_details.email) || s.customer_email)) || '').toLowerCase();
         if (!s || s.status !== 'complete' || !email) return json({ error: 'paiement non terminé' }, 409);
         if (Date.now() / 1000 - (s.created || 0) > 7 * 86400) return json({ error: 'session trop ancienne' }, 410);
+        const lic = await env.LICENSES.get('lic:' + email, { type: 'json' });
+        const prevClaim = await env.LICENSES.get('claimed:' + email);
+        if (prevClaim && lic && lic.customerId && s.customer && s.customer !== lic.customerId)
+          return json({ error: 'Cet e-mail est déjà lié à un autre compte Cadence' }, 409);
         await env.LICENSES.put('claimed:' + email, String(Date.now()));
         return json({ email, tok: await makeTok(env, email) });
       } catch (e) { return json({ error: 'Stripe indisponible' }, 502); }
@@ -546,6 +576,7 @@ export default {
     if (url.pathname === '/transfer/new') {
       const a = await authOf(env, url);
       if (!a.ok) return json(NEED_AUTH, 401);
+      if (!(await rateOK(env, 'xnew', request, 10))) return json({ error: 'Trop de codes demandés, réessaie dans une heure' }, 429);
       const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', r = crypto.getRandomValues(new Uint8Array(8));
       const code = [...r].map(x => abc[x % abc.length]).join('');
       await env.LICENSES.put('xfer:' + code, a.email, { expirationTtl: 600 });
@@ -577,7 +608,8 @@ export default {
     if (url.pathname === '/buy') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase(), item = url.searchParams.get('item') || '';
       if (!email || !SHOP[item]) return json({ error: 'article inconnu' }, 400);
-      const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      if (await accountExists(env, email) && !(await tokOK(env, email, url.searchParams.get('tok') || ''))) return Response.redirect(APP_URL + '?buy=auth', 302);
+      const appUrl = safeReturn(url.searchParams.get('return') || APP_URL);
       try {
         const session = await stripe(env, 'checkout/sessions', {
           mode: 'payment',
@@ -622,7 +654,8 @@ export default {
     if (url.pathname === '/checkout') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
       if (!email) return json({ error: 'email manquant' }, 400);
-      const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      if (await accountExists(env, email) && !(await tokOK(env, email, url.searchParams.get('tok') || ''))) return Response.redirect(APP_URL + '?lic=auth', 302);
+      const appUrl = safeReturn(url.searchParams.get('return') || APP_URL);
       const plan = url.searchParams.get('plan') === 'coach' ? 'coach' : 'base';
       try {
         const session = await stripe(env, 'checkout/sessions', {
@@ -711,7 +744,7 @@ export default {
     // GET /portal?email=... -> redirige vers le portail client Stripe (gérer/annuler l'abonnement)
     if (url.pathname === '/portal') {
       const email = (url.searchParams.get('email') || '').trim().toLowerCase();
-      const appUrl = url.searchParams.get('return') || 'https://zypnozz.github.io/Cadence/';
+      const appUrl = safeReturn(url.searchParams.get('return') || APP_URL);
       if (!(await tokOK(env, email, url.searchParams.get('tok') || ''))) return json(NEED_AUTH, 401);
       const v = await env.LICENSES.get('lic:' + email);
       const data = v ? JSON.parse(v) : null;
@@ -746,6 +779,8 @@ export default {
     // POST /ai -> analyse photo Gemini avec la clé du serveur (secret GEMINI_KEY), pour les utilisateurs sans clé
     if (url.pathname === '/ai' && request.method === 'POST') {
       if (!env.GEMINI_KEY) return json({ error: 'GEMINI_KEY manquant sur le serveur' }, 500);
+      { const a = await authOf(env, url); const l = a.ok && await env.LICENSES.get('lic:' + a.email, { type: 'json' });
+        if (!l || !l.active) return json({ error: 'réservé aux abonnés' }, 403); }
       const body = await request.text();
       if (body.length > 6000000) return json({ error: 'Image trop lourde' }, 413);
       // Limite simple : 30 analyses par heure et par adresse IP

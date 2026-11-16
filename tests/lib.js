@@ -5,7 +5,7 @@ async function boot(opts={}){
   const b=await chromium.launch();
   const ctx=await b.newContext({...devices['iPhone 13'],serviceWorkers:'block',...(opts.ctx||{})});
   if(opts.clock)await ctx.clock.install({time:new Date(opts.clock)});
-  const p=await ctx.newPage();const er=[];p.on('pageerror',e=>er.push(e.message));
+  const p=await ctx.newPage();const er=[];p.on('pageerror',e=>er.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|ERR_|net::/.test(m.text()))er.push('console: '+m.text())});
   if(opts.init)await p.addInitScript(opts.init);
   await p.goto(URL0);await p.waitForTimeout(700);
   await p.evaluate(()=>{try{localStorage.setItem('cadence-glass-asked','1')}catch(e){}S.tuto=1;S.tutoC=1;S.setup=1;S.onb=1;

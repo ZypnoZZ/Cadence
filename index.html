@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F6F5FB" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0A11" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon-v108.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v108.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>
 html{background:var(--bg,#F4F4F4);-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px)}
@@ -1269,6 +1269,34 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
 .privl{margin:8px 0 6px;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4}
 .danger-zone{border-color:color-mix(in srgb,var(--danger) 35%,var(--line))}
 .xfer{margin-top:10px;padding:12px;border-radius:14px;background:var(--soft);text-align:center;display:flex;flex-direction:column;gap:4px}.xfer b{font-size:28px;letter-spacing:.12em;font-variant-numeric:tabular-nums}.xfer span{font-size:12.5px;color:var(--muted)}
+.bkfile{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:12px;font-weight:600;cursor:pointer}
+.bkconf{border-color:var(--accent)}
+/* v110 : Assiettes */
+.pl-top input{margin:0}
+.pl-cats{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;margin:0 -2px;scrollbar-width:none}.pl-cats::-webkit-scrollbar{display:none}
+.pl-cats button{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:78px;padding:10px 8px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:700}
+.pl-cats button span{font-size:22px}.pl-cats button small{font-size:11px;color:var(--muted);font-weight:600}
+.pl-cats button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}.pl-cats button[aria-pressed="true"] small{color:#fff;opacity:.85}
+.pl-filt{display:flex;gap:6px;margin:8px -2px;padding:0 2px 4px;overflow-x:auto;scrollbar-width:none}.pl-filt::-webkit-scrollbar{display:none}.pl-filt button{flex:none}
+.pl-filt button{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:999px;padding:7px 11px;font:inherit;font-size:13px;font-weight:600}
+.pl-filt button[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent);color:var(--accent)}
+.pl-filt button[aria-pressed="true"]::before{content:'✓ '}
+.pl-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 2px 10px}.pl-sort select{width:auto;padding:6px 8px;font-size:13px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl-card{flex-direction:column;align-items:stretch;padding:0;overflow:hidden;gap:0}
+.pl-img{position:relative;display:grid;place-items:center;height:96px;font-size:46px;border-radius:0;width:auto}
+.pl-img i{position:absolute;right:8px;bottom:8px;font-style:normal;font-size:11px;font-weight:700;background:rgba(0,0,0,.45);color:#fff;border-radius:999px;padding:3px 7px}
+.c-bf{background:linear-gradient(135deg,#fde68a,#fdba74)}.c-lunch{background:linear-gradient(135deg,#bbf7d0,#86efac)}.c-dinner{background:linear-gradient(135deg,#c7d2fe,#a5b4fc)}.c-snack{background:linear-gradient(135deg,#fef3c7,#fde047)}.c-dessert{background:linear-gradient(135deg,#fbcfe8,#f9a8d4)}.c-drink{background:linear-gradient(135deg,#bae6fd,#7dd3fc)}.c-side{background:linear-gradient(135deg,#d9f99d,#a3e635)}
+.pl-card .pl-tx{padding:10px 10px 12px;gap:3px}.pl-card .pl-tx b{font-size:14px;line-height:1.25}
+.pl-k{font-weight:800;font-size:15px}.pl-m{display:flex;gap:4px;flex-wrap:wrap}.pl-m i{font-style:normal;font-size:11px;font-weight:700;border-radius:6px;padding:2px 5px;background:var(--soft)}
+.pl-m .mp{color:#4f46e5}.pl-m .mc{color:#b45309}.pl-m .mf{color:#be185d}.pl-veg{font-size:11px;color:#1a8a5a;font-weight:700}
+.pl-how{margin:14px 2px}.pl-how summary{color:var(--accent);font-size:13.5px;cursor:pointer}.pl-how ul{padding-left:18px;font-size:13px;line-height:1.45;display:flex;flex-direction:column;gap:4px}
+.r-hero.c-bf,.r-hero.c-lunch,.r-hero.c-dinner,.r-hero.c-snack,.r-hero.c-dessert,.r-hero.c-drink,.r-hero.c-side{font-size:56px;padding:14px 0}
+.r-meta{display:flex;gap:8px;margin:4px 0 8px;flex-wrap:wrap}.r-meta>div{flex:1;min-width:84px;background:var(--soft);border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:2px}.r-meta b{font-size:15px}.r-meta span{font-size:11.5px;color:var(--muted)}
+.r-step{display:flex;align-items:center;gap:10px}.r-step button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;font-weight:700;padding:0}.r-step button:disabled{opacity:.35}
+.r-tags{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 6px}.r-tags span{font-size:11.5px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:999px;padding:3px 8px}
+.r-tot{grid-column:1/-1;margin:2px 0 0}
+@media (max-width:350px){.pl-grid{grid-template-columns:1fr}}
 
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
@@ -1379,11 +1407,14 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
   <div class="panel" role="dialog" aria-labelledby="r-head">
     <div class="panel-head"><div style="min-width:0"><h2 id="r-head"></h2><p class="note" id="r-sub"></p></div><button type="button" class="x" data-act="rclose" aria-label="Fermer">×</button></div>
     <div class="r-hero" id="r-hero" aria-hidden="true" hidden></div>
+    <div class="r-meta" id="r-meta" hidden></div>
+    <div class="r-tags" id="r-tags" hidden></div>
+    <h3 class="group-h" id="r-mach" hidden style="margin-top:10px">Valeurs nutritionnelles par portion</h3>
     <div class="r-mac" id="r-mac" hidden></div>
-    <h3 class="group-h" style="margin-top:6px">Ingrédients pour 1 portion</h3><ul class="ringr" id="r-ing"></ul>
+    <h3 class="group-h" id="r-ingh" style="margin-top:6px">Ingrédients</h3><ul class="ringr" id="r-ing"></ul>
     <h3 class="group-h">Préparation</h3><ol class="rsteps" id="r-steps"></ol>
     <div id="r-add" hidden><span class="lab">Ajouter à mon journal</span><div class="r-meals"><button type="button" class="ghost" data-act="pladd" data-m="bf">Petit-déj</button><button type="button" class="ghost" data-act="pladd" data-m="lunch">Déjeuner</button><button type="button" class="ghost" data-act="pladd" data-m="dinner">Dîner</button><button type="button" class="ghost" data-act="pladd" data-m="snack">Collation</button></div></div>
-    <p class="note" id="r-src" hidden style="margin-top:10px">Valeurs estimées à partir des ingrédients (moyennes pour 100 g). Pas de photo : Cadence n'utilise que des images dont les droits sont vérifiés.</p>
+    <p class="note" id="r-src" hidden style="margin-top:10px">Valeurs estimées à partir des ingrédients (moyennes pour 100 g d'aliments cuits ou prêts à manger). L'illustration n'est pas une photo du plat : Cadence n'utilise que des images dont les droits sont vérifiés.</p>
   </div>
 </div>
 <div id="msheet" class="scrim" hidden>
@@ -1736,7 +1767,7 @@ const EDITEUR={
 const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
-const APP_VERSION='2026.11.16 · 109';
+const APP_VERSION='2026.11.16 · 110';
 const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
@@ -2543,7 +2574,7 @@ async function wpSync(silent){
 function wpBuy(id){
   if(!IS_PWA){toast('L\'achat se fait dans l\'application installée');return}
   const l=licenseGet(),email=l&&l.email;if(!email){toast('Connecte d\'abord ton compte Cadence (Menu › Mon compte)');return}
-  location.href=WORKER_URL+'/buy?email='+encodeURIComponent(email)+'&item=wp-'+id+'&return='+encodeURIComponent(location.origin+location.pathname);
+  location.href=WORKER_URL+'/buy?email='+encodeURIComponent(email)+tq(email)+'&item=wp-'+id+'&return='+encodeURIComponent(location.origin+location.pathname);
 }
 function wpPhoto(file){
   const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1200/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
@@ -2937,7 +2968,10 @@ function renderSettings(){
     return head+'<h2 class="pg-t">Sauvegarde</h2>'
      +'<section class="needs"><div><b>'+nA+'</b><span>agenda</span></div><div><b>'+nS+'</b><span>séances</span></div><div><b>'+nJ+'</b><span>jours repas</span></div><div><b>'+nW+'</b><span>pesées</span></div></section>'
      +'<p class="note" style="margin:0 2px 10px">Tes données restent sur ce téléphone. Le code n\'est pas inclus.</p>'
-     +'<button type="button" class="primary big" data-act="backup" style="width:100%;margin-bottom:10px">Copier ma sauvegarde</button>'
+     +'<button type="button" class="primary big" data-act="dlexport" style="width:100%;margin-bottom:8px">Enregistrer ma sauvegarde (fichier)</button>'
+     +'<label class="ghost bkfile" style="width:100%;margin-bottom:10px"><input type="file" id="bk-file" accept="application/json,.json" hidden>Restaurer depuis un fichier</label>'
+     +(V.bkPending?'<section class="card bkconf"><b>Restaurer « '+esc(V.bkPending.name)+' » ?</b><p class="note">'+V.bkPending.n+' séances, '+V.bkPending.j+' jours de repas, '+V.bkPending.a+' éléments d\'agenda. Les données actuelles de ce profil seront remplacées.</p><div class="row" style="gap:8px;justify-content:flex-start;margin-top:8px"><button type="button" class="primary" data-act="bkapply">Restaurer</button><button type="button" class="ghost" data-act="bkcancel">Annuler</button></div></section>':'')
+     +'<button type="button" class="ghost" data-act="backup" style="width:100%;margin-bottom:10px">Copier ma sauvegarde (texte)</button>'
      +acc('b-rest','save','Restaurer une sauvegarde','Coller une sauvegarde copiée plus tôt','<textarea id="bk-text" rows="3" placeholder="Colle ici une sauvegarde à restaurer"></textarea><div class="row" style="margin-top:8px;justify-content:flex-start"><button type="button" class="ghost" data-act="restore">Restaurer</button></div>')
      +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
   }
@@ -3743,7 +3777,7 @@ async function gemini(parts,schema){
   if(!key){
     // Sans clé personnelle : passe par le serveur de Cadence s'il est configuré (la clé reste côté serveur).
     if(!PROXY_OK())throw {code:'nokey'};
-    let r;try{r=await fetch(WORKER_URL+'/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){throw {code:'net'}}
+    let r;try{r=await fetch(WORKER_URL+'/ai'+(()=>{const l=licenseGet()||{};return l.email?'?email='+encodeURIComponent(l.email)+tq(l.email):''})(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){throw {code:'net'}}
     const j=await r.json().catch(()=>({}));if(!r.ok)throw {code:r.status,msg:(j.error&&j.error.message)||j.error||''};
     const txt=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text||'').join('');
     if(!txt)throw {code:'vide'};try{return JSON.parse(txt)}catch(e){throw {code:'format'}}
@@ -5315,16 +5349,16 @@ function msStop(){clearInterval(MSX.iv);MSX.o=null;if(MSX.a){try{MSX.a.pause()}c
 const RT={on:false,end:0,dur:0,pl:0,label:'',iv:null};
 function rtLeft(){return RT.pl?RT.pl:(RT.end-Date.now())/1000}
 function rtStart(sec,label){
-  msAmbient(prefs().lock!=='cadence');try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
+  acStart();
   Object.assign(RT,{on:true,dur:sec,end:Date.now()+sec*1000,pl:0,label:label||'Repos'});
   if(prefs().lock==='apple')appleTimer(sec);else msStart({label:RT.label,left:rtLeft,dur:()=>RT.dur,paused:()=>!!RT.pl,pause:rtPause,add:rtAdd,stop:rtStop});
   clearInterval(RT.iv);RT.iv=setInterval(rtTick,250);rtTick();rtSave()}
 function rtPause(){if(!RT.on)return;if(RT.pl){RT.end=Date.now()+RT.pl*1000;RT.pl=0}else RT.pl=Math.max(.5,rtLeft());msUpd();rtTick();rtSave()}
 function rtAdd(s){if(!RT.on)return;if(RT.pl)RT.pl=Math.max(1,RT.pl+s);else RT.end=Math.max(Date.now()+1000,RT.end+s*1000);RT.dur=Math.max(RT.dur+(s>0?s:0),rtLeft());msUpd();rtTick();rtSave()}
-function rtStop(){RT.on=false;clearInterval(RT.iv);msStop();rtSave();const el=$('#rtimer');if(el){el.hidden=true;el.classList.remove('fin')}}
+function rtStop(){RT.on=false;clearInterval(RT.iv);msStop();rtSave();acRelease();const el=$('#rtimer');if(el){el.hidden=true;el.classList.remove('fin')}}
 function rtTick(){
   const el=$('#rtimer');if(!el||!RT.on)return;const left=rtLeft();
-  if(left<=0){RT.on=false;clearInterval(RT.iv);rtSave();msDone(RT.label);if(!document.hidden)beep(3);else haptic(3);el.classList.add('fin');$('#rt-t').textContent='0:00';$('#rt-l').textContent='Repos terminé 💪';$('#rt-p').textContent='▶';setTimeout(()=>{if(!RT.on){el.hidden=true;el.classList.remove('fin')}},5000);return}
+  if(left<=0){RT.on=false;clearInterval(RT.iv);rtSave();msDone(RT.label);acRelease();if(!document.hidden)beep(3);else haptic(3);el.classList.add('fin');$('#rt-t').textContent='0:00';$('#rt-l').textContent='Repos terminé 💪';$('#rt-p').textContent='▶';setTimeout(()=>{if(!RT.on){el.hidden=true;el.classList.remove('fin')}},5000);return}
   el.hidden=false;el.classList.remove('fin');const s=Math.ceil(left);$('#rt-t').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');$('#rt-l').textContent=RT.label;
   $('#rt-p').textContent=RT.pl?'▶':'❚❚';$('#rt-p').setAttribute('aria-label',RT.pl?'Reprendre':'Pause');el.classList.toggle('paused',!!RT.pl);
   const c=$('#rt-c');if(c)c.style.strokeDashoffset=String(Math.round(113*(1-left/Math.max(1,RT.dur))*10)/10);
@@ -6015,8 +6049,13 @@ function animFor(n){const a=ANIM.find(x=>x[0].test(n));return a&&a[1]?a[1]:null}
 
 /* ---------- Séance guidée ---------- */
 const PL={w:null,i:0,set:0,anim:true,phase:'work',t:null,tick:null,rounds:0,lock:null,ac:null};
-function beep(n){
-  try{if(!PL.ac)return;if(prefs().lock!=='cadence')msAmbient(true);for(let k=0;k<(n||1);k++){const o=PL.ac.createOscillator(),g=PL.ac.createGain();o.frequency.value=k===(n||1)-1?1175:880;o.connect(g);g.connect(PL.ac.destination);const t0=PL.ac.currentTime+k*0.22;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.4,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18);o.start(t0);o.stop(t0+0.2)}}catch(e){}
+// Son : session audio « ambiant » (se mélange à Spotify, Deezer, Apple Music ; muet si l'iPhone est en mode silencieux)
+function acStart(){msAmbient(prefs().lock!=='cadence');try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();if(PL.ac.state!=='running')PL.ac.resume()}catch(e){}}
+// Libère le son quand plus rien ne compte (évite de garder une session audio ouverte pour rien)
+function acRelease(){clearTimeout(PL.acT);PL.acT=setTimeout(()=>{try{if(PL.ac&&PL.ac.state==='running'&&!RT.on&&$('#player').hidden)PL.ac.suspend()}catch(e){}},2000)}
+function beep(n,again){
+  try{if(!PL.ac)return;if(prefs().lock!=='cadence')msAmbient(true);
+  if(PL.ac.state==='suspended'&&!again){PL.ac.resume().then(()=>beep(n,true)).catch(()=>{});return}for(let k=0;k<(n||1);k++){const o=PL.ac.createOscillator(),g=PL.ac.createGain();o.frequency.value=k===(n||1)-1?1175:880;o.connect(g);g.connect(PL.ac.destination);const t0=PL.ac.currentTime+k*0.22;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.4,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18);o.start(t0);o.stop(t0+0.2)}}catch(e){}
   haptic(n||1);
 }
 function askGuided(w){
@@ -6029,14 +6068,14 @@ function askGuided(w){
 function openPlayer(wid,anim){
   rtStop();
   const w=S.workouts.find(x=>x.id===wid);if(!w||!w.ex.length)return;
-  msAmbient(prefs().lock!=='cadence');try{PL.ac=PL.ac||new (window.AudioContext||window.webkitAudioContext)();PL.ac.resume&&PL.ac.resume()}catch(e){}
+  acStart();
   Object.assign(PL,{w:wid,i:0,set:0,anim:!!anim,phase:'work',rounds:0,restNx:null});stopTimer();
   if(!w.st&&w.date===todayISO&&COACH_NOTE(w))w.st='live';
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>PL.lock=l).catch(()=>{})}catch(e){}
   $('#player').hidden=false;renderPlayer();
 }
 function closePlayer(){
-  liveSave();stopTimer();msStop();$('#player').hidden=true;
+  liveSave();stopTimer();msStop();$('#player').hidden=true;acRelease();
   try{PL.lock&&PL.lock.release()}catch(e){}PL.lock=null;
   V.tab='seances';V.wEdit=PL.w;touch();render();window.scrollTo(0,0);
 }
@@ -6487,137 +6526,176 @@ function watchStatusHTML(){
    Chaque assiette est décrite par ses ingrédients et leurs quantités. Les calories et macros
    sont CALCULÉES à partir des valeurs moyennes pour 100 g des aliments de base (FOODBOOK) :
    ce sont des estimations, affichées comme telles. */
-const PLAT_CATS=[['bf','Petit-déjeuner','🥣'],['lunch','Déjeuner','🍛'],['dinner','Dîner','🍲'],['snack','Collation','🍌'],['dessert','Dessert','🍮'],['side','Accompagnement','🥗']];
+const PLAT_CATS=[['bf','Petit-déjeuner','🥣'],['lunch','Déjeuner','🍛'],['dinner','Dîner','🍲'],['snack','Collation','🍌'],['dessert','Dessert','🍮'],['drink','Boisson','🥤'],['side','Accompagnement','🥗']];
 const PLATS=[
- // Petit-déjeuner
- ['Porridge banane et beurre de cacahuète','bf',8,1,'🥣',[["Flocons d'avoine",60],['Lait demi-écrémé',250],['Banane',100],['Beurre de cacahuète',15]],['Cuis les flocons dans le lait 4 à 5 min en remuant.','Ajoute la banane en rondelles et le beurre de cacahuète.']],
- ['Omelette 3 œufs, pain complet','bf',8,1,'🍳',[['Œuf',180],['Pain complet',60],['Tomate',100]],['Bats les œufs avec sel et poivre.','Cuis 2 à 3 min à la poêle.','Sers avec le pain et la tomate.']],
- ['Skyr, muesli et fruits rouges','bf',3,0,'🥛',[['Skyr nature',200],['Muesli',40],['Framboises',80]],['Verse le skyr dans un bol.','Ajoute le muesli et les framboises.']],
- ['Tartines jambon et fromage blanc','bf',5,1,'🍞',[['Pain complet',80],['Jambon blanc',45],['Fromage blanc 3 %',150],['Pomme',150]],['Fais griller le pain, garnis de jambon.','Fromage blanc et pomme à côté.']],
- ['Pancakes protéinés','bf',15,0,'🥞',[["Flocons d'avoine",50],['Œuf',120],['Whey (poudre)',30],['Banane',100],['Miel',10]],['Mixe flocons, œufs, whey et banane.','Cuis de petites galettes 2 min par face.','Un filet de miel pour finir.']],
- ['Overnight oats chia et myrtilles','bf',5,0,'🫙',[["Flocons d'avoine",60],['Graines de chia',10],['Yaourt nature',125],['Lait demi-écrémé',100],['Myrtilles',80]],['La veille : mélange flocons, chia, yaourt et lait.','Laisse au frigo toute la nuit, ajoute les myrtilles le matin.']],
- ['Œufs brouillés, avocat et pain','bf',10,0,'🥑',[['Œuf',120],['Avocat',70],['Pain aux céréales',60]],['Brouille les œufs à feu doux.','Écrase l\'avocat sur le pain grillé, ajoute les œufs.']],
- ['Bol fromage blanc, avoine et banane','bf',3,1,'🍌',[['Fromage blanc 0 %',200],["Flocons d'avoine",40],['Banane',100],['Amandes',15]],['Mélange le fromage blanc et les flocons.','Ajoute la banane et les amandes concassées.']],
- ['Petit-déjeuner continental','bf',5,1,'🥐',[['Pain de mie',60],['Beurre',10],['Confiture',20],['Jus d\'orange',200],['Yaourt nature',125]],['Toaste le pain, beurre et confiture.','Jus et yaourt à côté.']],
- ['Smoothie bowl mangue','bf',7,0,'🥭',[['Mangue',150],['Banane',100],['Skyr nature',150],['Muesli',30]],['Mixe mangue, banane et skyr.','Verse dans un bol, parsème de muesli.']],
- ['Crêpes au jambon et emmental','bf',10,1,'🫓',[['Crêpe nature',120],['Jambon blanc',45],['Emmental',30]],['Garnis les crêpes de jambon et fromage.','Réchauffe 2 min à la poêle pour faire fondre.']],
- ['Shake petit-déjeuner express','bf',3,0,'🥤',[['Lait demi-écrémé',300],['Whey (poudre)',30],["Flocons d'avoine",50],['Banane',100]],['Mixe tous les ingrédients 30 secondes.']],
- // Déjeuner
- ['Poulet, riz et brocoli','lunch',20,1,'🍗',[['Blanc de poulet cuit',150],['Riz blanc cuit',200],['Brocoli cuit',150],["Huile d'olive",10]],['Cuis le riz 10 à 12 min.','Saisis le poulet 6 à 8 min.','Brocoli vapeur 6 min, filet d\'huile.']],
- ['Pâtes bolognaise maison','lunch',20,1,'🍝',[['Pâtes cuites',220],['Steak haché 5 % cuit',120],['Tomate',150],['Oignon',40],["Huile d'olive",5],['Parmesan',10]],['Cuis les pâtes.','Fais revenir oignon et viande, ajoute les tomates 10 min.','Mélange, parmesan dessus.']],
- ['Bowl saumon, quinoa et avocat','lunch',15,0,'🥗',[['Saumon cuit',120],['Quinoa cuit',150],['Avocat',60],['Concombre',80]],['Cuis le quinoa 12 min.','Dispose saumon, avocat et concombre.']],
- ['Chili con carne maison','lunch',35,1,'🌶',[['Steak haché 5 % cuit',120],['Haricots rouges cuits',150],['Riz blanc cuit',150],['Tomate',150],['Oignon',40],['Poivron',60]],['Fais revenir oignon, poivron et viande.','Ajoute tomates et haricots, mijote 20 min avec cumin et paprika.','Sers avec le riz.']],
- ['Wrap poulet crudités','lunch',10,1,'🌯',[['Wrap, tortilla',70],['Blanc de poulet cuit',100],['Salade verte',30],['Tomate',60],['Fromage blanc 3 %',40]],['Étale le fromage blanc assaisonné sur la galette.','Ajoute poulet et crudités, roule serré.']],
- ['Salade de lentilles, œuf et thon','lunch',10,1,'🥗',[['Lentilles cuites',200],['Œuf',60],['Thon au naturel',100],['Tomate',100],['Vinaigrette',15]],['Mélange lentilles, thon émietté et tomate.','Ajoute l\'œuf dur et la vinaigrette.']],
- ['Steak, purée et haricots verts','lunch',20,1,'🥩',[['Steak haché 5 % cuit',125],['Purée de pommes de terre',200],['Haricots verts cuits',150]],['Cuis le steak à la poêle.','Haricots vapeur 8 min, purée réchauffée.']],
- ['Dinde, patate douce et courgette','lunch',30,1,'🍠',[['Escalope de dinde cuite',150],['Patate douce cuite',200],['Courgette cuite',150],["Huile d'olive",10]],['Patate douce en cubes au four 25 min à 200 °C.','Dinde à la poêle 4 min par face, courgette sautée.']],
- ['Riz cantonais au poulet','lunch',20,1,'🍚',[['Riz blanc cuit',220],['Blanc de poulet cuit',100],['Œuf',60],['Petits pois cuits',60],["Huile de colza",10]],['Fais sauter le riz froid à l\'huile.','Ajoute œuf battu, poulet et petits pois, 5 min à feu vif.']],
- ['Couscous poulet légumes','lunch',30,1,'🥘',[['Semoule cuite',200],['Cuisse de poulet rôtie',150],['Carotte',80],['Courgette cuite',100],['Pois chiches cuits',60]],['Fais cuire légumes et pois chiches dans un bouillon 20 min.','Ajoute le poulet, sers sur la semoule.']],
- ['Poke bowl thon','lunch',15,0,'🍣',[['Riz blanc cuit',180],['Thon au naturel',120],['Avocat',60],['Concombre',80],['Mangue',60]],['Dispose le riz dans un bol.','Ajoute thon, avocat, concombre et mangue. Un trait de sauce soja.']],
- ['Pâtes complètes au thon et tomate','lunch',15,1,'🍝',[['Pâtes complètes cuites',220],['Thon au naturel',120],['Tomate',150],["Huile d'olive",10]],['Cuis les pâtes.','Réchauffe tomates et thon 5 min, mélange.']],
- ['Buddha bowl pois chiches','lunch',20,1,'🥙',[['Quinoa cuit',150],['Pois chiches cuits',150],['Carotte',80],['Épinards cuits',80],['Feta',30],["Huile d'olive",10]],['Rôtis les pois chiches 15 min au four.','Assemble avec quinoa, carotte râpée, épinards et feta.']],
- ['Saumon, riz complet et épinards','lunch',20,0,'🐟',[['Saumon cuit',130],['Riz complet cuit',180],['Épinards cuits',150]],['Cuis le saumon 4 min côté peau puis 2 min.','Riz complet et épinards à la poêle.']],
- ['Croque-monsieur maison et salade','lunch',12,1,'🥪',[['Pain de mie',80],['Jambon blanc',45],['Emmental',30],['Salade verte',60],['Vinaigrette',10]],['Monte le croque, 4 min par face à la poêle.','Salade à côté.']],
- ['Omelette pommes de terre et salade','lunch',20,1,'🍳',[['Œuf',180],['Pommes de terre cuites',200],['Oignon',40],['Salade verte',60],["Huile d'olive",10]],['Fais dorer pommes de terre et oignon.','Verse les œufs battus, cuis à couvert 8 min.']],
- ['Gnocchis poulet et pesto','lunch',15,0,'🥟',[['Gnocchis',200],['Blanc de poulet cuit',120],['Pesto',20],['Tomate',80]],['Fais dorer les gnocchis à la poêle.','Ajoute poulet et pesto, tomates cerises.']],
- ['Lentilles corail au curry','lunch',25,1,'🍛',[['Lentilles cuites',220],['Riz blanc cuit',150],['Tomate',100],['Oignon',40],["Huile de colza",10]],['Fais revenir l\'oignon et le curry.','Ajoute lentilles et tomates, mijote 15 min. Sers avec le riz.']],
- ['Burger maison steak et crudités','lunch',15,0,'🍔',[['Pain burger',80],['Steak haché 5 % cuit',125],['Emmental',20],['Salade verte',20],['Tomate',50]],['Cuis le steak, fais fondre le fromage dessus.','Monte le burger avec salade et tomate.']],
- ['Salade de pâtes poulet et légumes','lunch',15,1,'🥗',[['Pâtes cuites',180],['Blanc de poulet cuit',100],['Poivron',60],['Tomate',80],['Mozzarella',40],['Vinaigrette',15]],['Mélange pâtes froides, poulet et légumes.','Ajoute mozzarella et vinaigrette.']],
- ['Riz, haricots rouges et œufs','lunch',15,1,'🍳',[['Riz blanc cuit',180],['Haricots rouges cuits',150],['Œuf',120]],['Réchauffe riz et haricots épicés.','Ajoute deux œufs au plat.']],
- // Dîner
- ['Saumon, pommes de terre et haricots verts','dinner',25,0,'🐟',[['Saumon cuit',130],['Pommes de terre cuites',200],['Haricots verts cuits',150]],['Pommes de terre à l\'eau 15 à 20 min.','Saumon au four 12 min à 180 °C, haricots vapeur.']],
- ['Wok de bœuf et nouilles','dinner',20,0,'🥢',[['Rumsteck grillé',120],['Pâtes cuites',180],['Poivron',80],['Brocoli cuit',100],["Huile de colza",10]],['Saisis le bœuf en lanières 2 min.','Ajoute légumes et nouilles, sauce soja, 4 min à feu vif.']],
- ['Soupe de légumes, tartines et fromage','dinner',10,1,'🍲',[['Soupe de légumes',350],['Pain complet',60],['Comté',30]],['Réchauffe la soupe.','Tartines et fromage à côté.']],
- ['Cabillaud, riz et ratatouille','dinner',20,1,'🐟',[['Cabillaud cuit',150],['Riz blanc cuit',150],['Ratatouille',200]],['Cuis le cabillaud au four 12 min.','Sers avec riz et ratatouille.']],
- ['Poulet curry et riz basmati','dinner',25,1,'🍛',[['Blanc de poulet cuit',140],['Riz blanc cuit',180],['Oignon',40],['Crème fraîche 30 %',20],['Épinards cuits',80]],['Fais revenir oignon et poulet avec le curry.','Ajoute crème et épinards, 5 min. Sers avec le riz.']],
- ['Tofu sauté, quinoa et légumes','dinner',20,1,'🥦',[['Tofu',150],['Quinoa cuit',150],['Brocoli cuit',120],['Carotte',60],["Huile d'olive",10]],['Fais dorer le tofu 8 min.','Ajoute légumes et sauce soja, sers sur le quinoa.']],
- ['Omelette champignons et salade','dinner',12,1,'🍄',[['Œuf',180],['Champignons cuits',100],['Emmental',20],['Salade verte',80],['Vinaigrette',10]],['Fais revenir les champignons.','Ajoute les œufs battus et le fromage.']],
- ['Lasagnes de légumes à la ricotta','dinner',45,0,'🫕',[['Lasagnes bolognaise',300],['Salade verte',60]],['Réchauffe la part au four 20 min.','Salade à côté.']],
- ['Hachis parmentier et salade','dinner',15,1,'🥧',[['Hachis parmentier',350],['Salade verte',60],['Vinaigrette',10]],['Réchauffe au four 15 min.','Salade assaisonnée.']],
- ['Truite, boulgour et courgettes','dinner',20,0,'🐟',[['Truite cuite',130],['Boulgour cuit',180],['Courgette cuite',150]],['Boulgour 10 min, truite à la poêle 3 min par face.','Courgettes sautées.']],
- ['Porc, polenta et poêlée de légumes','dinner',20,1,'🍖',[['Filet mignon de porc cuit',130],['Polenta cuite',250],['Poivron',80],['Courgette cuite',100]],['Cuis le filet mignon en médaillons.','Polenta 5 min, légumes sautés.']],
- ['Shakshuka','dinner',20,1,'🍅',[['Œuf',180],['Tomate',250],['Poivron',80],['Oignon',40],['Pain complet',60]],['Fais compoter tomates, poivron et oignon 10 min.','Casse les œufs dessus, couvre 6 min.']],
- ['Crevettes sautées et riz','dinner',15,0,'🍤',[['Crevettes cuites',150],['Riz blanc cuit',180],['Petits pois cuits',80],["Huile d'olive",10]],['Saisis les crevettes 3 min avec ail.','Ajoute petits pois et riz.']],
- ['Galette complète et salade','dinner',10,1,'🫓',[['Crêpe nature',100],['Œuf',60],['Jambon blanc',45],['Emmental',30],['Salade verte',60]],['Garnis la galette, casse l\'œuf au centre.','Plie les bords, 3 min à couvert.']],
- ['Pâtes au saumon et épinards','dinner',15,0,'🍝',[['Pâtes cuites',200],['Saumon cuit',100],['Épinards cuits',100],['Crème fraîche 30 %',20]],['Cuis les pâtes.','Saumon émietté, épinards et crème 4 min, mélange.']],
- ['Dahl de lentilles et pain','dinner',25,1,'🍛',[['Lentilles cuites',250],['Tomate',100],['Oignon',40],['Pain complet',50],["Huile de colza",10]],['Fais revenir oignon et épices.','Ajoute lentilles et tomate, 15 min.']],
- ['Poulet rôti, frites au four et salade','dinner',30,1,'🍗',[['Cuisse de poulet rôtie',180],['Potatoes',150],['Salade verte',60]],['Poulet et potatoes au four 25 min à 200 °C.','Salade à côté.']],
- ['Pizza maison jambon champignons','dinner',25,0,'🍕',[['Pizza margherita',250],['Jambon blanc',45],['Champignons cuits',50],['Salade verte',50]],['Ajoute jambon et champignons sur la pizza.','Four 12 min à 220 °C.']],
- ['Soupe miso tofu et nouilles','dinner',15,0,'🍜',[['Soupe de légumes',300],['Tofu',100],['Pâtes cuites',120]],['Chauffe le bouillon, ajoute tofu et nouilles 3 min.']],
- ['Assiette sardines, pommes de terre et salade','dinner',15,1,'🐟',[['Sardines à l\'huile',95],['Pommes de terre cuites',200],['Salade verte',60],['Tomate',100]],['Pommes de terre tièdes, sardines égouttées.','Salade et tomate.']],
- // Collation
- ['Shake whey et banane','snack',2,0,'🥤',[['Whey (poudre)',30],['Lait demi-écrémé',250],['Banane',100]],['Mixe ou secoue 20 secondes.']],
- ['Skyr, miel et noix','snack',2,1,'🍯',[['Skyr nature',150],['Miel',10],['Noix',15]],['Mélange et c\'est prêt.']],
- ['Tartine beurre de cacahuète et banane','snack',3,1,'🥜',[['Pain complet',40],['Beurre de cacahuète',15],['Banane',100]],['Étale, ajoute la banane en rondelles.']],
- ['Fromage blanc et fruits rouges','snack',2,1,'🍓',[['Fromage blanc 0 %',200],['Fraises',100]],['Mélange.']],
- ['Galettes de riz, jambon et fromage','snack',3,1,'🍘',[['Galette de riz',20],['Blanc de dinde (tranche)',30],['Fromage de chèvre',20]],['Garnis les galettes.']],
- ['Œufs durs et pomme','snack',10,1,'🥚',[['Œuf',120],['Pomme',150]],['Cuis les œufs 9 min, refroidis-les.']],
- ['Poignée d\'amandes et clémentines','snack',1,1,'🌰',[['Amandes',25],['Clémentine',150]],['Prêt à emporter.']],
- ['Barre protéinée et yaourt','snack',1,0,'🍫',[['Barre protéinée',60],['Yaourt nature',125]],['Prêt à emporter.']],
- ['Collation avant l\'effort','snack',2,1,'⚡',[['Banane',120],['Dattes',30],['Galette de riz',20]],['À prendre 45 à 60 min avant l\'entraînement.']],
- ['Récupération après l\'effort','snack',3,0,'🔋',[['Lait chocolaté',300],['Banane',100],['Skyr nature',100]],['Dans l\'heure qui suit l\'entraînement.']],
- ['Cottage cheese et ananas','snack',2,0,'🍍',[['Cottage cheese',150],['Ananas',100]],['Mélange.']],
- ['Houmous maison et carottes','snack',10,1,'🥕',[['Pois chiches cuits',100],["Huile d'olive",10],['Carotte',150]],['Mixe pois chiches, huile, citron et ail.','Bâtonnets de carotte à tremper.']],
- ['Pudding protéiné et fruits','snack',1,0,'🍮',[['Pudding protéiné',200],['Myrtilles',60]],['Prêt à manger.']],
- // Dessert
- ['Compote et fromage blanc','dessert',2,1,'🍏',[['Compote sans sucre ajouté',100],['Fromage blanc 3 %',100]],['Mélange.']],
- ['Mousse au chocolat','dessert',2,0,'🍫',[['Mousse au chocolat',100]],['Prêt à servir.']],
- ['Salade de fruits frais','dessert',8,1,'🍉',[['Orange',100],['Kiwi',80],['Pomme',100],['Fraises',60]],['Coupe les fruits en dés, un trait de citron.']],
- ['Banane rôtie et chocolat noir','dessert',8,1,'🍌',[['Banane',120],['Chocolat noir 70 %',15]],['Banane fendue au four 8 min, chocolat fondu dessus.']],
- ['Yaourt grec, miel et noix','dessert',2,0,'🍯',[['Yaourt grec',150],['Miel',10],['Noix',10]],['Mélange.']],
- ['Crème dessert au chocolat','dessert',1,1,'🍮',[['Crème dessert chocolat',125]],['Prêt à servir.']],
- ['Tarte aux pommes (part)','dessert',1,0,'🥧',[['Tarte aux pommes',120]],['Une part.']],
- ['Glace vanille et fraises','dessert',2,0,'🍨',[['Glace vanille',80],['Fraises',100]],['Deux boules et les fraises.']],
- ['Riz au lait maison','dessert',30,1,'🍚',[['Riz blanc cuit',100],['Lait demi-écrémé',150],['Sucre',10]],['Cuis le riz dans le lait sucré à feu doux 25 min.']],
- ['Smoothie fruits rouges','dessert',3,0,'🍓',[['Framboises',80],['Fraises',80],['Yaourt nature',125],['Miel',8]],['Mixe le tout.']],
- // Accompagnements
- ['Purée maison au lait','side',20,1,'🥔',[['Pommes de terre cuites',200],['Lait demi-écrémé',50],['Beurre',5]],['Écrase les pommes de terre avec le lait et le beurre.']],
- ['Riz aux petits légumes','side',15,1,'🍚',[['Riz blanc cuit',150],['Carotte',50],['Petits pois cuits',50]],['Mélange le riz chaud et les légumes.']],
- ['Salade composée','side',8,1,'🥗',[['Salade verte',60],['Tomate',100],['Concombre',80],['Vinaigrette',10]],['Coupe et assaisonne.']],
- ['Légumes rôtis au four','side',30,1,'🫑',[['Poivron',100],['Courgette cuite',100],['Aubergine cuite',100],["Huile d'olive",10]],['Four 25 min à 200 °C.']],
- ['Taboulé maison','side',15,1,'🥙',[['Semoule cuite',150],['Tomate',80],['Concombre',60],["Huile d'olive",10]],['Mélange semoule, légumes en dés, citron et menthe.']],
- ['Haricots verts à l\'ail','side',10,1,'🫛',[['Haricots verts cuits',200],['Beurre',5]],['Fais sauter les haricots avec l\'ail et le beurre.']],
- ['Patates douces rôties','side',30,1,'🍠',[['Patate douce cuite',200],["Huile d'olive",8]],['Cubes au four 25 min à 200 °C.']],
- ['Quinoa aux herbes','side',15,0,'🌿',[['Quinoa cuit',150],["Huile d'olive",5]],['Cuis 12 min, ajoute herbes et citron.']]
+ ["Porridge banane et beurre de cacahuète",["bf"],[3,5],1,"🥣",[["Flocons d'avoine",60],["Lait demi-écrémé",250],["Banane",100],["Beurre de cacahuète",15]],["Cuis les flocons dans le lait 4 à 5 min en remuant.","Ajoute la banane en rondelles et le beurre de cacahuète."]],
+ ["Omelette 3 œufs, pain complet",["bf","dinner"],[3,5],1,"🍳",[["Œuf",180],["Pain complet",60],["Tomate",100]],["Bats les œufs avec sel et poivre.","Cuis 2 à 3 min à la poêle.","Sers avec le pain et la tomate."]],
+ ["Skyr, muesli et fruits rouges",["bf","snack"],[3,0],0,"🥛",[["Skyr nature",200],["Muesli",40],["Framboises",80]],["Verse le skyr dans un bol.","Ajoute le muesli et les framboises."]],
+ ["Tartines jambon et fromage blanc",["bf"],[5,0],1,"🍞",[["Pain complet",80],["Jambon blanc",45],["Fromage blanc 3 %",150],["Pomme",150]],["Fais griller le pain, garnis de jambon.","Fromage blanc et pomme à côté."]],
+ ["Pancakes protéinés",["bf","dessert"],[5,10],0,"🥞",[["Flocons d'avoine",50],["Œuf",120],["Whey (poudre)",30],["Banane",100],["Miel",10]],["Mixe flocons, œufs, whey et banane.","Cuis de petites galettes 2 min par face.","Un filet de miel pour finir."]],
+ ["Overnight oats chia et myrtilles",["bf","snack"],[5,0],0,"🫙",[["Flocons d'avoine",60],["Graines de chia",10],["Yaourt nature",125],["Lait demi-écrémé",100],["Myrtilles",80]],["La veille : mélange flocons, chia, yaourt et lait.","Laisse au frigo toute la nuit, ajoute les myrtilles le matin."]],
+ ["Œufs brouillés, avocat et pain",["bf"],[5,5],0,"🥑",[["Œuf",120],["Avocat",70],["Pain aux céréales",60]],["Brouille les œufs à feu doux.","Écrase l'avocat sur le pain grillé, ajoute les œufs."]],
+ ["Bol fromage blanc, avoine et banane",["bf","snack"],[3,0],1,"🍌",[["Fromage blanc 0 %",200],["Flocons d'avoine",40],["Banane",100],["Amandes",15]],["Mélange le fromage blanc et les flocons.","Ajoute la banane et les amandes concassées."]],
+ ["Petit-déjeuner continental",["bf"],[5,0],1,"🥐",[["Pain de mie",60],["Beurre",10],["Confiture",20],["Jus d'orange",200],["Yaourt nature",125]],["Toaste le pain, beurre et confiture.","Jus et yaourt à côté."]],
+ ["Smoothie bowl mangue",["bf","snack"],[7,0],0,"🥭",[["Mangue",150],["Banane",100],["Skyr nature",150],["Muesli",30]],["Mixe mangue, banane et skyr.","Verse dans un bol, parsème de muesli."]],
+ ["Crêpes au jambon et emmental",["bf"],[3,7],1,"🫓",[["Crêpe nature",120],["Jambon blanc",45],["Emmental",30]],["Garnis les crêpes de jambon et fromage.","Réchauffe 2 min à la poêle pour faire fondre."]],
+ ["Shake petit-déjeuner express",["bf","drink"],[3,0],0,"🥤",[["Lait demi-écrémé",300],["Whey (poudre)",30],["Flocons d'avoine",50],["Banane",100]],["Mixe tous les ingrédients 30 secondes."]],
+ ["Poulet, riz et brocoli",["lunch","dinner"],[8,12],1,"🍗",[["Blanc de poulet cuit",150],["Riz blanc cuit",200],["Brocoli cuit",150],["Huile d'olive",10]],["Cuis le riz 10 à 12 min.","Saisis le poulet 6 à 8 min.","Brocoli vapeur 6 min, filet d'huile."]],
+ ["Pâtes bolognaise maison",["lunch","dinner"],[5,15],1,"🍝",[["Pâtes cuites",220],["Steak haché 5 % cuit",120],["Tomate",150],["Oignon",40],["Huile d'olive",5],["Parmesan",10]],["Cuis les pâtes.","Fais revenir oignon et viande, ajoute les tomates 10 min.","Mélange, parmesan dessus."]],
+ ["Bowl saumon, quinoa et avocat",["lunch"],[3,12],0,"🥗",[["Saumon cuit",120],["Quinoa cuit",150],["Avocat",60],["Concombre",80]],["Cuis le quinoa 12 min.","Dispose saumon, avocat et concombre."]],
+ ["Chili con carne maison",["lunch"],[10,25],1,"🌶",[["Steak haché 5 % cuit",120],["Haricots rouges cuits",150],["Riz blanc cuit",150],["Tomate",150],["Oignon",40],["Poivron",60]],["Fais revenir oignon, poivron et viande.","Ajoute tomates et haricots, mijote 20 min avec cumin et paprika.","Sers avec le riz."]],
+ ["Wrap poulet crudités",["lunch"],[10,0],1,"🌯",[["Wrap, tortilla",70],["Blanc de poulet cuit",100],["Salade verte",30],["Tomate",60],["Fromage blanc 3 %",40]],["Étale le fromage blanc assaisonné sur la galette.","Ajoute poulet et crudités, roule serré."]],
+ ["Salade de lentilles, œuf et thon",["lunch","dinner"],[10,0],1,"🥗",[["Lentilles cuites",200],["Œuf",60],["Thon au naturel",100],["Tomate",100],["Vinaigrette",15]],["Mélange lentilles, thon émietté et tomate.","Ajoute l'œuf dur et la vinaigrette."]],
+ ["Steak, purée et haricots verts",["lunch","dinner"],[5,15],1,"🥩",[["Steak haché 5 % cuit",125],["Purée de pommes de terre",200],["Haricots verts cuits",150]],["Cuis le steak à la poêle.","Haricots vapeur 8 min, purée réchauffée."]],
+ ["Dinde, patate douce et courgette",["lunch"],[5,25],1,"🍠",[["Escalope de dinde cuite",150],["Patate douce cuite",200],["Courgette cuite",150],["Huile d'olive",10]],["Patate douce en cubes au four 25 min à 200 °C.","Dinde à la poêle 4 min par face, courgette sautée."]],
+ ["Riz cantonais au poulet",["lunch","dinner"],[5,15],1,"🍚",[["Riz blanc cuit",220],["Blanc de poulet cuit",100],["Œuf",60],["Petits pois cuits",60],["Huile de colza",10]],["Fais sauter le riz froid à l'huile.","Ajoute œuf battu, poulet et petits pois, 5 min à feu vif."]],
+ ["Couscous poulet légumes",["lunch"],[10,20],1,"🥘",[["Semoule cuite",200],["Cuisse de poulet rôtie",150],["Carotte",80],["Courgette cuite",100],["Pois chiches cuits",60]],["Fais cuire légumes et pois chiches dans un bouillon 20 min.","Ajoute le poulet, sers sur la semoule."]],
+ ["Poke bowl thon",["lunch"],[15,0],0,"🍣",[["Riz blanc cuit",180],["Thon au naturel",120],["Avocat",60],["Concombre",80],["Mangue",60]],["Dispose le riz dans un bol.","Ajoute thon, avocat, concombre et mangue. Un trait de sauce soja."]],
+ ["Pâtes complètes au thon et tomate",["lunch","dinner"],[5,10],1,"🍝",[["Pâtes complètes cuites",220],["Thon au naturel",120],["Tomate",150],["Huile d'olive",10]],["Cuis les pâtes.","Réchauffe tomates et thon 5 min, mélange."]],
+ ["Buddha bowl pois chiches",["lunch","dinner"],[5,15],1,"🥙",[["Quinoa cuit",150],["Pois chiches cuits",150],["Carotte",80],["Épinards cuits",80],["Feta",30],["Huile d'olive",10]],["Rôtis les pois chiches 15 min au four.","Assemble avec quinoa, carotte râpée, épinards et feta."]],
+ ["Saumon, riz complet et épinards",["lunch"],[5,15],0,"🐟",[["Saumon cuit",130],["Riz complet cuit",180],["Épinards cuits",150]],["Cuis le saumon 4 min côté peau puis 2 min.","Riz complet et épinards à la poêle."]],
+ ["Croque-monsieur maison et salade",["lunch","dinner"],[4,8],1,"🥪",[["Pain de mie",80],["Jambon blanc",45],["Emmental",30],["Salade verte",60],["Vinaigrette",10]],["Monte le croque, 4 min par face à la poêle.","Salade à côté."]],
+ ["Omelette pommes de terre et salade",["lunch","dinner"],[5,15],1,"🍳",[["Œuf",180],["Pommes de terre cuites",200],["Oignon",40],["Salade verte",60],["Huile d'olive",10]],["Fais dorer pommes de terre et oignon.","Verse les œufs battus, cuis à couvert 8 min."]],
+ ["Gnocchis poulet et pesto",["lunch","dinner"],[3,12],0,"🥟",[["Gnocchis",200],["Blanc de poulet cuit",120],["Pesto",20],["Tomate",80]],["Fais dorer les gnocchis à la poêle.","Ajoute poulet et pesto, tomates cerises."]],
+ ["Lentilles corail au curry",["lunch"],[5,20],1,"🍛",[["Lentilles cuites",220],["Riz blanc cuit",150],["Tomate",100],["Oignon",40],["Huile de colza",10]],["Fais revenir l'oignon et le curry.","Ajoute lentilles et tomates, mijote 15 min. Sers avec le riz."]],
+ ["Burger maison steak et crudités",["lunch","dinner"],[5,10],0,"🍔",[["Pain burger",80],["Steak haché 5 % cuit",125],["Emmental",20],["Salade verte",20],["Tomate",50]],["Cuis le steak, fais fondre le fromage dessus.","Monte le burger avec salade et tomate."]],
+ ["Salade de pâtes poulet et légumes",["lunch"],[15,0],1,"🥗",[["Pâtes cuites",180],["Blanc de poulet cuit",100],["Poivron",60],["Tomate",80],["Mozzarella",40],["Vinaigrette",15]],["Mélange pâtes froides, poulet et légumes.","Ajoute mozzarella et vinaigrette."]],
+ ["Riz, haricots rouges et œufs",["lunch","dinner"],[5,10],1,"🍳",[["Riz blanc cuit",180],["Haricots rouges cuits",150],["Œuf",120]],["Réchauffe riz et haricots épicés.","Ajoute deux œufs au plat."]],
+ ["Saumon, pommes de terre et haricots verts",["dinner","lunch"],[5,20],0,"🐟",[["Saumon cuit",130],["Pommes de terre cuites",200],["Haricots verts cuits",150]],["Pommes de terre à l'eau 15 à 20 min.","Saumon au four 12 min à 180 °C, haricots vapeur."]],
+ ["Wok de bœuf et nouilles",["dinner","lunch"],[10,10],0,"🥢",[["Rumsteck grillé",120],["Pâtes cuites",180],["Poivron",80],["Brocoli cuit",100],["Huile de colza",10]],["Saisis le bœuf en lanières 2 min.","Ajoute légumes et nouilles, sauce soja, 4 min à feu vif."]],
+ ["Soupe de légumes, tartines et fromage",["dinner"],[5,5],1,"🍲",[["Soupe de légumes",350],["Pain complet",60],["Comté",30]],["Réchauffe la soupe.","Tartines et fromage à côté."]],
+ ["Cabillaud, riz et ratatouille",["dinner","lunch"],[5,15],1,"🐟",[["Cabillaud cuit",150],["Riz blanc cuit",150],["Ratatouille",200]],["Cuis le cabillaud au four 12 min.","Sers avec riz et ratatouille."]],
+ ["Poulet curry et riz basmati",["dinner","lunch"],[5,20],1,"🍛",[["Blanc de poulet cuit",140],["Riz blanc cuit",180],["Oignon",40],["Crème fraîche 30 %",20],["Épinards cuits",80]],["Fais revenir oignon et poulet avec le curry.","Ajoute crème et épinards, 5 min. Sers avec le riz."]],
+ ["Tofu sauté, quinoa et légumes",["dinner","lunch"],[5,15],1,"🥦",[["Tofu",150],["Quinoa cuit",150],["Brocoli cuit",120],["Carotte",60],["Huile d'olive",10]],["Fais dorer le tofu 8 min.","Ajoute légumes et sauce soja, sers sur le quinoa."]],
+ ["Omelette champignons et salade",["dinner","bf"],[4,8],1,"🍄",[["Œuf",180],["Champignons cuits",100],["Emmental",20],["Salade verte",80],["Vinaigrette",10]],["Fais revenir les champignons.","Ajoute les œufs battus et le fromage."]],
+ ["Lasagnes bolognaise et salade",["dinner"],[1,20],0,"🫕",[["Lasagnes bolognaise",300],["Salade verte",60]],["Réchauffe la part au four 20 min.","Salade à côté."]],
+ ["Hachis parmentier et salade",["dinner"],[2,15],1,"🥧",[["Hachis parmentier",350],["Salade verte",60],["Vinaigrette",10]],["Réchauffe au four 15 min.","Salade assaisonnée."]],
+ ["Truite, boulgour et courgettes",["dinner","lunch"],[5,15],0,"🐟",[["Truite cuite",130],["Boulgour cuit",180],["Courgette cuite",150]],["Boulgour 10 min, truite à la poêle 3 min par face.","Courgettes sautées."]],
+ ["Porc, polenta et poêlée de légumes",["dinner","lunch"],[5,15],1,"🍖",[["Filet mignon de porc cuit",130],["Polenta cuite",250],["Poivron",80],["Courgette cuite",100]],["Cuis le filet mignon en médaillons.","Polenta 5 min, légumes sautés."]],
+ ["Shakshuka",["dinner","lunch"],[5,15],1,"🍅",[["Œuf",180],["Tomate",250],["Poivron",80],["Oignon",40],["Pain complet",60]],["Fais compoter tomates, poivron et oignon 10 min.","Casse les œufs dessus, couvre 6 min."]],
+ ["Crevettes sautées et riz",["dinner","lunch"],[5,10],0,"🍤",[["Crevettes cuites",150],["Riz blanc cuit",180],["Petits pois cuits",80],["Huile d'olive",10]],["Saisis les crevettes 3 min avec ail.","Ajoute petits pois et riz."]],
+ ["Galette complète et salade",["dinner"],[3,7],1,"🫓",[["Crêpe nature",100],["Œuf",60],["Jambon blanc",45],["Emmental",30],["Salade verte",60]],["Garnis la galette, casse l'œuf au centre.","Plie les bords, 3 min à couvert."]],
+ ["Pâtes au saumon et épinards",["dinner","lunch"],[5,10],0,"🍝",[["Pâtes cuites",200],["Saumon cuit",100],["Épinards cuits",100],["Crème fraîche 30 %",20]],["Cuis les pâtes.","Saumon émietté, épinards et crème 4 min, mélange."]],
+ ["Dahl de lentilles et pain",["dinner","lunch"],[5,20],1,"🍛",[["Lentilles cuites",250],["Tomate",100],["Oignon",40],["Pain complet",50],["Huile de colza",10]],["Fais revenir oignon et épices.","Ajoute lentilles et tomate, 15 min."]],
+ ["Poulet rôti, frites au four et salade",["dinner"],[5,25],1,"🍗",[["Cuisse de poulet rôtie",180],["Potatoes",150],["Salade verte",60]],["Poulet et potatoes au four 25 min à 200 °C.","Salade à côté."]],
+ ["Pizza jambon et champignons",["dinner"],[3,12],0,"🍕",[["Pizza margherita",250],["Jambon blanc",45],["Champignons cuits",50],["Salade verte",50]],["Ajoute jambon et champignons sur la pizza.","Four 12 min à 220 °C."]],
+ ["Soupe de légumes, tofu et nouilles",["dinner"],[5,10],0,"🍜",[["Soupe de légumes",300],["Tofu",100],["Pâtes cuites",120]],["Chauffe le bouillon, ajoute tofu et nouilles 3 min."]],
+ ["Assiette sardines, pommes de terre et salade",["dinner"],[10,5],1,"🐟",[["Sardines à l'huile",95],["Pommes de terre cuites",200],["Salade verte",60],["Tomate",100]],["Pommes de terre tièdes, sardines égouttées.","Salade et tomate."]],
+ ["Shake whey et banane",["snack","drink"],[2,0],0,"🥤",[["Whey (poudre)",30],["Lait demi-écrémé",250],["Banane",100]],["Mixe ou secoue 20 secondes."]],
+ ["Skyr, miel et noix",["snack"],[2,0],1,"🍯",[["Skyr nature",150],["Miel",10],["Noix",15]],["Mélange et c'est prêt."]],
+ ["Tartine beurre de cacahuète et banane",["snack"],[3,0],1,"🥜",[["Pain complet",40],["Beurre de cacahuète",15],["Banane",100]],["Étale, ajoute la banane en rondelles."]],
+ ["Fromage blanc et fruits rouges",["snack"],[2,0],1,"🍓",[["Fromage blanc 0 %",200],["Fraises",100]],["Mélange."]],
+ ["Galettes de riz, jambon et fromage",["snack"],[3,0],1,"🍘",[["Galette de riz",20],["Blanc de dinde (tranche)",30],["Fromage de chèvre",20]],["Garnis les galettes."]],
+ ["Œufs durs et pomme",["snack"],[1,9],1,"🥚",[["Œuf",120],["Pomme",150]],["Cuis les œufs 9 min, refroidis-les."]],
+ ["Poignée d'amandes et clémentines",["snack"],[1,0],1,"🌰",[["Amandes",25],["Clémentine",150]],["Prêt à emporter."]],
+ ["Barre protéinée et yaourt",["snack"],[1,0],0,"🍫",[["Barre protéinée",60],["Yaourt nature",125]],["Prêt à emporter."]],
+ ["Collation avant l'effort",["snack"],[2,0],1,"⚡",[["Banane",120],["Dattes",30],["Galette de riz",20]],["À prendre 45 à 60 min avant l'entraînement."]],
+ ["Récupération après l'effort",["snack","drink"],[3,0],0,"🔋",[["Lait chocolaté",300],["Banane",100],["Skyr nature",100]],["Dans l'heure qui suit l'entraînement."]],
+ ["Cottage cheese et ananas",["snack"],[2,0],0,"🍍",[["Cottage cheese",150],["Ananas",100]],["Mélange."]],
+ ["Houmous maison et carottes",["snack"],[10,0],1,"🥕",[["Pois chiches cuits",100],["Huile d'olive",10],["Carotte",150]],["Mixe pois chiches, huile, citron et ail.","Bâtonnets de carotte à tremper."]],
+ ["Pudding protéiné et fruits",["snack"],[1,0],0,"🍮",[["Pudding protéiné",200],["Myrtilles",60]],["Prêt à manger."]],
+ ["Compote et fromage blanc",["dessert","snack"],[2,0],1,"🍏",[["Compote sans sucre ajouté",100],["Fromage blanc 3 %",100]],["Mélange."]],
+ ["Mousse au chocolat",["dessert"],[1,0],0,"🍫",[["Mousse au chocolat",100]],["Prêt à servir."]],
+ ["Salade de fruits frais",["dessert","snack"],[8,0],1,"🍉",[["Orange",100],["Kiwi",80],["Pomme",100],["Fraises",60]],["Coupe les fruits en dés, un trait de citron."]],
+ ["Banane rôtie et chocolat noir",["dessert"],[2,8],1,"🍌",[["Banane",120],["Chocolat noir 70 %",15]],["Banane fendue au four 8 min, chocolat fondu dessus."]],
+ ["Yaourt grec, miel et noix",["dessert","snack"],[2,0],0,"🍯",[["Yaourt grec",150],["Miel",10],["Noix",10]],["Mélange."]],
+ ["Crème dessert au chocolat",["dessert"],[1,0],1,"🍮",[["Crème dessert chocolat",125]],["Prêt à servir."]],
+ ["Tarte aux pommes (part)",["dessert"],[1,0],0,"🥧",[["Tarte aux pommes",120]],["Une part."]],
+ ["Glace vanille et fraises",["dessert"],[2,0],0,"🍨",[["Glace vanille",80],["Fraises",100]],["Deux boules et les fraises."]],
+ ["Riz au lait maison",["dessert"],[5,25],1,"🍚",[["Riz blanc cuit",100],["Lait demi-écrémé",150],["Sucre",10]],["Cuis le riz dans le lait sucré à feu doux 25 min."]],
+ ["Smoothie fruits rouges",["dessert","snack","drink"],[3,0],0,"🍓",[["Framboises",80],["Fraises",80],["Yaourt nature",125],["Miel",8]],["Mixe le tout."]],
+ ["Purée maison au lait",["side"],[5,15],1,"🥔",[["Pommes de terre cuites",200],["Lait demi-écrémé",50],["Beurre",5]],["Écrase les pommes de terre avec le lait et le beurre."]],
+ ["Riz aux petits légumes",["side"],[5,10],1,"🍚",[["Riz blanc cuit",150],["Carotte",50],["Petits pois cuits",50]],["Mélange le riz chaud et les légumes."]],
+ ["Salade composée",["side"],[8,0],1,"🥗",[["Salade verte",60],["Tomate",100],["Concombre",80],["Vinaigrette",10]],["Coupe et assaisonne."]],
+ ["Légumes rôtis au four",["side"],[5,25],1,"🫑",[["Poivron",100],["Courgette cuite",100],["Aubergine cuite",100],["Huile d'olive",10]],["Four 25 min à 200 °C."]],
+ ["Taboulé maison",["side"],[15,0],1,"🥙",[["Semoule cuite",150],["Tomate",80],["Concombre",60],["Huile d'olive",10]],["Mélange semoule, légumes en dés, citron et menthe."]],
+ ["Haricots verts à l'ail",["side"],[2,8],1,"🫛",[["Haricots verts cuits",200],["Beurre",5]],["Fais sauter les haricots avec l'ail et le beurre."]],
+ ["Patates douces rôties",["side"],[5,25],1,"🍠",[["Patate douce cuite",200],["Huile d'olive",8]],["Cubes au four 25 min à 200 °C."]],
+ ["Quinoa aux herbes",["side"],[3,12],0,"🌿",[["Quinoa cuit",150],["Huile d'olive",5]],["Cuis 12 min, ajoute herbes et citron."]],
+ ["Latte protéiné glacé",["drink","bf","snack"],[3,0],0,"🧋",[["Café noir",100],["Lait demi-écrémé",200],["Whey (poudre)",25]],["Mélange la whey avec un peu de lait.","Ajoute le reste du lait, le café et des glaçons."]],
+ ["Chocolat chaud au lait",["drink","snack"],[2,3],1,"☕",[["Lait demi-écrémé",250],["Chocolat noir 70 %",15],["Sucre",5]],["Chauffe le lait sans le faire bouillir.","Ajoute le chocolat en morceaux et le sucre, fouette jusqu'à ce qu'il fonde."]],
+ ["Smoothie kiwi, pomme et yaourt",["drink","bf","snack"],[5,0],1,"🥝",[["Kiwi",80],["Pomme",100],["Yaourt nature",125]],["Épluche le kiwi, coupe la pomme.","Mixe avec le yaourt et quelques glaçons."]],
+ ["Lassi à la mangue",["drink","dessert","snack"],[5,0],0,"🥭",[["Mangue",150],["Yaourt nature",125],["Lait demi-écrémé",80]],["Mixe la mangue avec le yaourt et le lait.","Une pincée de cardamome si tu aimes."]],
+ ["Boisson d'effort maison",["drink"],[2,0],1,"🚰",[["Eau",500],["Jus d'orange",200],["Miel",15]],["Mélange l'eau, le jus et le miel.","Une pincée de sel pour les sorties longues par temps chaud."]],
+ ["Milkshake protéiné à la fraise",["drink","snack"],[3,0],0,"🍓",[["Lait demi-écrémé",250],["Fraises",120],["Whey (poudre)",30]],["Mixe le tout 30 secondes."]],
+ ["Thé glacé maison au citron",["drink"],[5,0],1,"🍋",[["Thé",400],["Miel",10]],["Infuse le thé, ajoute le miel et le jus d'un demi-citron.","Laisse refroidir et sers avec des glaçons."]],
+ ["Jus d'orange et tartine",["bf","drink"],[3,0],1,"🍊",[["Jus d'orange",200],["Pain complet",50],["Beurre",8]],["Toaste le pain et beurre-le.","Sers avec le jus bien frais."]]
 ];
 let PLAT_CACHE=null;
-function bookByName(){if(bookByName.m)return bookByName.m;const m={};FOODBOOK.forEach(c=>c[2].forEach(x=>{m[x[0]]=x}));return bookByName.m=m}
+function bookByName(){if(bookByName.m)return bookByName.m;const m={};FOODBOOK.forEach(c=>c[2].forEach(x=>{m[x[0]]=[x[0],x[1],x[2],x[3],x[4],c[0]]}));return bookByName.m=m}
+const NONVEG_PLATS=['Lasagnes bolognaise','Hachis parmentier','Quiche lorraine','Croque-monsieur','Sandwich jambon-beurre','Wrap au poulet','Hamburger','Cheeseburger','Kebab complet','Tacos français','Hot-dog','Sushi, maki','Couscous royal','Paella','Chili con carne','Poulet curry et riz','Salade César'];
+const GOODFAT=/huile d'olive|huile de colza|avocat|amandes|noix|noisettes|cajou|cacahuètes|pistaches|beurre de cacahuète|graines|olives|saumon|maquereau|sardines|truite/i;
+const MAINS=['lunch','dinner'];
+// Critères des filtres : calculés sur les valeurs par portion, jamais attribués à la main
+const PLAT_TAGS=[
+ ['prot','Riches en protéines','au moins 20 % des calories viennent des protéines (seuil réglementaire européen de l\'allégation « riche en protéines ») et au moins 15 g par portion'],
+ ['gluc','Riches en glucides','au moins 55 % des calories viennent des glucides'],
+ ['fat','Bonnes graisses','au moins 30 % des calories viennent des lipides, dont au moins 60 % apportés par huile d\'olive ou de colza, avocat, oléagineux, graines ou poissons gras'],
+ ['light','Faibles en calories','au plus 450 kcal pour un déjeuner ou un dîner, 350 kcal pour un petit-déjeuner, 200 kcal pour une collation, un dessert, une boisson ou un accompagnement'],
+ ['masse','Prise de muscle','au moins 30 g de protéines et 500 kcal pour un repas (25 g et 300 kcal pour une collation ou une boisson)'],
+ ['loss','Perte de poids','faible en calories ET au moins 25 % des calories venant des protéines (rassasiant)'],
+ ['veg','Végétarien','aucune viande ni aucun poisson dans les ingrédients'],
+ ['rapide','Rapide','15 minutes ou moins au total']];
 function platInfo(i){
   if(!PLAT_CACHE)PLAT_CACHE=[];if(PLAT_CACHE[i])return PLAT_CACHE[i];
-  const d=PLATS[i],B=bookByName(),t={k:0,p:0,c:0,f:0},g=[];
-  for(const [n,q] of d[5]){let x=B[n];if(!x&&n==='Tofu'){const o=FOODS.tofu;x=[n,4*o.p+4*o.c+9*o.f,o.p,o.c,o.f]}if(!x||!q)continue;const r=q/100;t.k+=x[1]*r;t.p+=x[2]*r;t.c+=x[3]*r;t.f+=x[4]*r;g.push([n,q,x])}
-  const tags=[];if(t.p>=30)tags.push('prot');if(t.k>=650&&t.p>=35)tags.push('masse');if(t.c>=70&&d[1]!=='dessert')tags.push('endu');if(d[2]<=10)tags.push('rapide');if(d[3])tags.push('eco');
-  return PLAT_CACHE[i]={i,n:d[0],cat:d[1],min:d[2],ic:d[4],ing:g,steps:d[6],t,g:g.reduce((a,x)=>a+x[1],0),tags};
+  const d=PLATS[i],B=bookByName(),t={k:0,p:0,c:0,f:0},g=[];let goodF=0,veg=true,miss=[];
+  for(const [n,q] of d[5]){let x=B[n];if(!x&&n==='Tofu'){const o=FOODS.tofu;x=[n,4*o.p+4*o.c+9*o.f,o.p,o.c,o.f,'Végétal']}
+    if(!x){miss.push(n);continue}if(!q)continue;const r=q/100;t.k+=x[1]*r;t.p+=x[2]*r;t.c+=x[3]*r;t.f+=x[4]*r;if(GOODFAT.test(n))goodF+=x[4]*r;
+    if(x[5]==='Viandes'||x[5]==='Poissons'||NONVEG_PLATS.includes(n))veg=false;g.push([n,q,x])}
+  const cats=[].concat(d[1]),prep=d[2][0],cook=d[2][1],main=cats.some(c=>MAINS.includes(c)),bfOnly=!main&&cats.includes('bf');
+  const eP=t.k?t.p*4/t.k:0,eC=t.k?t.c*4/t.k:0,eF=t.k?t.f*9/t.k:0,lim=main?450:bfOnly?350:200;
+  const tags=[];
+  if(eP>=.20&&t.p>=15)tags.push('prot');
+  if(eC>=.55)tags.push('gluc');
+  if(eF>=.30&&t.f>0&&goodF/t.f>=.60)tags.push('fat');
+  const light=t.k<=lim;if(light)tags.push('light');
+  if(main||bfOnly?(t.p>=30&&t.k>=500):(t.p>=25&&t.k>=300))tags.push('masse');
+  if(light&&eP>=.25)tags.push('loss');
+  if(veg)tags.push('veg');
+  if(prep+cook<=15)tags.push('rapide');
+  return PLAT_CACHE[i]={i,n:d[0],cats,cat:cats[0],prep,cook,min:prep+cook,eco:!!d[3],ic:d[4],ing:g,miss,steps:d[6],t,g:g.reduce((a,x)=>a+x[1],0),tags,veg};
 }
-const PLAT_TAGS=[['prot','Riche en protéines'],['masse','Prise de muscle'],['endu','Endurance'],['rapide','Rapide'],['eco','Économique']];
+function platsAll(){return PLATS.map((_,i)=>platInfo(i))}
 function platsHTML(){
-  const c=V.plCat||'all',tg=V.plTag||'',q=normTxt(V.plQ||'').trim();
-  let list=PLATS.map((_,i)=>platInfo(i));
-  if(c!=='all')list=list.filter(x=>x.cat===c);if(tg)list=list.filter(x=>x.tags.includes(tg));if(q)list=list.filter(x=>normTxt(x.n+' '+x.ing.map(z=>z[0]).join(' ')).includes(q));
-  let h='<section class="card pl-head"><h3 class="sh" style="margin:0">Idées d\'assiettes</h3><p class="note" style="margin:4px 0 10px">'+PLATS.length+' assiettes avec leurs ingrédients, quantités et étapes. Touche une assiette pour la voir et l\'ajouter à ton journal.</p>'
-   +'<input type="text" enterkeyhint="search" autocomplete="off" id="pl-q" placeholder="Chercher : poulet, riz, rapide…" value="'+esc(V.plQ||'')+'">'
-   +'<div class="fbcats" style="margin-top:10px">'+[['all','Tout','🍽']].concat(PLAT_CATS).map(x=>'<button type="button" data-act="plcat" data-c="'+x[0]+'" aria-pressed="'+(c===x[0])+'">'+x[2]+' '+x[1]+'</button>').join('')+'</div>'
-   +'<div class="fbcats">'+PLAT_TAGS.map(x=>'<button type="button" data-act="pltag" data-t="'+x[0]+'" aria-pressed="'+(tg===x[0])+'">'+x[1]+'</button>').join('')+'</div></section>';
-  if(!list.length)return h+'<div class="empty">Aucune assiette ne correspond. Retire un filtre ou essaie un autre mot.</div>';
-  return h+'<div class="pl-grid">'+list.map(x=>'<button type="button" class="pl-card" data-act="plopen" data-i="'+x.i+'"><span class="pl-ic" aria-hidden="true">'+x.ic+'</span><span class="pl-tx"><b>'+esc(x.n)+'</b><small>'+nf.format(Math.round(x.t.k))+' kcal · '+num(x.t.p,0)+' g P · '+num(x.t.c,0)+' g G · '+num(x.t.f,0)+' g L</small><small class="pl-meta">'+x.min+' min · '+nf.format(Math.round(x.g))+' g'+(x.tags.includes('prot')?' · <span class="pl-tag">Protéiné</span>':'')+(x.tags.includes('eco')?' · <span class="pl-tag eco">€</span>':'')+'</small></span></button>').join('')+'</div>'
-   +'<p class="note" style="margin:10px 4px">Valeurs nutritionnelles estimées : elles sont calculées à partir des quantités et des valeurs moyennes pour 100 g de chaque ingrédient. Elles varient selon les marques, la cuisson et la portion réellement mangée.</p>';
+  const c=V.plCat||'all',tg=V.plTags||[],q=normTxt(V.plQ||'').trim(),all=platsAll();
+  let list=all;if(c!=='all')list=list.filter(x=>x.cats.includes(c));
+  for(const t of tg)list=list.filter(x=>x.tags.includes(t));
+  if(q)list=list.filter(x=>normTxt(x.n+' '+x.ing.map(z=>z[0]).join(' ')).includes(q));
+  const sort=V.plSort||'name';
+  list=list.slice().sort((a,b)=>sort==='prot'?b.t.p-a.t.p:sort==='kcal'?a.t.k-b.t.k:sort==='time'?a.min-b.min:a.n.localeCompare(b.n,'fr'));
+  const cnt=k=>k==='all'?all.length:all.filter(x=>x.cats.includes(k)).length;
+  let h='<div class="pl-top"><input type="text" enterkeyhint="search" autocomplete="off" id="pl-q" placeholder="Chercher une recette ou un ingrédient" value="'+esc(V.plQ||'')+'"></div>'
+   +'<div class="pl-cats" role="tablist">'+[['all','Tout','🍽']].concat(PLAT_CATS).map(x=>'<button type="button" role="tab" data-act="plcat" data-c="'+x[0]+'" aria-pressed="'+(c===x[0])+'"><span aria-hidden="true">'+x[2]+'</span>'+x[1]+'<small>'+cnt(x[0])+'</small></button>').join('')+'</div>'
+   +'<div class="pl-filt">'+PLAT_TAGS.map(x=>'<button type="button" data-act="pltag" data-t="'+x[0]+'" aria-pressed="'+tg.includes(x[0])+'">'+x[1]+'</button>').join('')+'</div>'
+   +'<div class="pl-bar"><span class="note">'+list.length+' recette'+(list.length>1?'s':'')+(tg.length?' · <button type="button" class="linkbtn" data-act="plclear">effacer les filtres</button>':'')+'</span><label class="pl-sort"><span class="sr">Trier</span><select id="pl-sort">'+[['name','A → Z'],['prot','Plus de protéines'],['kcal','Moins de calories'],['time','Plus rapides']].map(x=>'<option value="'+x[0]+'"'+(sort===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></label></div>';
+  if(!list.length)return h+'<div class="empty">Aucune recette ne correspond. Retire un filtre ou essaie un autre mot.</div>';
+  h+='<div class="pl-grid">'+list.map(x=>'<button type="button" class="pl-card" data-act="plopen" data-i="'+x.i+'"><span class="pl-img c-'+x.cat+'" aria-hidden="true">'+x.ic+'<i>'+x.min+' min</i></span><span class="pl-tx"><b>'+esc(x.n)+'</b><span class="pl-k">'+nf.format(Math.round(x.t.k))+' kcal</span><span class="pl-m"><i class="mp">P '+num(x.t.p,0)+'</i><i class="mc">G '+num(x.t.c,0)+'</i><i class="mf">L '+num(x.t.f,0)+'</i></span>'+(x.tags.includes('veg')?'<span class="pl-veg">Végétarien</span>':'')+'</span></button>').join('')+'</div>';
+  h+='<details class="pl-how"><summary>Comment sont calculés les filtres et les valeurs</summary><ul>'+PLAT_TAGS.map(x=>'<li><b>'+x[1]+'</b> : '+esc(x[2])+'.</li>').join('')+'</ul><p class="note">Valeurs <b>estimées</b> pour 1 portion : somme des ingrédients, à partir de valeurs moyennes pour 100 g d\'aliments cuits ou prêts à manger. Elles varient selon les marques, la cuisson et la portion réellement mangée.</p></details>';
+  return h;
 }
-function openPlat(i){
-  const x=platInfo(i);V.plOpen=i;
+function platPortions(){return Math.max(1,Math.min(8,+V.plN||1))}
+function openPlat(i){V.plOpen=i;V.plN=V.plN&&V.plOpenPrev===i?V.plN:1;V.plOpenPrev=i;renderPlatSheet();const pn=$('#rsheet .panel');if(pn)pn.scrollTop=0;$('#rsheet').hidden=false}
+function renderPlatSheet(){
+  const x=platInfo(V.plOpen),n=platPortions(),f=v=>v*n;
   $('#r-head').textContent=x.n;
-  $('#r-sub').textContent=PLAT_CATS.find(c=>c[0]===x.cat)[1]+' · '+x.min+' min · 1 portion ≈ '+nf.format(Math.round(x.g))+' g';
-  $('#r-ing').innerHTML=x.ing.map(z=>'<li><span>'+esc(z[0])+'</span><b>'+nf.format(z[1])+' g</b></li>').join('');
+  $('#r-sub').textContent=x.cats.map(c=>PLAT_CATS.find(z=>z[0]===c)[1]).join(' · ');
+  $('#r-hero').className='r-hero c-'+x.cat;$('#r-hero').textContent=x.ic;$('#r-hero').hidden=false;
+  $('#r-meta').innerHTML='<div><b>'+x.prep+' min</b><span>préparation</span></div>'+(x.cook?'<div><b>'+x.cook+' min</b><span>cuisson</span></div>':'')+'<div class="r-port"><span>portions</span><span class="r-step"><button type="button" data-act="plport" data-d="-1" aria-label="Une portion de moins"'+(n<=1?' disabled':'')+'>−</button><b>'+n+'</b><button type="button" data-act="plport" data-d="1" aria-label="Une portion de plus"'+(n>=8?' disabled':'')+'>+</button></span></div>';
+  $('#r-meta').hidden=false;
+  $('#r-ing').innerHTML=x.ing.map(z=>'<li><span>'+esc(z[0])+'</span><b>'+nf.format(Math.round(f(z[1])))+' g</b></li>').join('');
+  $('#r-ingh').textContent='Ingrédients pour '+n+' portion'+(n>1?'s':'');
   $('#r-steps').innerHTML=x.steps.map(s=>'<li>'+esc(s)+'</li>').join('');
-  $('#r-mac').innerHTML='<div><b>'+nf.format(Math.round(x.t.k))+'</b><span>kcal</span></div><div><b>'+num(x.t.p,0)+' g</b><span>protéines</span></div><div><b>'+num(x.t.c,0)+' g</b><span>glucides</span></div><div><b>'+num(x.t.f,0)+' g</b><span>lipides</span></div>';
-  $('#r-hero').textContent=x.ic;$('#r-hero').hidden=false;$('#r-mac').hidden=false;
+  $('#r-mach').textContent='Valeurs nutritionnelles par portion (estimées)';$('#r-mach').hidden=false;
+  $('#r-mac').innerHTML='<div><b>'+nf.format(Math.round(x.t.k))+'</b><span>kcal</span></div><div><b>'+num(x.t.p,0)+' g</b><span>protéines</span></div><div><b>'+num(x.t.c,0)+' g</b><span>glucides</span></div><div><b>'+num(x.t.f,0)+' g</b><span>lipides</span></div>'
+    +(n>1?'<p class="note r-tot">Pour '+n+' portions : '+nf.format(Math.round(f(x.t.k)))+' kcal · '+num(f(x.t.p),0)+' g P · '+num(f(x.t.c),0)+' g G · '+num(f(x.t.f),0)+' g L</p>':'');
+  $('#r-mac').hidden=false;
+  $('#r-tags').innerHTML=x.tags.map(t=>'<span>'+esc(PLAT_TAGS.find(z=>z[0]===t)[1])+'</span>').join('');$('#r-tags').hidden=!x.tags.length;
   $('#r-add').hidden=false;$('#r-src').hidden=false;
-  const pn=$('#rsheet .panel');if(pn)pn.scrollTop=0;
-  $('#rsheet').hidden=false;
 }
 function addPlat(i,meal){
   const x=platInfo(i),day=V.jday||todayISO;
   S.log[day]=(S.log[day]||[]).concat([{id:uid(),meal:meal||defaultMeal(),name:x.n.slice(0,60),g:Math.round(x.g),k:Math.round(x.t.k),p:r1(x.t.p),c:r1(x.t.c),f:r1(x.t.f),src:'liste'}]);
-  touch();$('#rsheet').hidden=true;toast('« '+x.n+' » ajouté au journal');
+  touch();$('#rsheet').hidden=true;toast('1 portion de « '+x.n+' » ajoutée au journal');
 }
 
 /* ---- Open Food Facts : recherche de produits du commerce (gratuit, données ODbL), avec cache ---- */
@@ -6720,7 +6798,7 @@ function openRecipe(i){
   $('#r-ing').innerHTML=m.items.map(it=>{const fd=FOODS[it.id];const raw=RAW[it.id]?' <span class="note">(≈ '+nf.format(Math.round(it.g/RAW[it.id]/5)*5)+' g cru)</span>':'';return '<li><span>'+esc(fd.n)+raw+'</span><b>'+nf.format(it.g)+' g</b></li>'}).join('');
   $('#r-steps').innerHTML=r.s.map(x=>'<li>'+esc(x)+'</li>').join('');
   const tt=m.tot||{};$('#r-mac').innerHTML='<div><b>'+nf.format(Math.round(tt.k||0))+'</b><span>kcal</span></div>'+(tt.p!=null?'<div><b>'+num(tt.p,0)+' g</b><span>protéines</span></div><div><b>'+num(tt.c,0)+' g</b><span>glucides</span></div><div><b>'+num(tt.f,0)+' g</b><span>lipides</span></div>':'');
-  $('#r-mac').hidden=false;$('#r-hero').hidden=true;$('#r-add').hidden=true;$('#r-src').hidden=true;
+  $('#r-mac').hidden=false;$('#r-hero').hidden=true;$('#r-add').hidden=true;$('#r-src').hidden=true;$('#r-meta').hidden=true;$('#r-tags').hidden=true;$('#r-mach').hidden=true;$('#r-ingh').textContent='Ingrédients';V.plOpen=null;
   const pn=$('#rsheet .panel');if(pn)pn.scrollTop=0;
   $('#rsheet').hidden=false;
 }
@@ -6760,7 +6838,9 @@ document.addEventListener('click',e=>{
   else if(a==='recipe'){openRecipe(+b.dataset.i)}
   else if(a==='jseg'){V.jseg=b.dataset.seg;render();window.scrollTo(0,0)}
   else if(a==='plcat'){V.plCat=b.dataset.c;render()}
-  else if(a==='pltag'){V.plTag=V.plTag===b.dataset.t?'':b.dataset.t;render()}
+  else if(a==='pltag'){const t=b.dataset.t,l=V.plTags||[];V.plTags=l.includes(t)?l.filter(x=>x!==t):l.concat([t]);render()}
+  else if(a==='plclear'){V.plTags=[];render()}
+  else if(a==='plport'){V.plN=Math.max(1,Math.min(8,platPortions()+(+b.dataset.d)));renderPlatSheet()}
   else if(a==='plopen'){openPlat(+b.dataset.i)}
   else if(a==='pladd'){if(V.plOpen!=null)addPlat(V.plOpen,b.dataset.m);if(V.tab==='journal')render()}
   else if(a==='rclose'){$('#rsheet').hidden=true}
@@ -6961,9 +7041,11 @@ document.addEventListener('click',e=>{
     try{navigator.clipboard.writeText(t.value).then(()=>{$('#bk-msg').textContent='Sauvegarde copiée.'},fail)}catch(e){fail()}
   }
   else if(a==='restore'){
-    try{const d=JSON.parse($('#bk-text').value);if(!d||!Array.isArray(d.items))throw 0;S=normalize(d);S.touched=true;touch();render()}
+    try{const d=bkParse($('#bk-text').value);if(!d)throw 0;V.bkPending=d;render()}
     catch(e){$('#bk-msg').textContent='Sauvegarde invalide. Colle le texte copié depuis Cadence.'}
   }
+  else if(a==='bkapply'){const d=V.bkPending;V.bkPending=null;if(d){S=normalize(d.S);S.touched=true;touch();render();toast('Sauvegarde restaurée ✓')}}
+  else if(a==='bkcancel'){V.bkPending=null;render()}
   else if(a==='fclose'){closeFood()}
   else if(a==='fmode'){stopLive();F.mode=b.dataset.mode;renderFood();if(F.mode==='barcode'&&!F.bc.prod&&CAM.state!=='denied')startLive()}
   else if(a==='bclive'){startLive()}
@@ -7044,9 +7126,9 @@ document.addEventListener('click',e=>{
     if(!email){msg.textContent="Entre ton email avant de t'abonner.";return}
     if(!$('#lic-waiver').checked){msg.textContent="Coche la case sur l'accès immédiat et le droit de rétractation pour continuer.";return}
     rememberCheckout(email,b.dataset.plan==='coach'?'coach':'base');
-    location.href=WORKER_URL+'/checkout?plan='+(b.dataset.plan==='coach'?'coach':'base')+'&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
+    location.href=WORKER_URL+'/checkout?plan='+(b.dataset.plan==='coach'?'coach':'base')+'&email='+encodeURIComponent(email)+tq(email)+'&return='+encodeURIComponent(location.origin+location.pathname);
   }
-  else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}rememberCheckout(email,'coach');location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
+  else if(a==='cpsub'){const l=licenseGet();const email=l&&l.email;if(!email){V.lic=true;$('#license').hidden=false;$('#lic-msg').textContent='Entre ton email puis choisis « Cadence + Coach ».';return}rememberCheckout(email,'coach');location.href=WORKER_URL+'/checkout?plan=coach&email='+encodeURIComponent(email)+tq(email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='licportal'){
     const l=licenseGet();if(!l||!l.email)return;const fl=b.dataset.flow||(b.closest('.sale,.chero,.coachpay')||/Coach/.test(b.textContent)?'update':'');
     if(fl==='cancel'&&l.plan==='coach'&&!b.dataset.force){
@@ -7077,7 +7159,7 @@ document.addEventListener('click',e=>{
       V.lic=false;updateGate();render();planFeedback(before,licenseGet());
     }).catch(e=>pSheet({tone:'warn',icon:'info',title:'Changement impossible',sub:(e&&e.message&&e.message!=='Failed to fetch'?e.message:'Vérifie ta connexion et réessaie.'),btn:'OK'}))}
   else if(a==='liclogout'){licenseLogout()}
-  else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
+  else if(a==='expsub'){const l=licenseGet();if(!l||!l.email)return;const pl=b.dataset.plan==='coach'?'coach':'base';rememberCheckout(l.email,pl);location.href=WORKER_URL+'/checkout?plan='+pl+'&email='+encodeURIComponent(l.email)+tq(l.email)+'&return='+encodeURIComponent(location.origin+location.pathname)}
   else if(a==='expcheck'){const l=licenseGet(),m=$('#exp-msg');if(!l||!l.email)return;if(m)m.textContent='Vérification…';
     fetch(WORKER_URL+'/status?email='+encodeURIComponent(l.email)+tq(l.email)+'&t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{stRead(l.email,d);
       licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
@@ -7262,6 +7344,12 @@ document.addEventListener('change',e=>{
   else if(t.id==='fs-bcphoto'&&t.files&&t.files[0])scanBarcode(t.files[0]);
 });
 $('#form').addEventListener('submit',submitForm);
+// Sauvegarde : accepte le texte copié ou le fichier téléchargé (format « exportData »)
+function bkParse(txt,name){let d=JSON.parse(txt);if(d&&d.app==='Cadence'&&d.data)d=d.data;if(!d||!Array.isArray(d.items))return null;
+  return {S:d,name:name||'texte collé',n:(d.workouts||[]).length,j:Object.keys(d.log||{}).length,a:d.items.length}}
+document.addEventListener('change',e=>{if(e.target.id!=='bk-file'||!e.target.files||!e.target.files[0])return;const f=e.target.files[0];
+  f.text().then(t=>{try{const d=bkParse(t,f.name);if(!d)throw 0;V.bkPending=d;render()}catch(x){const m=$('#bk-msg');if(m)m.textContent='Ce fichier n\'est pas une sauvegarde Cadence.'}})});
+document.addEventListener('change',e=>{if(e.target.id==='pl-sort'){V.plSort=e.target.value;render()}});
 document.addEventListener('change',e=>{if(e.target.id==='j-date'&&e.target.value){V.jday=e.target.value;render()}});
 $('#form').addEventListener('input',e=>{if(e.target.id==='f-time'||e.target.id==='f-date')updateSlot();if(e.target.id==='f-date'||e.target.id==='f-until')updateRepeat();if(e.target.id==='f-colorpick'){V.fColor=e.target.value.toUpperCase();const l=e.target.parentNode;l.style.background=V.fColor;document.querySelectorAll('#f-colors .sw').forEach(x=>x.setAttribute('aria-checked',x===l))}});
 $('#form').addEventListener('change',e=>{
@@ -7403,7 +7491,9 @@ fillSelects();
 if(IS_PWA){
   try{
     const qs=new URLSearchParams(location.search);
-    if(qs.get('buy')){const ok=qs.get('buy')==='ok',it=(qs.get('item')||'').replace(/^wp-/,'');history.replaceState(null,'',location.pathname);
+    if(qs.get('buy')==='ok'&&qs.get('sid'))licClaim(qs.get('sid'));
+    if(qs.get('lic')==='auth'||qs.get('buy')==='auth'){history.replaceState(null,'',location.pathname);setTimeout(()=>pSheet({tone:'info',icon:'lock',title:'Confirme d\'abord cet appareil',sub:'Un compte Cadence existe déjà avec cet e-mail. Sur ton autre appareil : Réglages › Mon abonnement › « Utiliser mon abonnement sur un autre appareil », puis entre le code ici, dans « J\'ai un code ».',btn:'Compris'}),600)}
+    else if(qs.get('buy')){const ok=qs.get('buy')==='ok',it=(qs.get('item')||'').replace(/^wp-/,'');history.replaceState(null,'',location.pathname);
       if(ok)setTimeout(async()=>{toast('Vérification de l\'achat…');for(let i=0;i<4;i++){await wpSync(true);if(wpOwned().includes('wp-'+it)||wpOwned().includes('wp-pack'))break;await new Promise(r=>setTimeout(r,2500))}
         if(it&&it!=='pack'&&wpOwns(it)){wpSet(LS_WP,it);applyWall()}render();toast(wpOwns(it==='pack'?'aurore':it)?'Merci ! Fond d\'écran débloqué ✨':'Paiement reçu, déblocage en cours : réessaie « Restaurer mes achats » dans un instant.')},400);
       else setTimeout(()=>toast('Achat annulé'),300)}
