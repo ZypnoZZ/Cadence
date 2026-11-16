@@ -1298,6 +1298,7 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
 .r-tot{grid-column:1/-1;margin:2px 0 0}
 @media (max-width:350px){.pl-grid{grid-template-columns:1fr}}
 #testbar{position:fixed;left:0;right:0;bottom:0;z-index:70;text-align:center;font-size:11px;font-weight:700;padding:3px 8px calc(3px + env(safe-area-inset-bottom,0px));background:#f97316;color:#fff;pointer-events:none}
+.lv-stopl{display:block;margin:-4px 0 12px auto;font-size:13px;color:var(--danger)}
 
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
@@ -1401,7 +1402,8 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
     <p class="lv-t" id="lv-t"></p><p class="note" id="lv-s"></p>
     <button type="button" class="primary big" data-act="lv-go" style="width:100%;margin-top:14px">Reprendre où j'en étais</button>
     <button type="button" class="ghost" data-act="lv-later" style="width:100%;margin-top:8px">Plus tard</button>
-    <p class="note" style="margin-top:10px;text-align:center">Tes séries déjà faites sont enregistrées. Tu peux aussi la retrouver dans Séances.</p>
+    <button type="button" class="linkbtn" data-act="lv-stop" style="display:block;margin:10px auto 0;color:var(--danger)">Arrêter cette séance</button>
+    <p class="note" style="margin-top:10px;text-align:center">Tes séries déjà faites sont enregistrées. « Plus tard » : la séance reste dans Séances, sans te le redemander.</p>
   </div>
 </div>
 <div id="rsheet" class="scrim" hidden>
@@ -6077,12 +6079,12 @@ function openPlayer(wid,anim){
   const w=S.workouts.find(x=>x.id===wid);if(!w||!w.ex.length)return;
   acStart();
   Object.assign(PL,{w:wid,i:0,set:0,anim:!!anim,phase:'work',rounds:0,restNx:null});stopTimer();
-  if(!w.st&&w.date===todayISO&&COACH_NOTE(w))w.st='live';
+  if(!w.st&&w.date===todayISO){w.st='live';if(!COACH_NOTE(w)&&wHasData(w))w.ed=1}
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>PL.lock=l).catch(()=>{})}catch(e){}
   $('#player').hidden=false;renderPlayer();
 }
 function closePlayer(){
-  liveSave();stopTimer();msStop();$('#player').hidden=true;acRelease();
+  liveSave();liveMark({open:false,dismissed:true});stopTimer();msStop();$('#player').hidden=true;acRelease();
   try{PL.lock&&PL.lock.release()}catch(e){}PL.lock=null;
   V.tab='seances';V.wEdit=PL.w;touch();render();window.scrollTo(0,0);
 }
@@ -6251,6 +6253,7 @@ function wHasData(w){return w.ex.some(e=>e.kind==='cardio'?(+e.min>0||+e.km>0):(
 function wDone(w){
   if(!w||!w.ex||!w.ex.length||w.date>todayISO)return false;
   if(w.st==='done')return true;
+  if(w.st==='abandoned')return false;      // abandonnée sans aucune série faite
   if(w.st==='live')return !!w.ed;            // commencée : compte dès qu'une série est validée ou saisie
   return COACH_NOTE(w)?true:wHasData(w)||+w.dur>0; // anciennes séances (avant v108)
 }
@@ -6275,21 +6278,50 @@ let lastStartAt=0;
 function startCoachWorkout(src,note,agendaId,fresh){
   if(Date.now()-lastStartAt<1500)return null;lastStartAt=Date.now(); // double toucher
   let w=!fresh&&S.workouts.find(x=>x.date===todayISO&&x.title===src.title&&(x.note||'')===(note||'Programme du coach')&&x.st!=='done'&&(!agendaId||!x.agendaId||x.agendaId===agendaId));
+  if(w&&w.st==='abandoned')w.st='live'; // reprendre la même séance plutôt que d'en créer une autre
   if(!w){w=coachToWorkout(src,agendaId);if(note)w.note=note;w.st='live';S.workouts.push(w)}
   touch();return w;
 }
 
-/* ---- Séance en cours : sauvegarde et reprise ---- */
+/* ---- Séance en cours : sauvegarde et reprise ----
+   État enregistré (cadence-live) : position dans la séance + décision de l'utilisateur.
+   open      : le lecteur était ouvert quand l'app s'est fermée (interruption → reprise à proposer)
+   choice    : 'resume' quand l'utilisateur a choisi de reprendre (les lancements suivants reprennent directement)
+   dismissed : l'utilisateur a dit « Plus tard » ou a quitté la séance lui-même (plus de fenêtre, seulement le bandeau dans Séances) */
 const LS_LIVE='cadence-live';
+function liveRaw(){try{return JSON.parse(localStorage.getItem(LS_LIVE)||'null')}catch(e){return null}}
+function liveWrite(x){try{localStorage.setItem(LS_LIVE,JSON.stringify(x))}catch(e){}}
 function liveSave(){
-  if(!PL.w||$('#player').hidden){return}
+  if(!PL.w||$('#player').hidden)return;
+  const w=S.workouts.find(y=>y.id===PL.w);if(!w||w.st==='done')return;
+  const old=liveRaw(),same=old&&old.w===PL.w;
   const t=PL.t&&!PL.t.segs?{d:PL.t.d,start:PL.t.start,paused:PL.t.paused,pauseAt:PL.t.pauseAt,mode:PL.t.mode,label:PL.t.label}:null;
-  try{localStorage.setItem(LS_LIVE,JSON.stringify({w:PL.w,i:PL.i,set:PL.set,anim:PL.anim,phase:PL.phase,rounds:PL.rounds,t,nx:PL.restNx||null,at:Date.now()}))}catch(e){}
+  liveWrite({w:PL.w,i:PL.i,set:PL.set,anim:PL.anim,phase:PL.phase,rounds:PL.rounds,t,nx:PL.restNx||null,at:Date.now(),open:true,
+    choice:same?old.choice||null:null,dismissed:false});
 }
+// Met à jour la décision sans toucher à la position enregistrée
+function liveMark(p){const x=liveRaw();if(x)liveWrite(Object.assign(x,p))}
 function liveClear(){try{localStorage.removeItem(LS_LIVE)}catch(e){}}
-function liveGet(){try{const x=JSON.parse(localStorage.getItem(LS_LIVE)||'null');if(!x)return null;const w=S.workouts.find(y=>y.id===x.w);if(!w||w.st==='done'||Date.now()-x.at>12*3600e3)return null;return x}catch(e){return null}}
+// Une séance n'est « en cours » que si elle existe, n'est ni terminée ni abandonnée, et date de moins de 12 h
+function liveGet(){const x=liveRaw();if(!x)return null;const w=S.workouts.find(y=>y.id===x.w);
+  if(!w||w.st!=='live'||Date.now()-(x.at||0)>12*3600e3){liveClear();return null}return x}
+// Au lancement : une seule décision par interruption
+function liveBoot(){
+  const x=liveGet();if(!x||!x.open)return;
+  if(x.choice==='resume'){liveResume(x);toast('Séance reprise où tu l\'avais laissée');return}
+  if(!x.dismissed)liveOffer();
+}
+function liveDismiss(){$('#lvsheet').hidden=true;liveMark({open:false,dismissed:true})}
+// Abandon définitif : plus de reprise ; les séries déjà faites restent enregistrées
+function liveAbandon(id){
+  const x=liveRaw(),wid=id||(x&&x.w),w=S.workouts.find(y=>y.id===wid);
+  liveClear();$('#lvsheet').hidden=true;
+  if(w&&w.st==='live'){w.st=w.ed?'done':'abandoned';touch()}
+  render();toast(w&&w.ed?'Séance arrêtée : tes séries faites sont gardées':'Séance abandonnée');
+}
 function liveResume(x){
   const w=S.workouts.find(y=>y.id===x.w);if(!w)return;
+  liveMark({choice:'resume',dismissed:false});
   openPlayer(w.id,x.anim);
   Object.assign(PL,{i:Math.min(x.i,w.ex.length),set:x.set||0,rounds:x.rounds||0});
   if(x.phase==='rest'&&x.t&&x.nx){
@@ -6468,7 +6500,7 @@ function suiviSport(){
 function liveBanner(){
   const w=S.workouts.find(x=>wLive(x));if(!w)return '';
   const x=liveGet(),done=w.ex.reduce((t,e)=>t+(e.kind==='cardio'?(+e.min>0?1:0):(e.sets||[]).filter(s=>s.ok).length),0),all=w.ex.reduce((t,e)=>t+(e.kind==='cardio'?1:(e.sets||[]).length),0);
-  return '<button type="button" class="card livebar" data-act="lv-open" data-id="'+w.id+'"><span class="lv-dot" aria-hidden="true"></span><span class="lv-tx"><b>Séance en cours · '+esc(w.title||'Séance')+'</b><small>'+done+' / '+all+' séries faites'+(x?' · exercice '+Math.min(x.i+1,w.ex.length)+' sur '+w.ex.length:'')+'</small></span><span class="lv-go">Reprendre ›</span></button>';
+  return '<button type="button" class="card livebar" data-act="lv-open" data-id="'+w.id+'"><span class="lv-dot" aria-hidden="true"></span><span class="lv-tx"><b>Séance en cours · '+esc(w.title||'Séance')+'</b><small>'+done+' / '+all+' séries faites'+(x?' · exercice '+Math.min(x.i+1,w.ex.length)+' sur '+w.ex.length:'')+'</small></span><span class="lv-go">Reprendre ›</span></button><button type="button" class="linkbtn lv-stopl" data-act="lv-stopid" data-id="'+w.id+'">Arrêter cette séance</button>';
 }
 // Coach : options compactes (endurance, autres cours)
 function swHTML(k,on,label){return '<button type="button" class="tgl" role="switch" aria-checked="'+on+'" aria-label="'+esc(label)+'" data-act="ptoggle" data-k="'+k+'"><i></i></button>'}
@@ -6840,7 +6872,7 @@ document.addEventListener('click',e=>{
   if(e.target===$('#sheet')){closeSheet();return}
   if(e.target===$('#dsheet')){closeDay();return}
   if(e.target===$('#rsheet')){$('#rsheet').hidden=true;return}
-  if(e.target===$('#lvsheet')){$('#lvsheet').hidden=true;return}
+  if(e.target===$('#lvsheet')){liveDismiss();return}
   if(e.target===$('#pprompt')){$('#pprompt').hidden=true;return}
   if(e.target===$('#mvsheet')){$('#mvsheet').hidden=true;return}
   if(e.target===$('#ssheet')){$('#ssheet').hidden=true;return}
@@ -6955,7 +6987,9 @@ document.addEventListener('click',e=>{
   else if(a==='rt-sub'){rtAdd(-15)}
   else if(a==='rt-reset'){if(RT.on){RT.end=Date.now()+RT.dur*1000;RT.pl=0;msUpd();rtTick();rtSave()}}
   else if(a==='lv-go'){$('#lvsheet').hidden=true;const x=liveGet();if(x)liveResume(x)}
-  else if(a==='lv-later'){$('#lvsheet').hidden=true}
+  else if(a==='lv-later'){liveDismiss()}
+  else if(a==='lv-stop'){liveAbandon()}
+  else if(a==='lv-stopid'){liveAbandon(b.dataset.id)}
   else if(a==='lv-open'){const w=S.workouts.find(y=>y.id===b.dataset.id);if(w){const x=liveGet();if(x&&x.w===w.id)liveResume(x);else askGuided(w)}}
   else if(a==='rt-stop'){rtStop()}
   else if(a==='cswapopen'){openCoachSwap(+b.dataset.i)}
@@ -7565,7 +7599,7 @@ if(IS_PWA){
   });
 }
 setSync('pending');
-initStore().then(()=>{checkReminders();setInterval(checkReminders,15000);rtRestore();setTimeout(()=>{if($('#player').hidden&&(!IS_PWA||$('#lock').hidden))liveOffer();else{const iv=setInterval(()=>{if($('#lock').hidden){clearInterval(iv);if($('#player').hidden)liveOffer()}},800)}},900)});
+initStore().then(()=>{checkReminders();setInterval(checkReminders,15000);rtRestore();setTimeout(()=>{if($('#player').hidden&&(!IS_PWA||$('#lock').hidden))liveBoot();else{const iv=setInterval(()=>{if($('#lock').hidden){clearInterval(iv);if($('#player').hidden)liveBoot()}},800)}},900)});
 </script>
 
 </body>
