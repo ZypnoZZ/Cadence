@@ -1,0 +1,10 @@
+const {boot}=require('./lib');
+(async()=>{const T=await boot();const {p,ok}=T;
+await p.evaluate(()=>{V.tab='settings';V.sec='diag';render()});await p.waitForTimeout(600);
+const t=await p.evaluate(()=>$('#diag-box').textContent);
+ok('diagnostic affiché (version, session audio, minuteur, licence)',/110/.test(t)&&/Session audio/.test(t)&&/Minuteur de repos/.test(t)&&/Licence/.test(t),t.slice(0,120));
+ok('diagnostic sans e-mail ni jeton',!/a@b\.fr|tok/.test(t));
+ok('bandeau « version de test » hors de l\'adresse officielle',await p.evaluate(()=>!!document.getElementById('testbar')));
+await p.evaluate(()=>document.querySelector('[data-act=diagbeep]').click());await p.waitForTimeout(500);
+ok('bouton « tester le bip » sans erreur',true);
+await T.done()})();

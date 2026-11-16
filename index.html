@@ -1297,6 +1297,7 @@ button.cgoal{border:0;font:inherit;cursor:pointer}
 .r-tags{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 6px}.r-tags span{font-size:11.5px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:999px;padding:3px 8px}
 .r-tot{grid-column:1/-1;margin:2px 0 0}
 @media (max-width:350px){.pl-grid{grid-template-columns:1fr}}
+#testbar{position:fixed;left:0;right:0;bottom:0;z-index:70;text-align:center;font-size:11px;font-weight:700;padding:3px 8px calc(3px + env(safe-area-inset-bottom,0px));background:#f97316;color:#fff;pointer-events:none}
 
 </style>
 <style>:root{--font-display:-apple-system,"SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;--font-body:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}h1,h2,h3{letter-spacing:-.01em}</style>
@@ -1756,7 +1757,7 @@ const IS_PWA=true;
 /* ====== À PERSONNALISER AVANT DE PARTAGER L'APP ====== */
 const EDITEUR={
   nom:'ZypnoZZ',
-  email:'thibautgradinaru0709@gmail.com',
+  email:'', // adresse de contact DÉDIÉE à créer (ne pas mettre d'adresse personnelle)
   hebergeur:'Site : GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis. Serveur d\'abonnements : Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis.',
   // À COMPLÉTER AVANT D'OUVRIR LES PAIEMENTS RÉELS (laisser vide tant que Stripe est en mode test)
   statut:'',      // ex. 'Entrepreneur individuel (micro-entreprise)'
@@ -1768,7 +1769,11 @@ const LIVE=!!EDITEUR.siret;
 /* ===================================================== */
 const CGU_VERSION='2026-11-09b';
 const APP_VERSION='2026.11.16 · 110';
-const ADMIN_HASH='10b6674c3a7f11c178c0db0c54120242145d084ef23dea6b6f9e36031525b949';
+const ADMIN_KDF={salt:'8aea207bc540fe4b794229e9f5c68ab5',it:210000,hash:'a32f4d04f16bb604dfb707dd13e0afb61a411d90c0e26e8dfecc01181662c952'};
+async function adminCheck(code){try{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(code),'PBKDF2',false,['deriveBits']);
+  const salt=new Uint8Array(ADMIN_KDF.salt.match(/../g).map(x=>parseInt(x,16)));
+  const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:ADMIN_KDF.it,hash:'SHA-256'},k,256);
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')===ADMIN_KDF.hash}catch(e){return false}}
 const WORKER_URL='https://cadence-license.m6hkhvkg5v.workers.dev';
 const LS_LICENSE='cadence-license';
 const LIC_RECHECK_MS=12*3600*1000;
@@ -2976,6 +2981,7 @@ function renderSettings(){
      +'<p class="note" id="bk-msg" style="margin-top:8px" aria-live="polite"></p>';
   }
   if(sec==='privacy')return head+privacyHTML();
+  if(sec==='diag'){setTimeout(renderDiag,0);return head+'<h2 class="pg-t">Diagnostic</h2><p class="note" style="margin:0 2px 10px">Pour les tests sur iPhone : copie ce résumé et joins-le à ton retour. Il ne contient ni ton e-mail ni aucun jeton.</p><section class="card"><div class="zones" id="diag-box"><p class="note">Lecture…</p></div></section><button type="button" class="primary" data-act="diagcopy" style="width:100%">Copier le diagnostic</button><button type="button" class="ghost" data-act="diagbeep" style="width:100%;margin-top:8px">Tester le bip (avec ta musique en marche)</button>'}
   if(sec==='legalmenu')return head+'<section class="card"><h2>Conditions et confidentialité</h2><div style="display:flex;flex-direction:column;gap:8px"><button type="button" class="ghost" data-act="legal" data-doc="cgu">Conditions d\'utilisation</button><button type="button" class="ghost" data-act="legal" data-doc="cgv">Conditions de vente</button><button type="button" class="ghost" data-act="legal" data-doc="conf">Politique de confidentialité</button><button type="button" class="ghost" data-act="legal" data-doc="mentions">Mentions légales</button></div></section>';
   return head+'<h2 class="pg-t">Données</h2>'+acc('d-wipe','save','Effacer ce profil','Action définitive','<p class="note" style="margin-bottom:10px">Efface l\'agenda, les séances, l\'assiette, les pesées, le code et la clé de ce profil. Les autres profils ne sont pas touchés.</p><button type="button" class="danger" data-act="wipe" style="width:100%">Effacer les données de ce profil</button>');
 }
@@ -3022,7 +3028,7 @@ function openDrawer(){
     h+=list('Préférences',[row('train','dumb','Séances et coach','#10b981',prefs().coach?'Coach activé':'Mes séances'),row('notif','bell','Notifications','#ef4444',pushInfo()?'Activées':''),row('theme','moon','Apparence','#334155',{auto:'Auto',light:'Clair',dark:'Sombre'}[themePref()])]);
     h+=list('Confidentialité',[row('privacy','shield','Confidentialité et données','#0f766e','Tes choix')]);
     h+=fold('sec','Sécurité et sauvegarde',[row('security','lock','Code de verrouillage','#0ea5e9',lk?'Activé':'Désactivé'),row('backup','save','Sauvegarde','#14b8a6')]);
-    h+=fold('aide','Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
+    h+=fold('aide','Aide et infos',[row('','sync','Rechercher une mise à jour','#6366f1','v'+APP_VERSION.split('·').pop().trim(),'updcheck'),row('diag','info','Diagnostic (tests)','#6366f1'),row('cgu','doc','Conditions d\'utilisation','#64748b'),row('conf','shield','Confidentialité','#64748b'),row('mentions','info','Mentions légales','#64748b')]);
     h+='<div class="dr-list" style="margin-top:18px">'
       +(lk?'<button type="button" class="dr-row" data-act="locknow"><span class="dr-ic" style="--c:#0ea5e9">'+drSvg('lock')+'</span><span class="lbl">Verrouiller maintenant</span></button>':'')
       +'<button type="button" class="dr-row red" data-act="drlogout"><span class="dr-ic">'+drSvg('out')+'</span><span class="lbl">Se déconnecter</span></button></div>'
@@ -3918,7 +3924,7 @@ async function lookupCode(raw){
 /* ---------- Textes légaux ---------- */
 const MAJ='9 novembre 2026';
 const LEGAL={
-  mentions:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Mentions légales</h2><p class="note">Mise à jour : ${MAJ}</p>
+  mentions:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email||'adresse de contact en cours de création');return `<h2>Mentions légales</h2><p class="note">Mise à jour : ${MAJ}</p>
 <h3>Éditeur</h3><p>${LIVE?'Cadence est éditée par '+n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':'Cadence est éditée par '+n+', particulier, à titre personnel et non commercial.'}<br>Contact : ${m}</p>
 <h3>Directeur de la publication</h3><p>${n}</p>
 <h3>Hébergement et paiement</h3><p>${esc(EDITEUR.hebergeur)}</p><p>Les paiements sont traités par Stripe Payments Europe, Ltd. (Dublin, Irlande). L'éditeur ne voit ni ne conserve ton numéro de carte.</p>
@@ -3926,7 +3932,7 @@ const LEGAL={
 <h3>Propriété intellectuelle</h3><p>Le code, le design, le nom et l'icône de Cadence appartiennent à ${n}. Leur reproduction sans autorisation écrite est interdite.</p>
 <p>Les informations sur les produits emballés proviennent d'<a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>. Ces données sont publiées sous licence Open Database License (ODbL) et appartiennent aux contributeurs d'Open Food Facts.</p>
 <p>La lecture des codes-barres utilise la bibliothèque libre ZXing, sous licence Apache 2.0.</p>`},
-  cgv:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Conditions générales de vente</h2><p class="note">Version du ${MAJ}</p>
+  cgv:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email||'adresse de contact en cours de création');return `<h2>Conditions générales de vente</h2><p class="note">Version du ${MAJ}</p>
 <h3>1. Vendeur</h3><p>${LIVE?n+', '+esc(EDITEUR.statut||'entrepreneur individuel')+', SIRET '+esc(EDITEUR.siret)+', '+esc(EDITEUR.adresse)+'.':n+'.'} Contact : ${m}.</p>
 <h3>2. Offres et prix</h3><p>Deux formules d'abonnement mensuel : <b>Cadence</b> (${PRICE_BASE} par mois) et <b>Cadence + Coach</b> (${PRICE_COACH} par mois), avec le coach personnel : programme de 12 semaines, séances guidées, adaptation à tes sorties et à tes échéances. Les prix sont indiqués en euros, toutes taxes comprises.${LIVE?' TVA non applicable, article 293 B du CGI.':''}</p>
 <h3>2 bis. Achats à l'unité</h3><p>Des fonds d'écran sont aussi vendus à l'unité (paiement unique, sans abonnement), ainsi qu'un pack qui les regroupe. Le prix est affiché avant l'achat. L'achat est lié à ton adresse e-mail et reste valable tant que l'application est proposée, sur tous tes appareils, via « Restaurer mes achats ». En validant le paiement, tu demandes l'accès immédiat à ce contenu numérique et tu reconnais perdre ton droit de rétractation dès qu'il est débloqué.</p><h3>3. Commande et paiement</h3><p>Tu t'abonnes en indiquant ton adresse e-mail, puis tu paies par carte sur la page sécurisée de Stripe. L'abonnement se renouvelle automatiquement chaque mois jusqu'à sa résiliation. Quand tu passes de Cadence à Cadence + Coach, tu paies la différence au prorata de la période en cours. Quand tu repasses à Cadence, l'écart est crédité sur ta prochaine facture.</p>
@@ -3936,7 +3942,7 @@ const LEGAL={
 <h3>7. Disponibilité et garanties</h3><p>L'éditeur s'efforce d'assurer le service sans interruption mais ne peut la garantir. Tu bénéficies des garanties légales applicables aux contenus et services numériques, notamment la garantie de conformité.</p>
 <h3>8. Données personnelles</h3><p>Voir la politique de confidentialité.</p>
 <h3>9. Médiation et litiges</h3><p>En cas de litige, écris d'abord à ${m}. Si aucune solution n'est trouvée, tu peux gratuitement recourir au médiateur de la consommation : ${esc(EDITEUR.mediateur||'coordonnées du médiateur à renseigner avant l\'ouverture des paiements')}. Tu peux aussi utiliser la plateforme européenne de règlement en ligne des litiges (ec.europa.eu/consumers/odr). Le droit français s'applique.</p>`},
-  cgu:()=>{const m=esc(EDITEUR.email);return `<h2>Conditions générales d'utilisation</h2><p class="note">Version du ${MAJ}</p>
+  cgu:()=>{const m=esc(EDITEUR.email||'adresse de contact en cours de création');return `<h2>Conditions générales d'utilisation</h2><p class="note">Version du ${MAJ}</p>
 <h3>1. Objet</h3><p>Ces conditions encadrent l'utilisation de Cadence, une application web sur abonnement qui propose un agenda, une liste de tâches avec rappels, un suivi des séances de sport et de la progression, un calcul de besoins caloriques et de macronutriments, des plans de repas, une liste de courses, un journal alimentaire et un suivi du poids. Utiliser Cadence vaut acceptation de ces conditions.</p>
 <h3>2. Accès</h3><p>Cadence s'utilise avec un abonnement mensuel, identifié par ton adresse e-mail, aux conditions décrites dans les conditions de vente. Elle ne contient aucune publicité. Elle fonctionne dans un navigateur récent ; certaines fonctions demandent une connexion internet. L'éditeur peut modifier, suspendre ou arrêter Cadence à tout moment, sans préavis ni indemnité. L'éditeur s'efforce de maintenir le service disponible mais n'en garantit pas une disponibilité continue.</p>
 <h3>3. Âge</h3><p>Cadence s'adresse aux personnes de 15 ans et plus. Avant 15 ans, son utilisation demande l'accord d'un parent.</p>
@@ -3949,7 +3955,7 @@ const LEGAL={
 <h3>10. Propriété intellectuelle</h3><p>Voir les mentions légales.</p>
 <h3>11. Modifications</h3><p>Ces conditions peuvent évoluer. La nouvelle version s'affiche au lancement suivant et doit être acceptée pour continuer à utiliser Cadence.</p>
 <h3>12. Droit applicable et contact</h3><p>Ces conditions sont soumises au droit français. En cas de désaccord, écris d'abord à ${m} pour chercher une solution amiable. À défaut, les tribunaux français seront compétents.</p>`},
-  conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email);return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
+  conf:()=>{const n=esc(EDITEUR.nom),m=esc(EDITEUR.email||'adresse de contact en cours de création');return `<h2>Politique de confidentialité</h2><p class="note">Version du ${MAJ}</p>
 <h3>En résumé</h3><p>Tes données de santé et de suivi (poids, repas, séances, sorties) restent sur ton appareil. Le serveur de l'éditeur ne garde que ce qui est nécessaire à l'abonnement et aux rappels, décrit ci-dessous. Il n'y a ni publicité, ni mesure d'audience, ni cookie de suivi.</p>
 <h3>Ce qui reste sur ton appareil</h3><p>Ton agenda, tes tâches, tes séances de sport, ton profil (sexe, âge, taille, poids, niveau d'activité, objectif), tes pesées, ton journal alimentaire, ta liste de courses, l'empreinte de ton code de verrouillage (jamais le code lui-même), et ton acceptation de ces conditions. Le poids et l'alimentation peuvent révéler des informations sur ta santé : ces données ne quittent pas ton appareil, sauf dans les cas décrits ci-dessous.</p><p>Les entrées du journal de plus de 180 jours sont supprimées automatiquement. Tu peux tout effacer à tout moment dans Réglages (icône en haut à gauche), puis « Effacer les données de ce profil », ou en supprimant l'application. Si plusieurs profils existent sur l'appareil, chacun a ses données, son code et sa clé séparés.</p>
 <h3>Ce que garde le serveur de Cadence</h3><ul>
@@ -4073,7 +4079,8 @@ function moveTabInd(){
   V.barTab=V.tab;
 }
 window.addEventListener('resize',()=>{const ind=$('.tabind');if(ind){ind.classList.add('still');V.barTab=undefined;moveTabInd()}});
-function render(){
+function testBanner(){if(!isTestBuild()||document.getElementById('testbar'))return;const d=document.createElement('div');d.id='testbar';d.textContent='Version de test '+APP_VERSION.split('·').pop().trim()+' · données séparées de ton app habituelle';document.body.appendChild(d)}
+function render(){testBanner();
   $('#today-label').textContent=headLabel();
   $('.tabs').classList.remove('nocoach');
   document.querySelectorAll('.tabs button').forEach(b=>{if(b.dataset.tab===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -6744,7 +6751,7 @@ function privacyHTML(){
    +'<div class="copt"><span class="copt-t"><b>Recherche Open Food Facts</b><small>Les mots que tu cherches sont envoyés à Open Food Facts (association, France). Aucune donnée personnelle.</small></span>'+swHTML('off',prefs().off,'Recherche Open Food Facts')+'</div>'
    +'<div class="copt"><span class="copt-t"><b>Analyse des photos de repas</b><small>'+(AI_ON?'Seulement quand tu prends une photo : l\'image est envoyée à Google (Gemini) pour estimer les aliments. Cadence ne la conserve pas.':'Désactivée pour le moment : aucune photo n\'est envoyée.')+'</small></span><span class="wpill off">'+(AI_ON?'À la demande':'Désactivée')+'</span></div>'
    +'</section>';
-  h+='<section class="card"><b>Tes droits</b><p class="note" style="margin:4px 0 10px">Accès, rectification, effacement, portabilité, opposition : tu peux tout faire ici ou écrire à <a href="mailto:'+esc(EDITEUR.email)+'">'+esc(EDITEUR.email)+'</a>.</p>'
+  h+='<section class="card"><b>Tes droits</b><p class="note" style="margin:4px 0 10px">Accès, rectification, effacement, portabilité, opposition : tu peux tout faire ici'+(EDITEUR.email?' ou écrire à <a href="mailto:'+esc(EDITEUR.email)+'">'+esc(EDITEUR.email)+'</a>':'')+'.</p>'
    +'<button type="button" class="ghost" data-act="dlexport" style="width:100%">Télécharger toutes mes données (fichier)</button>'
    +'<p class="note" style="margin-top:8px">Le fichier contient tout ce que Cadence garde sur ce téléphone pour ce profil (format JSON, lisible par d\'autres applications).</p></section>';
   h+='<section class="card danger-zone"><b>Supprimer mon compte</b><p class="note" style="margin:4px 0 10px">Supprime définitivement les données de ce profil sur ce téléphone, coupe les notifications et Strava côté serveur, et envoie la demande d\'effacement de ton e-mail et de ton abonnement'+(sub?'. <b>Ton abonnement est encore actif : résilie-le d\'abord</b>, sinon il continuera d\'être facturé.':'.')+'</p>'
@@ -6765,11 +6772,35 @@ async function deleteAccount(){
   try{const gk=S.garmin&&S.garmin.gk;if(gk)await fetch(WORKER_URL+'/garmin/disconnect?gk='+encodeURIComponent(gk))}catch(e){}
   try{localStorage.removeItem('cadence-live');localStorage.removeItem('cadence-rt');localStorage.removeItem('cadence-offcache')}catch(e){}
   let srvOK=false;if(l&&l.email&&tokFor(l.email)){try{const d=await (await fetch(WORKER_URL+'/account/delete?email='+encodeURIComponent(l.email)+tq(l.email),{method:'POST'})).json();srvOK=!!d.ok;if(!d.ok&&d.error){toast(d.error);return}}catch(e){}}
-  const mail=!srvOK&&l&&l.email?'mailto:'+EDITEUR.email+'?subject='+encodeURIComponent('Suppression de mon compte Cadence')+'&body='+encodeURIComponent('Bonjour,\n\nJe demande la suppression de mon compte Cadence et des données associées à l\'adresse '+l.email+' (abonnement, achats, données serveur).\n\nMerci.'):'';
+  const mail=!srvOK&&l&&l.email&&EDITEUR.email?'mailto:'+EDITEUR.email+'?subject='+encodeURIComponent('Suppression de mon compte Cadence')+'&body='+encodeURIComponent('Bonjour,\n\nJe demande la suppression de mon compte Cadence et des données associées à l\'adresse '+l.email+' (abonnement, achats, données serveur).\n\nMerci.'):'';
   wipeAll();
   if(mail){setTimeout(()=>{location.href=mail},400)}
   try{const m=tokMap();if(l&&l.email){delete m[l.email.toLowerCase()];localStorage.setItem(LS_TOKS,JSON.stringify(m))}localStorage.removeItem(LS_LICENSE)}catch(e){}
   toast(srvOK?'Compte supprimé, sur ce téléphone et sur le serveur':'Données de ce profil supprimées');
+}
+
+/* ================= v110 : diagnostic pour les tests sur iPhone ================= */
+const PROD_ORIGIN='https://zypnozz.github.io';
+function isTestBuild(){return IS_PWA&&location.origin!==PROD_ORIGIN}
+async function diagData(){
+  const ua=navigator.userAgent,ios=(ua.match(/OS (\d+)[._](\d+)/)||[]).slice(1).join('.');
+  let cam='inconnu';try{if(navigator.permissions&&navigator.permissions.query)cam=(await navigator.permissions.query({name:'camera'})).state}catch(e){cam='non disponible'}
+  let est='';try{const e=await navigator.storage.estimate();est=Math.round(e.usage/1024)+' Ko utilisés'}catch(e){}
+  let swv='aucun';try{const ks=await caches.keys();swv=ks.filter(k=>/^cadence-v/.test(k)).join(', ')||'aucun cache'}catch(e){}
+  const l=licenseGet()||{};
+  return [['Version',APP_VERSION],['Adresse',location.origin+location.pathname+(isTestBuild()?' (version de test)':'')],['iOS',ios||'non détecté'],
+    ['Mode app (écran d\'accueil)',(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'oui':'non (navigateur)'],
+    ['Session audio',navigator.audioSession?navigator.audioSession.type:'API non disponible'],['Contexte audio',PL.ac?PL.ac.state:'pas encore créé'],
+    ['Minuteur de repos',{none:'Dans Cadence',apple:'Horloge iPhone',cadence:'Lecteur (coupe la musique)'}[prefs().lock]],
+    ['Notifications',('Notification' in window)?Notification.permission:'non disponibles'],['Notifications push',pushInfo()?'activées':'désactivées'],
+    ['Caméra',cam],['Service worker',navigator.serviceWorker&&navigator.serviceWorker.controller?'actif':'inactif'],['Caches',swv],['Stockage',est||'?'],
+    ['Licence',l.type==='admin'?'administrateur':l.type==='sub'?(licLive(l)?'abonnement actif':'abonnement inactif')+(l.email&&tokFor(l.email)?', appareil confirmé':', appareil non confirmé'):'aucune'],
+    ['Séance en cours',liveGet()?'oui':'non']];
+}
+async function renderDiag(){
+  const rows=await diagData();const box=$('#diag-box');if(!box)return;
+  box.innerHTML=rows.map(r=>'<div class="zrow"><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('');
+  V.diagTxt=rows.map(r=>r[0]+' : '+r[1]).join('\n');
 }
 
 /* ---------- Recettes ---------- */
@@ -7092,8 +7123,8 @@ document.addEventListener('click',e=>{
     const code=($('#lic-code').value||'').trim();
     const msg=$('#lic-msg');
     if(!code){msg.textContent='Entre un code.';return}
-    sha256Hex(code).then(h=>{
-      if(h===ADMIN_HASH){licenseSet({type:'admin'});msg.textContent='';updateGate();render();return}
+    adminCheck(code).then(isAdmin=>{
+      if(isAdmin){licenseSet({type:'admin'});msg.textContent='';updateGate();render();return}
       const xc=code.toUpperCase().replace(/[^A-Z0-9]/g,'');
       if(xc.length!==8){msg.textContent='Code incorrect.';return}
       msg.textContent='Vérification du code…';
@@ -7165,6 +7196,8 @@ document.addEventListener('click',e=>{
       licenseSet({type:'sub',email:l.email,active:!!d.active,plan:d.plan||'base',cancelAt:d.cancelAt||null,checked:Date.now()});
       if(d.active){render();planFeedback(null,licenseGet())}else{const m2=$('#exp-msg');if(m2)m2.textContent='Toujours aucun abonnement actif pour '+l.email+'.'}
     }).catch(()=>{const m2=$('#exp-msg');if(m2)m2.textContent='Impossible de vérifier pour le moment.'})}
+  else if(a==='diagcopy'){try{navigator.clipboard.writeText(V.diagTxt||'').then(()=>toast('Diagnostic copié'),()=>toast('Copie impossible : fais une capture d\'écran'))}catch(e){toast('Copie impossible : fais une capture d\'écran')}}
+  else if(a==='diagbeep'){acStart();setTimeout(()=>{beep(3);acRelease();setTimeout(renderDiag,300)},150)}
   else if(a==='dlexport'){exportData();toast('Fichier de tes données téléchargé')}
   else if(a==='privpushoff'){pushDisable().then(()=>{render();toast('Notifications désactivées')})}
   else if(a==='delacct'){if(!V.delArmed){V.delArmed=true;render();return}V.delArmed=false;deleteAccount()}

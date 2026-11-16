@@ -1,7 +1,7 @@
 // Non-régression : chaque onglet, chaque section des réglages, gestes principaux, données conservées
 const {boot}=require('./lib');
 (async()=>{const T=await boot({clock:'2026-11-18T10:00:00'});const {p,ok}=T;
-await p.evaluate(()=>{S.profile=Object.assign(S.profile||{},{name:'Thibaut',sex:'h',age:22,h:180,w:75,act:1.55,goal:'maintien'});
+await p.evaluate(()=>{S.profile=Object.assign(S.profile||{},{name:'Test',sex:'h',age:22,h:180,w:75,act:1.55,goal:'maintien'});
   S.coach=Object.assign(coachCfg(),{start:iso(addDays(monday(today),-7)),style:'muscu',level:'inter',days:4,place:'gym'});
   S.items.push({id:'i1',type:'sport',title:'Foot',date:todayISO,time:'19:00'},{id:'i2',type:'todo',title:'Courses',date:todayISO});
   S.workouts.push({id:'w1',date:iso(addDays(today,-2)),title:'Push',dur:50,note:'',ex:[{name:'Développé couché',kind:'force',sets:[{r:8,kg:60}]}]});
